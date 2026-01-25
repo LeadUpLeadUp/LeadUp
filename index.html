@@ -3,895 +3,678 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>LEADUP • CRM</title>
+  <title>GoldLead — מערכת ניהול לידים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#0b0b0f;
-      --panel:#111118;
-      --panel2:#151520;
-      --line:rgba(255,255,255,.10);
-      --soft:rgba(255,255,255,.06);
+      --bg:#faf8f2;
+      --panel:#ffffff;
+      --text:#101114;
+      --muted:rgba(16,17,20,.65);
+      --line:rgba(16,17,20,.10);
+      --shadow:0 18px 50px rgba(0,0,0,.10);
 
-      --paper:#f6f4ef;          /* האזור הבהיר (כמו בתמונה) */
-      --paper2:#ffffff;
-      --paperLine: rgba(10,10,10,.10);
-      --paperSoft: rgba(10,10,10,.06);
-
-      --text:#ffffff;
-      --muted:rgba(255,255,255,.70);
-      --dark:#111114;
-      --dark2:#1a1a22;
-
-      --gold:#d6b25e;
-      --gold2:#f0d183;
-      --goldSoft: rgba(214,178,94,.20);
-
-      --ok:#2ef2a2;
-      --bad:#ff5c7a;
+      --gold:#c8a552;         /* זהב אלגנטי */
+      --gold2:#b8913e;
+      --goldSoft:rgba(200,165,82,.18);
 
       --radius:18px;
-      --radius2:14px;
+      --radius2:22px;
 
-      --shadow: 0 18px 55px rgba(0,0,0,.45);
-      --shadow2: 0 10px 28px rgba(0,0,0,.28);
-
-      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
+      --ok:#1f9d63;
+      --warn:#b7791f;
+      --bad:#c53030;
     }
 
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:var(--font);
-      background:
-        radial-gradient(900px 520px at 20% -10%, rgba(214,178,94,.12), transparent 60%),
-        radial-gradient(900px 520px at 90% 120%, rgba(240,209,131,.08), transparent 55%),
-        linear-gradient(180deg, #0a0a10, #08080c);
+      font-family:"Heebo",system-ui,Segoe UI,Arial;
       color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(200,165,82,.20), transparent 55%),
+        radial-gradient(1200px 600px at 100% 0%, rgba(200,165,82,.12), transparent 50%),
+        linear-gradient(180deg, var(--bg), #fff 60%);
       min-height:100vh;
-      overflow-x:hidden;
+    }
+
+    a{color:inherit}
+    .wrap{max-width:1250px;margin:0 auto;padding:18px}
+
+    /* Top bar */
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      background:rgba(255,255,255,.75);
+      border:1px solid var(--line);
+      border-radius:var(--radius2);
+      box-shadow:0 10px 24px rgba(0,0,0,.06);
+      position:sticky; top:12px; z-index:20;
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .mark{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(145deg, var(--gold), #f2e6c7);
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow: 0 12px 30px rgba(200,165,82,.25);
+      position:relative;
+    }
+    .mark:after{
+      content:""; position:absolute; inset:10px;
+      border-radius:12px;
+      border:2px solid rgba(255,255,255,.65);
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+    }
+    .tab{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.9);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      color:rgba(16,17,20,.8);
+      transition:.18s ease;
+      user-select:none;
+    }
+    .tab:hover{border-color:rgba(200,165,82,.45); box-shadow:0 10px 20px rgba(200,165,82,.12)}
+    .tab.active{
+      border-color:rgba(200,165,82,.65);
+      background:linear-gradient(180deg, #fff, rgba(200,165,82,.10));
+      color:#1a1a1a;
+    }
+
+    .userbox{display:flex;gap:10px;align-items:center}
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(200,165,82,.55);
+      background:rgba(255,255,255,.85);
+      display:flex; gap:8px; align-items:center;
+      font-weight:700;
+    }
+    .dot{
+      width:9px;height:9px;border-radius:99px;background:var(--gold);
+      box-shadow:0 0 0 6px rgba(200,165,82,.18);
+    }
+
+    .btn{
+      border:1px solid rgba(200,165,82,.65);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      transition:.16s ease;
+    }
+    .btn:hover{transform:translateY(-1px); box-shadow:0 14px 28px rgba(200,165,82,.12)}
+    .btn.primary{
+      background:linear-gradient(180deg, var(--gold), var(--gold2));
+      color:#121212;
+      border-color:rgba(0,0,0,.10);
+    }
+    .btn.ghost{
+      border-color:var(--line);
+      background:rgba(255,255,255,.8);
+      font-weight:800;
     }
 
     /* Layout */
-    .app{
-      max-width: 1240px;
-      margin: 28px auto;
-      padding: 0 18px;
-    }
-    .frame{
+    .grid{
       display:grid;
-      grid-template-columns: 240px 1fr;
-      gap: 18px;
-      align-items: stretch;
+      grid-template-columns: 320px 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .topbar{position:static}
     }
 
-    /* Sidebar */
-    .sidebar{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    .card{
+      background:rgba(255,255,255,.85);
       border:1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: var(--shadow2);
+      border-radius:var(--radius2);
+      box-shadow:var(--shadow);
       overflow:hidden;
-      position: sticky;
-      top: 18px;
-      height: calc(100vh - 36px);
-      min-height: 560px;
-      display:flex;
-      flex-direction:column;
     }
-
-    .sbTop{
-      padding: 16px 16px 14px;
-      display:flex; align-items:center; gap:10px;
+    .card .hd{
+      padding:14px 14px 10px;
       border-bottom:1px solid var(--line);
-      background: rgba(255,255,255,.02);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:
+        linear-gradient(180deg, rgba(200,165,82,.10), transparent 70%);
     }
-    .shield{
-      width:36px; height:36px; border-radius: 12px;
-      background: radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.35), transparent 60%),
-                  linear-gradient(135deg, rgba(214,178,94,.95), rgba(240,209,131,.65));
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: 0 16px 30px rgba(214,178,94,.18);
-    }
-    .brand{
-      display:flex; flex-direction:column;
-      line-height:1.1;
-    }
-    .brand b{font-size:14px; letter-spacing:.3px}
-    .brand span{font-size:12px; color:var(--muted)}
+    .card .hd h2{margin:0;font-size:14px;letter-spacing:.2px}
+    .card .bd{padding:14px}
 
-    .nav{
-      padding: 10px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .nav a{
-      text-decoration:none;
-      color: rgba(255,255,255,.88);
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border:1px solid transparent;
-      background: transparent;
-      transition:.18s;
-      font-size:13px;
-    }
-    .nav a:hover{
-      background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.10);
-    }
-    .nav a.active{
-      background: linear-gradient(90deg, rgba(214,178,94,.18), rgba(255,255,255,.04));
-      border-color: rgba(214,178,94,.25);
-      box-shadow: 0 10px 24px rgba(214,178,94,.10);
-    }
-    .ico{
-      width:18px; height:18px; border-radius: 6px;
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      display:inline-flex; align-items:center; justify-content:center;
-      font-size:11px;
-      color: rgba(255,255,255,.85);
-    }
+    .muted{color:var(--muted)}
+    .sep{height:1px;background:var(--line);margin:12px 0}
 
-    .sbBottom{
-      margin-top:auto;
-      padding: 14px 14px 16px;
-      border-top:1px solid var(--line);
-      display:flex;
-      gap:10px;
-      align-items:center;
-      background: rgba(255,255,255,.02);
-    }
-    .avatarSmall{
-      width:38px; height:38px; border-radius: 14px;
-      background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.12);
-    }
-    .sbUser b{display:block; font-size:13px}
-    .sbUser span{display:block; font-size:12px; color:var(--muted)}
-
-    /* Main */
-    .main{
-      background: transparent;
-      border-radius: 20px;
-      min-height: 560px;
-    }
-
-    .paper{
-      background: linear-gradient(180deg, var(--paper2), var(--paper));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--paperLine);
-      background: rgba(255,255,255,.65);
-      backdrop-filter: blur(10px);
-    }
-    .search{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex:1;
-    }
-    .search input{
-      width: min(520px, 100%);
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--paperLine);
-      background: rgba(255,255,255,.70);
-      outline:none;
-      font-size: 13px;
-      color: #1a1a1a;
-    }
-    .search input:focus{
-      border-color: rgba(214,178,94,.55);
-      box-shadow: 0 0 0 4px rgba(214,178,94,.18);
-      background: rgba(255,255,255,.92);
-    }
-    .topIcons{
-      display:flex; align-items:center; gap:10px;
-    }
-    .iconBtn{
-      width:36px; height:36px;
-      border-radius: 14px;
-      border:1px solid var(--paperLine);
-      background: rgba(255,255,255,.65);
-      display:inline-flex; align-items:center; justify-content:center;
-      cursor:pointer;
-      transition:.15s;
-      color:#222;
-    }
-    .iconBtn:hover{transform: translateY(-1px); border-color: rgba(214,178,94,.40)}
-    .profile{
-      display:flex; align-items:center; gap:10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border:1px solid var(--paperLine);
-      background: rgba(255,255,255,.65);
-    }
-    .profile .face{
-      width:28px; height:28px; border-radius: 50%;
-      background: linear-gradient(135deg, rgba(214,178,94,.35), rgba(0,0,0,.08));
-      border:1px solid rgba(10,10,10,.10);
-    }
-    .profile b{font-size:13px; color:#111}
-
-    .content{
-      padding: 16px;
-    }
-
-    /* KPI row */
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-    @media (max-width: 1100px){ .kpis{grid-template-columns: repeat(2, minmax(0,1fr));} }
-    @media (max-width: 640px){ .kpis{grid-template-columns: 1fr;} .frame{grid-template-columns:1fr} .sidebar{position:relative; height:auto} }
-
-    .kpi{
-      background: rgba(255,255,255,.75);
-      border:1px solid var(--paperLine);
-      border-radius: 16px;
-      padding: 12px 12px;
-      box-shadow: 0 10px 22px rgba(0,0,0,.10);
-      position:relative;
-      overflow:hidden;
-    }
-    .kpi:before{
-      content:"";
-      position:absolute; inset:auto -30px -55px auto;
-      width:140px; height:140px; border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, rgba(214,178,94,.35), transparent 62%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-    .kpi .label{font-size:12px; color:#555}
-    .kpi .value{font-size:22px; font-weight:800; color:#111; margin-top:4px}
-    .kpi .miniLine{
-      height:3px; width: 44%;
-      margin-top: 10px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(214,178,94,.95), rgba(214,178,94,.18));
-    }
-
-    /* Main grid inside paper */
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 340px; /* כמו בתמונה: טבלה + פרטים */
-      gap: 12px;
-      align-items: start;
-    }
-    @media (max-width: 980px){ .grid2{grid-template-columns:1fr} }
-
-    /* Panels */
-    .panel{
-      background: rgba(255,255,255,.78);
-      border:1px solid var(--paperLine);
-      border-radius: 18px;
-      box-shadow: 0 12px 26px rgba(0,0,0,.10);
-      overflow:hidden;
-    }
-    .panelHd{
-      padding: 12px 12px;
-      border-bottom:1px solid var(--paperLine);
-      display:flex; align-items:center; justify-content:space-between;
-      color:#111;
-      background: rgba(255,255,255,.55);
-    }
-    .panelHd b{font-size:13px}
-    .panelHd .more{color:#777; font-size:18px; line-height:1}
-    .panelBd{padding: 10px 12px}
-
-    /* Table */
-    table{width:100%; border-collapse: separate; border-spacing: 0}
-    thead th{
-      text-align:right;
-      font-size:12px;
-      color:#666;
-      padding: 10px 10px;
-      border-bottom: 1px solid var(--paperLine);
-      background: rgba(10,10,10,.02);
-      position:sticky; top:0;
-      z-index: 1;
-    }
-    tbody td{
-      padding: 10px 10px;
-      border-bottom: 1px solid var(--paperSoft);
-      font-size: 13px;
-      color:#222;
-      vertical-align: middle;
-    }
-    tbody tr{
-      cursor:pointer;
-      transition:.12s;
-    }
-    tbody tr:hover{
-      background: rgba(214,178,94,.10);
-    }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(10,10,10,.10);
-      background: rgba(255,255,255,.80);
-      font-size: 12px;
-      color:#333;
-      white-space:nowrap;
-    }
-    .pill.gold{border-color: rgba(214,178,94,.35); background: rgba(214,178,94,.16)}
-    .pill.ok{border-color: rgba(46,242,162,.35); background: rgba(46,242,162,.12)}
-    .pill.bad{border-color: rgba(255,92,122,.35); background: rgba(255,92,122,.10)}
-    .dot{
-      width:8px; height:8px; border-radius: 50%;
-      background:#bbb;
-    }
-    .dot.gold{background: var(--gold)}
-    .dot.ok{background: var(--ok)}
-    .dot.bad{background: var(--bad)}
-    .sub{
-      font-size:12px; color:#666;
-      margin-top:2px;
-    }
-
-    /* Lead details */
-    .leadHeader{
-      display:flex; align-items:center; gap:10px;
-      padding: 12px 12px;
-      border-bottom:1px solid var(--paperLine);
-      background: rgba(10,10,10,.02);
-    }
-    .avatar{
-      width:42px; height:42px; border-radius: 16px;
-      background: linear-gradient(135deg, rgba(214,178,94,.30), rgba(10,10,10,.06));
-      border:1px solid rgba(10,10,10,.10);
-    }
-    .leadHeader b{display:block; color:#111; font-size:14px}
-    .leadHeader span{display:block; color:#666; font-size:12px}
-
-    .formRow{display:grid; grid-template-columns: 1fr; gap:10px; padding: 12px}
-    label{display:block; font-size:12px; color:#666; margin: 0 0 6px}
+    /* Filters */
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+    .field label{font-size:12px;color:var(--muted);font-weight:700}
     input, select, textarea{
       width:100%;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border:1px solid rgba(10,10,10,.14);
-      background: rgba(255,255,255,.88);
+      padding:11px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
       outline:none;
-      font-size: 13px;
-      color:#111;
+      background:rgba(255,255,255,.95);
+      font-family:inherit;
+      transition:.15s ease;
     }
-    textarea{min-height: 90px; resize:vertical}
+    textarea{min-height:80px;resize:vertical}
     input:focus, select:focus, textarea:focus{
-      border-color: rgba(214,178,94,.55);
-      box-shadow: 0 0 0 4px rgba(214,178,94,.18);
-      background: rgba(255,255,255,.96);
+      border-color:rgba(200,165,82,.65);
+      box-shadow:0 0 0 4px rgba(200,165,82,.16);
     }
 
-    .quickActions{
-      display:flex; gap:10px; flex-wrap:wrap;
-      padding: 0 12px 12px;
+    .row{display:flex; gap:10px}
+    .row > *{flex:1}
+    .kpis{display:grid; grid-template-columns:repeat(4, 1fr); gap:10px}
+    @media (max-width: 980px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+    .kpi{
+      background:#fff;
+      border:1px solid rgba(200,165,82,.35);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 14px 26px rgba(0,0,0,.06);
     }
-    .btn{
-      border:0;
+    .kpi .t{font-size:12px;color:var(--muted);font-weight:800}
+    .kpi .v{font-size:22px;font-weight:900;margin-top:6px}
+    .kpi .s{font-size:12px;color:rgba(16,17,20,.65);margin-top:3px}
+
+    /* Table */
+    table{width:100%; border-collapse:separate; border-spacing:0}
+    th, td{padding:10px 10px; text-align:right; border-bottom:1px solid var(--line); vertical-align:top}
+    th{font-size:12px;color:var(--muted);font-weight:900; background:rgba(255,255,255,.7); position:sticky; top:0}
+    .tblWrap{max-height:520px; overflow:auto; border-radius:18px; border:1px solid var(--line); background:#fff}
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(200,165,82,.45);
+      background:rgba(200,165,82,.10);
+      font-weight:900; font-size:12px;
+      white-space:nowrap;
+    }
+    .tag .bar{
+      width:8px; height:8px; border-radius:99px; background:var(--gold);
+      box-shadow:0 0 0 6px rgba(200,165,82,.15);
+    }
+
+    .score{
+      display:inline-flex; align-items:center; gap:8px;
+      font-weight:900; font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.95);
+      white-space:nowrap;
+    }
+    .meter{
+      width:64px; height:8px; border-radius:99px; background:rgba(16,17,20,.10);
+      overflow:hidden;
+    }
+    .meter > span{display:block;height:100%; background:linear-gradient(90deg, #e6c97e, var(--gold2));}
+
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .iconBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:12px;
       cursor:pointer;
-      padding: 10px 12px;
-      border-radius: 14px;
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:8px;
-      font-weight: 700;
-      font-size: 13px;
-      transition:.15s;
-      user-select:none;
+      font-weight:900;
+      font-size:12px;
+      transition:.14s ease;
     }
-    .btn.gold{
-      background: linear-gradient(135deg, rgba(214,178,94,.95), rgba(240,209,131,.70));
-      color:#111;
-      box-shadow: 0 14px 26px rgba(214,178,94,.20);
+    .iconBtn:hover{border-color:rgba(200,165,82,.55); box-shadow:0 10px 18px rgba(200,165,82,.12)}
+
+    /* Pipeline */
+    .kanban{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:10px;
     }
-    .btn.gold:hover{transform: translateY(-1px)}
-    .btn.soft{
-      background: rgba(10,10,10,.05);
-      border:1px solid rgba(10,10,10,.12);
-      color:#222;
+    @media (max-width: 980px){ .kanban{grid-template-columns:1fr} }
+    .col{
+      background:rgba(255,255,255,.85);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
     }
-    .btn.soft:hover{border-color: rgba(214,178,94,.35)}
-    .btn.danger{
-      background: rgba(255,92,122,.10);
-      border:1px solid rgba(255,92,122,.25);
-      color:#7a2032;
-      font-weight:800;
+    .col .chd{
+      padding:10px 12px;
+      font-weight:900;
+      display:flex; align-items:center; justify-content:space-between;
+      background:linear-gradient(180deg, rgba(200,165,82,.12), transparent 70%);
+      border-bottom:1px solid var(--line);
     }
-    .btn:disabled{opacity:.55; cursor:not-allowed; transform:none}
+    .col .cbd{padding:10px; min-height:220px}
+    .leadCard{
+      background:#fff;
+      border:1px solid rgba(200,165,82,.35);
+      border-radius:16px;
+      padding:10px;
+      box-shadow:0 10px 20px rgba(0,0,0,.06);
+      margin-bottom:10px;
+      cursor:grab;
+    }
+    .leadCard:active{cursor:grabbing}
+    .leadCard .nm{font-weight:900}
+    .leadCard .sm{color:var(--muted); font-size:12px; margin-top:2px}
+    .leadCard .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 
     /* Modal */
-    .modalWrap{
+    .backdrop{
       position:fixed; inset:0;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(6px);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index: 999;
-      padding: 18px;
+      background:rgba(0,0,0,.45);
+      display:none; align-items:center; justify-content:center;
+      padding:16px; z-index:50;
     }
-    .modalWrap.show{display:flex}
     .modal{
-      width: min(560px, 96vw);
-      border-radius: 20px;
+      width:min(920px, 100%);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(255,255,255,.35);
+      border-radius:26px;
+      box-shadow:0 24px 80px rgba(0,0,0,.28);
       overflow:hidden;
-      box-shadow: var(--shadow);
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(246,244,239,.96));
+      backdrop-filter: blur(10px);
     }
-    .modalHd{
-      display:flex; align-items:center; justify-content:space-between;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--paperLine);
-      color:#111;
-      background: rgba(255,255,255,.60);
+    .modal .mhd{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(200,165,82,.16), transparent 70%);
     }
-    .modalHd b{font-size:14px}
-    .x{
-      width:36px; height:36px; border-radius: 14px;
-      border:1px solid var(--paperLine);
-      background: rgba(255,255,255,.65);
-      cursor:pointer;
+    .modal .mhd h3{margin:0;font-size:15px}
+    .modal .mbd{padding:14px}
+    .modal .mft{
+      padding:14px 16px;
+      border-top:1px solid var(--line);
+      display:flex; gap:10px; justify-content:flex-start; flex-wrap:wrap;
+      background:rgba(255,255,255,.75);
     }
-    .modalBd{padding: 14px}
 
-    /* Toast */
+    /* Timeline */
+    .timeline{display:flex;flex-direction:column;gap:10px; max-height:260px; overflow:auto; padding-right:4px}
+    .event{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:10px;
+    }
+    .event .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .event .who{font-weight:900}
+    .event .when{color:var(--muted); font-size:12px; font-weight:800}
+    .event .msg{margin-top:6px; color:rgba(16,17,20,.82); font-weight:600}
+
+    /* Toast / reminder */
     .toast{
-      position: fixed;
-      left: 14px;
-      bottom: 14px;
-      background: rgba(12,12,16,.92);
-      border: 1px solid rgba(255,255,255,.14);
-      color: rgba(255,255,255,.92);
-      border-radius: 16px;
-      padding: 12px 14px;
-      box-shadow: var(--shadow2);
+      position:fixed; left:16px; bottom:16px;
+      width:min(420px, calc(100% - 32px));
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(200,165,82,.55);
+      border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.20);
+      padding:12px;
       display:none;
-      max-width: 92vw;
-      z-index: 1000;
+      z-index:80;
     }
-    .toast.show{display:block}
-    .toast b{color: var(--gold2)}
-    .conn{
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:12px; color:#444;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border:1px solid var(--paperLine);
-      background: rgba(255,255,255,.70);
-      margin-right: 10px;
+    .toast .t1{font-weight:900}
+    .toast .t2{color:var(--muted); margin-top:4px; font-weight:700}
+    .toast .tact{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+    .small{font-size:12px}
+
+    /* Login */
+    .login{
+      position:fixed; inset:0; z-index:100;
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(200,165,82,.25), transparent 60%),
+        radial-gradient(1200px 600px at 100% 0%, rgba(200,165,82,.18), transparent 55%),
+        linear-gradient(180deg, #fff, var(--bg));
+      display:flex; align-items:center; justify-content:center; padding:16px;
     }
-    .conn .cDot{width:8px; height:8px; border-radius:50%; background: var(--bad)}
-    .conn.ok .cDot{background: var(--ok)}
+    .loginCard{
+      width:min(520px, 100%);
+      background:rgba(255,255,255,.90);
+      border:1px solid rgba(200,165,82,.35);
+      border-radius:26px;
+      box-shadow:0 28px 90px rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .loginCard .hd{padding:18px; border-bottom:1px solid var(--line); background:linear-gradient(180deg, rgba(200,165,82,.14), transparent 70%)}
+    .loginCard .bd{padding:18px}
+    .hint{
+      padding:12px;
+      background:rgba(200,165,82,.10);
+      border:1px solid rgba(200,165,82,.35);
+      border-radius:18px;
+      color:rgba(16,17,20,.80);
+      font-weight:700;
+      margin-top:12px;
+    }
   </style>
 </head>
-
 <body>
-  <div class="app">
-    <div class="frame">
 
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sbTop">
-          <div class="shield"></div>
-          <div class="brand">
-            <b>LEADUP</b>
-            <span>CRM • סוכנות ביטוח</span>
+<div class="login" id="loginScreen">
+  <div class="loginCard">
+    <div class="hd">
+      <div class="brand">
+        <div class="mark"></div>
+        <div>
+          <h1 style="margin:0">GoldLead</h1>
+          <small class="muted">כניסה למערכת — Admin / Agent</small>
+        </div>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="row">
+        <div class="field">
+          <label>שם משתמש</label>
+          <input id="lgUser" placeholder="admin או agent1"/>
+        </div>
+        <div class="field">
+          <label>סיסמה</label>
+          <input id="lgPass" type="password" placeholder="1234"/>
+        </div>
+      </div>
+      <button class="btn primary" style="width:100%" onclick="authLogin()">כניסה</button>
+      <div class="hint small">
+        דמו למערכת:<br>
+        <b>admin</b> / 1234 (רואה הכל) • <b>agent1</b> / 1234 (רואה רק שלו)
+      </div>
+      <div class="hint small">
+        הערה: זו הרשאות בסיסיות מקומיות (ללא שרת). בהמשך אפשר לחבר לשרת/Google auth.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark"></div>
+      <div>
+        <h1>GoldLead</h1>
+        <small class="muted">מערכת ניהול לידים • זהב/לבן</small>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-view="dashboard" onclick="setView('dashboard')">Dashboard</div>
+      <div class="tab" data-view="leads" onclick="setView('leads')">לידים</div>
+      <div class="tab" data-view="pipeline" onclick="setView('pipeline')">Pipeline</div>
+    </div>
+
+    <div class="userbox">
+      <div class="pill"><span class="dot"></span><span id="whoami">—</span></div>
+      <button class="btn ghost" onclick="logout()">יציאה</button>
+      <button class="btn primary" onclick="openLeadModal()">+ ליד חדש</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Sidebar -->
+    <div class="card">
+      <div class="hd">
+        <h2>חיפוש • פילטרים • מיון</h2>
+        <button class="btn ghost" onclick="resetFilters()">איפוס</button>
+      </div>
+      <div class="bd">
+        <div class="field">
+          <label>חיפוש (שם / טלפון)</label>
+          <input id="q" placeholder="חפש..." oninput="renderAll()"/>
+        </div>
+
+        <div class="field">
+          <label>סטטוס</label>
+          <select id="fStatus" onchange="renderAll()">
+            <option value="">הכל</option>
+            <option>חדש</option>
+            <option>נוצר קשר</option>
+            <option>מתעניין</option>
+            <option>הצעת מחיר</option>
+            <option>נסגר</option>
+            <option>לא רלוונטי</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>מקור</label>
+          <select id="fSource" onchange="renderAll()">
+            <option value="">הכל</option>
+            <option>פייסבוק</option>
+            <option>אינסטגרם</option>
+            <option>גוגל</option>
+            <option>אתר</option>
+            <option>הפניה</option>
+            <option>טלפון</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>בעלים (נציג)</label>
+          <select id="fOwner" onchange="renderAll()"></select>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>מתאריך יצירה</label>
+            <input id="fromDate" type="date" onchange="renderAll()"/>
+          </div>
+          <div class="field">
+            <label>עד תאריך יצירה</label>
+            <input id="toDate" type="date" onchange="renderAll()"/>
           </div>
         </div>
 
-        <nav class="nav">
-          <a class="active" href="#"><span class="ico">▦</span> Dashboard</a>
-          <a href="#"><span class="ico">◎</span> Leads</a>
-          <a href="#"><span class="ico">👤</span> Customers</a>
-          <a href="#"><span class="ico">✓</span> Tasks</a>
-          <a href="#"><span class="ico">▤</span> Reports</a>
-          <a href="#"><span class="ico">⚙</span> Settings</a>
-        </nav>
+        <div class="field">
+          <label>מיון</label>
+          <select id="sortBy" onchange="renderAll()">
+            <option value="nextFollowUp">תאריך מעקב הבא</option>
+            <option value="hot">הכי חם</option>
+            <option value="old">הכי ישן</option>
+            <option value="new">הכי חדש</option>
+          </select>
+        </div>
 
-        <div class="sbBottom">
-          <div class="avatarSmall"></div>
-          <div class="sbUser">
-            <b>Agent</b>
-            <span>LEADUP Team</span>
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn" onclick="exportCSV()">ייצוא CSV</button>
+          <label class="btn" style="text-align:center; cursor:pointer">
+            ייבוא CSV
+            <input type="file" accept=".csv" style="display:none" onchange="importCSV(this.files[0])"/>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="muted small">
+          תזכורות: המערכת תציג “פופאפ” (Toast) כשמשימה מגיעה לזמן שלה, כל עוד הדף פתוח.
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div>
+      <!-- DASHBOARD -->
+      <div class="card view" id="view-dashboard">
+        <div class="hd">
+          <h2>Dashboard</h2>
+          <div class="actions">
+            <button class="iconBtn" onclick="seedDemo()">טען דאטה דמו</button>
+            <button class="iconBtn" onclick="clearAll()">איפוס מערכת</button>
           </div>
         </div>
-      </aside>
+        <div class="bd">
+          <div class="kpis" id="kpis"></div>
+          <div class="sep"></div>
 
-      <!-- Main -->
-      <main class="main">
-        <section class="paper">
-
-          <!-- Topbar -->
-          <div class="topbar">
-            <div class="search">
-              <span class="conn" id="connPill"><span class="cDot" id="connDot"></span><span id="connText">לא מחובר</span></span>
-              <input id="q" placeholder="חיפוש לידים: שם / טלפון / אימייל / מוצר..." />
+          <div class="row" style="align-items:stretch">
+            <div class="card" style="box-shadow:none; border-radius:22px; overflow:hidden; border:1px solid var(--line)">
+              <div class="hd"><h2>לידים לפי חודש (12 חודשים)</h2></div>
+              <div class="bd">
+                <canvas id="chart" height="140"></canvas>
+                <div class="muted small" style="margin-top:10px">גרף קנבס פשוט (ללא ספריות) — אפשר לשדרג ל-Chart.js בהמשך.</div>
+              </div>
             </div>
 
-            <div class="topIcons">
-              <button class="iconBtn" id="refreshBtn" title="רענן">⟳</button>
-              <button class="iconBtn" id="newBtn" title="ליד חדש">＋</button>
-              <div class="profile" title="פרופיל">
-                <div class="face"></div>
-                <b>LEADUP</b>
+            <div class="card" style="box-shadow:none; border-radius:22px; overflow:hidden; border:1px solid var(--line)">
+              <div class="hd"><h2>מעקבים קרובים</h2></div>
+              <div class="bd">
+                <div class="tblWrap" style="max-height:240px">
+                  <table>
+                    <thead><tr>
+                      <th>ליד</th><th>סטטוס</th><th>מעקב הבא</th><th>עדיפות</th>
+                    </tr></thead>
+                    <tbody id="upcoming"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="content">
+          <div class="sep"></div>
 
-            <!-- KPIs -->
-            <div class="kpis">
-              <div class="kpi"><div class="label">New Leads</div><div class="value" id="kNew">0</div><div class="miniLine"></div></div>
-              <div class="kpi"><div class="label">Past Follow-Ups</div><div class="value" id="kFollow">0</div><div class="miniLine"></div></div>
-              <div class="kpi"><div class="label">SLA Breaches</div><div class="value" id="kSla">0</div><div class="miniLine"></div></div>
-              <div class="kpi"><div class="label">My Tasks</div><div class="value" id="kTasks">0</div><div class="miniLine"></div></div>
-            </div>
-
-            <div class="grid2">
-
-              <!-- Lead List -->
-              <div class="panel">
-                <div class="panelHd">
-                  <b>Lead List</b>
-                  <span class="more">⋯</span>
-                </div>
-                <div class="panelBd" style="padding:0">
-                  <div style="max-height: 420px; overflow:auto">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th style="min-width:160px">Name</th>
-                          <th style="min-width:120px">Status</th>
-                          <th style="min-width:130px">Product</th>
-                          <th style="min-width:120px">Follow-up</th>
-                          <th style="min-width:110px">Priority</th>
-                        </tr>
-                      </thead>
-                      <tbody id="tbody">
-                        <tr><td colspan="5" style="padding:14px; color:#666">טוען נתונים…</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+          <div class="card" style="box-shadow:none; border-radius:22px; overflow:hidden; border:1px solid var(--line)">
+            <div class="hd"><h2>טבלת “נציגים מובילים”</h2></div>
+            <div class="bd">
+              <div class="tblWrap" style="max-height:260px">
+                <table>
+                  <thead><tr>
+                    <th>נציג</th><th>לידים</th><th>נסגרו</th><th>המרה</th>
+                  </tr></thead>
+                  <tbody id="agents"></tbody>
+                </table>
               </div>
-
-              <!-- Lead Details -->
-              <div class="panel">
-                <div class="panelHd">
-                  <b>Lead Details</b>
-                  <span class="more">⋯</span>
-                </div>
-
-                <div class="leadHeader">
-                  <div class="avatar"></div>
-                  <div>
-                    <b id="d_name">בחר ליד</b>
-                    <span id="d_contact">—</span>
-                  </div>
-                </div>
-
-                <div class="formRow">
-                  <input type="hidden" id="d_id" />
-
-                  <div>
-                    <label>Status</label>
-                    <select id="d_status">
-                      <option value="חדש">NEW</option>
-                      <option value="בטיפול">CONTACTING</option>
-                      <option value="הצעה נשלחה">QUOTE SENT</option>
-                      <option value="חזרו אליי">FOLLOW-UP</option>
-                      <option value="נסגר">CLOSED</option>
-                      <option value="לא רלוונטי">NOT RELEVANT</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label>Follow-up date</label>
-                    <input id="d_follow" type="date"/>
-                  </div>
-
-                  <div>
-                    <label>Priority</label>
-                    <select id="d_priority">
-                      <option value="LOW">LOW</option>
-                      <option value="NORMAL" selected>NORMAL</option>
-                      <option value="HIGH">HIGH</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label>Product</label>
-                    <input id="d_product" placeholder="רכב / דירה / חיים / בריאות..."/>
-                  </div>
-
-                  <div>
-                    <label>Notes</label>
-                    <textarea id="d_notes" placeholder="סיכום שיחה / מה הלקוח צריך / המשך טיפול…"></textarea>
-                  </div>
-                </div>
-
-                <div class="quickActions">
-                  <button class="btn soft" id="callBtn" type="button">📞 Call</button>
-                  <button class="btn soft" id="mailBtn" type="button">✉ Email</button>
-                  <button class="btn danger" id="delBtn" type="button" disabled>Delete</button>
-                  <button class="btn gold" id="saveBtn" type="button" disabled>Save Changes</button>
-                </div>
-              </div>
-
             </div>
-
           </div>
-        </section>
-      </main>
-    </div>
-  </div>
 
-  <!-- Call Modal -->
-  <div class="modalWrap" id="callModal">
-    <div class="modal">
-      <div class="modalHd">
-        <b>שיחה ללקוח</b>
-        <button class="x" data-close="callModal">✕</button>
+        </div>
       </div>
-      <div class="modalBd">
-        <div style="display:grid; gap:10px">
-          <div style="color:#111; font-weight:800" id="callName">—</div>
-          <div style="color:#333" id="callPhone">—</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap">
-            <button class="btn gold" id="copyPhoneBtn" type="button">העתק מספר</button>
-            <button class="btn soft" id="markCalledBtn" type="button">תיעוד: דיברתי איתו</button>
+
+      <!-- LEADS -->
+      <div class="card view" id="view-leads" style="display:none">
+        <div class="hd">
+          <h2>לידים</h2>
+          <div class="actions">
+            <button class="iconBtn" onclick="openLeadModal()">+ ליד חדש</button>
           </div>
-          <div style="font-size:12px; color:#555; line-height:1.6">
-            הערה: דפדפן לא מבצע “שיחה אמיתית” בתוך חלון. פה עושים UX מקצועי + תיעוד.  
-            אם תרצה גם חיוג אמיתי מתוך מחשב — אפשר לחבר שירות טלפוניה (Twilio/VoIP) בגרסה מתקדמת.
+        </div>
+        <div class="bd">
+          <div class="tblWrap">
+            <table>
+              <thead><tr>
+                <th>שם</th>
+                <th>טלפון</th>
+                <th>סטטוס</th>
+                <th>מקור</th>
+                <th>בעלים</th>
+                <th>חום</th>
+                <th>מעקב הבא</th>
+                <th>פעולות</th>
+              </tr></thead>
+              <tbody id="leadsTbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Email Modal -->
-  <div class="modalWrap" id="mailModal">
-    <div class="modal">
-      <div class="modalHd">
-        <b>שליחת מייל</b>
-        <button class="x" data-close="mailModal">✕</button>
-      </div>
-      <div class="modalBd">
-        <div style="display:grid; gap:10px">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-            <div>
-              <label>To</label>
-              <input id="m_to" placeholder="client@email.com"/>
-            </div>
-            <div>
-              <label>Subject</label>
-              <input id="m_sub" placeholder="LEADUP | הצעת ביטוח"/>
-            </div>
-          </div>
-          <div>
-            <label>Message</label>
-            <textarea id="m_body" placeholder="שלום …"></textarea>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap">
-            <button class="btn gold" id="sendMailBtn" type="button">Send</button>
-            <button class="btn soft" data-close="mailModal" type="button">Cancel</button>
-          </div>
-          <div style="font-size:12px; color:#555; line-height:1.6">
-            שליחה אמיתית מתוך המערכת דורשת פעולה ב-Apps Script (action: <b>sendEmail</b>).  
-            כרגע זה מוכן — בשלב החיבור ניצור את הפעולה הזו בסקריפט שלך.
+      <!-- PIPELINE -->
+      <div class="card view" id="view-pipeline" style="display:none">
+        <div class="hd">
+          <h2>Pipeline (גרירה בין סטטוסים)</h2>
+          <div class="actions">
+            <span class="muted small">טיפ: גרור כרטיס ליד לעמודה אחרת — זה ייצור אירוע Timeline אוטומטי.</span>
           </div>
         </div>
+        <div class="bd">
+          <div class="kanban" id="kanban"></div>
+        </div>
       </div>
+
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<!-- LEAD MODAL -->
+<div class="backdrop" id="leadBackdrop" onclick="if(event.target.id==='leadBackdrop') closeLeadModal()">
+  <div class="modal">
+    <div class="mhd">
+      <h3 id="leadModalTitle">ליד חדש</h3>
+      <button class="btn ghost" onclick="closeLeadModal()">סגירה</button>
+    </div>
+    <div class="mbd">
+      <div class="row">
+        <div class="field">
+          <label>שם מלא</label>
+          <input id="mName" placeholder="לדוגמה: דניאל כהן"/>
+        </div>
+        <div class="field">
+          <label>טלפון</label>
+          <input id="mPhone" placeholder="05..." inputmode="tel"/>
+        </div>
+      </div>
 
-  <script>
-    /**************
-     * חיבור Google Sheets (Apps Script Web App)
-     **************/
-    const APPS_SCRIPT_WEBAPP_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
-    const API_KEY = ""; // אם יש לך מפתח ב-Apps Script
+      <div class="row">
+        <div class="field">
+          <label>מייל</label>
+          <input id="mEmail" placeholder="name@email.com" inputmode="email"/>
+        </div>
+        <div class="field">
+          <label>מקור</label>
+          <select id="mSource">
+            <option>פייסבוק</option><option>אינסטגרם</option><option>גוגל</option>
+            <option>אתר</option><option>הפניה</option><option>טלפון</option>
+          </select>
+        </div>
+      </div>
 
-    let leads = [];
-    let selectedId = "";
+      <div class="row">
+        <div class="field">
+          <label>סטטוס</label>
+          <select id="mStatus">
+            <option>חדש</option><option>נוצר קשר</option><option>מתעניין</option>
+            <option>הצעת מחיר</option><option>נסגר</option><option>לא רלוונטי</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>בעלים (נציג)</label>
+          <select id="mOwner"></select>
+        </div>
+      </div>
 
-    const el = (id)=>document.getElementById(id);
-    const toastEl = el("toast");
+      <div class="row">
+        <div class="field">
+          <label>קבע “לחזור אליו עוד X ימים”</label>
+          <input id="mFollowIn" type="number" min="0" placeholder="לדוגמה: 2"/>
+        </div>
+        <div class="field">
+          <label>או תאריך/שעה למעקב</label>
+          <input id="mFollowAt" type="datetime-local"/>
+        </div>
+      </div>
 
-    function toast(msg){
-      toastEl.innerHTML = msg;
-      toastEl.classList.add("show");
-      setTimeout(()=>toastEl.classList.remove("show"), 3200);
-    }
+      <div class="field">
+        <label>הערות</label>
+        <textarea id="mNotes" placeholder="פרטים חשובים על הליד..."></textarea>
+      </div>
 
-    function setConnected(ok){
-      const pill = el("connPill");
-      const dot  = el("connDot");
-      const text = el("connText");
-      pill.classList.toggle("ok", ok);
-      dot.style.background = ok ? "var(--ok)" : "var(--bad)";
-      text.textContent = ok ? "מחובר" : "לא מחובר";
-    }
+      <div class="sep"></div>
 
-    function esc(s){
-      return (s ?? "").toString()
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+      <div class="row" style="align-items:flex-start
 
-    function statusPill(status){
-      const st = (status||"").trim();
-      if(st === "נסגר") return "ok";
-      if(st === "לא רלוונטי") return "bad";
-      if(st === "חדש") return "gold";
-      return "";
-    }
-
-    function calcKpis(list){
-      const kNew = list.filter(x => (x.status||"") === "חדש").length;
-      // אם אין לך followup/SLA בנתונים כרגע – זה חישוב בסיסי, ונשדרג בשלב החיבור
-      const kFollow = list.filter(x => (x.followup||"") && new Date(x.followup) < new Date()).length;
-      const kSla = list.filter(x => (x.sla_breach||"") === true).length;
-      const kTasks = list.filter(x => (x.task||"") === true).length;
-
-      el("kNew").textContent = kNew;
-      el("kFollow").textContent = kFollow;
-      el("kSla").textContent = kSla;
-      el("kTasks").textContent = kTasks;
-    }
-
-    function renderTable(list){
-      const tb = el("tbody");
-      if(!list.length){
-        tb.innerHTML = `<tr><td colspan="5" style="padding:14px; color:#666">אין נתונים.</td></tr>`;
-        return;
-      }
-
-      tb.innerHTML = list.map(l=>{
-        const pillClass = statusPill(l.status);
-        const statusLabel =
-          (l.status==="חדש") ? "NEW" :
-          (l.status==="בטיפול") ? "CONTACTING" :
-          (l.status==="הצעה נשלחה") ? "QUOTE SENT" :
-          (l.status==="חזרו אליי") ? "FOLLOW-UP" :
-          (l.status==="נסגר") ? "CLOSED" :
-          (l.status==="לא רלוונטי") ? "NOT RELEVANT" :
-          (l.status||"");
-
-        const priority = (l.priority || "NORMAL").toUpperCase();
-        const follow = l.followup ? esc(l.followup) : "—";
-
-        return `
-          <tr data-id="${esc(l.id)}">
-            <td>
-              <div style="font-weight:800; color:#111">${esc(l.name||"—")}</div>
-              <div class="sub">${esc(l.phone||"")} ${l.email ? "• "+esc(l.email) : ""}</div>
-            </td>
-            <td><span class="pill ${pillClass}"><span class="dot ${pillClass}"></span>${esc(statusLabel)}</span></td>
-            <td>${esc(l.product||"—")}</td>
-            <td>${follow}</td>
-            <td><span class="pill">${esc(priority)}</span></td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function applyFilter(){
-      const q = (el("q").value||"").trim().toLowerCase();
-      const list = !q ? leads : leads.filter(l=>{
-        const blob = [l.name,l.phone,l.email,l.product,l.status,l.notes].join(" ").toLowerCase();
-        return blob.includes(q);
-      });
-      renderTable(list);
-      calcKpis(list);
-    }
-
-    function setSelected(lead){
-      selectedId = lead?.id || "";
-      el("d_id").value = selectedId;
-
-      el("d_name").textContent = lead?.name || "בחר ליד";
-      el("d_contact").textContent = [lead?.phone, lead?.email].filter(Boolean).join(" • ") || "—";
-
-      el("d_status").value = lead?.status || "חדש";
-      el("d_follow").value = lead?.followup || "";
-      el("d_priority").value = (lead?.priority || "NORMAL").toUpperCase();
-      el("d_product").value = lead?.product || "";
-      el("d_notes").value = lead?.notes || "";
-
-      el("saveBtn").disabled = !selectedId;
-      el("delBtn").disabled = !selectedId;
-
-      // פעולות מודאל
-      el("callBtn").disabled = !selectedId;
-      el("mailBtn").disabled = !selectedId;
-    }
-
-    function openModal(id){ el(id).classList.add("show"); }
-    function closeModal(id){ el(id).classList.remove("show"); }
-
-    document.addEventListener("click", (e)=>{
-      const btn = e.target.closest("[data-close]");
-      if(btn) closeModal(btn.getAttribute("data-close"));
-      if(e.target.classList.contains("modalWrap")) e.target.classList.remove("show");
-    });
-
-    /**************
-     * API מול Apps Script
-     **************/
-    async function apiList(){
-      const url = new URL(APPS_SCRIPT_WEBAPP_URL);
-      url.searchParams.set("action","list");
-      if(API_KEY) url.searchParams.set("key", API_KEY);
-      const res = await fetch(url.toString(), {method:"GET"});
-      if(!res.ok) throw new Error("list failed");
-      return res.json();
-    }
-
-    async function apiUpsert(lead){
-      const res = await fetch(APPS_SCRIPT_WEBAPP_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({action:"upsert", key: API_KEY, lead})
-      });
-      if(!res.ok) throw new Error("upsert failed");
-      return res.json();
-    }
-
-    async function apiDelete(id){
-      const res = await fetch(APPS_SCRIPT_WEBAPP_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({action:"delete", key: API_KEY, id})
-      });
-      if(!res.ok) throw new Error("delete failed");
-      return res.json();
-    }
-
-    // נשתמש בזה בשלב החיבור כדי לשלוח מייל אמיתי מתוך המערכת
-    async function apiSendEmail(to, subject, body){
-      const res = await fetch(APPS_SCRIPT_WEBAPP_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({action:"sendEmail", key: API_KEY, to, subject, body})
-      });
-      if(!res.ok) throw new Error("sendEmail failed");
-      return res.json();
-    }
-
-    async function loadAll(){
-      if(APPS_SCRIPT_WEBAPP_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")){
-        setConnected(false);
-        el("tbody").innerHTML = `<tr><td colspan="5" style="padding:14px; color:#666"><b>שים את ה-Web App URL</b> בקוד כדי להתחבר לגיליון.</td></tr>`;
-        return;
-      }
-      try{
-        const out = await apiList();
-        if(!out || out.ok !== true) throw new Error(out?.error || "
