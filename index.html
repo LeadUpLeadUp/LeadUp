@@ -1,1 +1,692 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>LEADUP • מערכת לידים ולקוחות</title>
+
+  <style>
+    :root{
+      --bg:#070707;
+      --bg2:#0c0c0c;
+      --card:#101010;
+      --line:rgba(255,255,255,.12);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.70);
+      --gold:#d6b25e;
+      --gold2:#f2d27b;
+      --ok:#2ef2a2;
+      --bad:#ff5c7a;
+      --radius:18px;
+      --shadow:0 18px 50px rgba(0,0,0,.55);
+      --shadow2:0 10px 26px rgba(0,0,0,.35);
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans Hebrew", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 90% -10%, rgba(214,178,94,.14), transparent 60%),
+        radial-gradient(900px 520px at 10% 110%, rgba(242,210,123,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:1180px; margin:0 auto; padding:22px}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      position:sticky; top:0; z-index:50;
+      padding:14px 18px;
+      background:rgba(7,7,7,.72);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow2);
+      margin:12px 0 18px;
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+        linear-gradient(135deg, rgba(214,178,94,.95), rgba(242,210,123,.65));
+      box-shadow: 0 12px 28px rgba(214,178,94,.22);
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .brand h1{margin:0; font-size:16px; letter-spacing:.5px}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px; border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(16,16,16,.65);
+      font-size:13px;
+    }
+    .dot{width:10px; height:10px; border-radius:50%}
+    .dot.ok{background:var(--ok); box-shadow:0 0 0 6px rgba(46,242,162,.12)}
+    .dot.bad{background:var(--bad); box-shadow:0 0 0 6px rgba(255,92,122,.12)}
+
+    .grid{display:grid; grid-template-columns: 420px 1fr; gap:16px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} .topbar{position:relative} }
+
+    .card{
+      background:rgba(16,16,16,.72);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow2);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:16px 16px 12px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(214,178,94,.08), transparent);
+    }
+    .card .hd h2{margin:0; font-size:14px}
+    .card .hd span{font-size:12px; color:var(--muted)}
+    .card .bd{padding:16px}
+
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 520px){ .row{grid-template-columns:1fr} }
+
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(8,8,8,.75);
+      color:var(--text);
+      outline:none;
+      transition:.2s;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(214,178,94,.65);
+      box-shadow: 0 0 0 4px rgba(214,178,94,.14);
+    }
+    textarea{min-height:84px; resize:vertical}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+
+    .btn{
+      border:0;
+      cursor:pointer;
+      padding:11px 14px;
+      border-radius:14px;
+      display:inline-flex; align-items:center; gap:10px;
+      font-weight:600;
+      letter-spacing:.2px;
+      transition:.18s;
+      user-select:none;
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(214,178,94,.95), rgba(242,210,123,.70));
+      color:#0a0a0a;
+      box-shadow: 0 18px 40px rgba(214,178,94,.20);
+    }
+    .btn.primary:hover{transform: translateY(-1px)}
+    .btn.ghost{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+    }
+    .btn.danger{
+      background: rgba(255,92,122,.12);
+      border:1px solid rgba(255,92,122,.28);
+      color:#ffd6de;
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+    .toolbar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(10,10,10,.35);
+    }
+    .search{
+      display:flex; gap:10px; align-items:center; flex:1;
+    }
+    .search input{max-width:420px}
+    .kpis{display:flex; gap:10px; flex-wrap:wrap}
+    .kpi{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .kpi b{color:var(--text); font-size:13px}
+
+    table{width:100%; border-collapse:separate; border-spacing:0}
+    thead th{
+      text-align:right;
+      font-size:12px;
+      color:var(--muted);
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      position:sticky; top:0;
+    }
+    tbody td{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      vertical-align:top;
+      font-size:13px;
+    }
+    tbody tr:hover{background: rgba(214,178,94,.06)}
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .tag.gold{border-color: rgba(214,178,94,.35); background: rgba(214,178,94,.10)}
+    .tag.ok{border-color: rgba(46,242,162,.28); background: rgba(46,242,162,.08)}
+    .tag.bad{border-color: rgba(255,92,122,.28); background: rgba(255,92,122,.08)}
+    .mini{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+    .mini a{
+      text-decoration:none;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+    }
+    .mini a:hover{border-color: rgba(214,178,94,.45)}
+    .note{color:var(--muted); font-size:12px; line-height:1.6}
+    .toast{
+      position:fixed; left:14px; bottom:14px;
+      background: rgba(12,12,12,.92);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow: var(--shadow2);
+      display:none;
+      max-width: 92vw;
+    }
+    .toast.show{display:block}
+    .toast b{color:var(--gold2)}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>LEADUP</h1>
+          <p>ניהול לידים ולקוחות • סוכנות לביטוח • סנכרון ל-Google Sheets</p>
+        </div>
+      </div>
+
+      <div class="pill" id="connPill" title="סטטוס חיבור">
+        <span class="dot bad" id="connDot"></span>
+        <span id="connText">לא מחובר</span>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- Left: Add / Edit -->
+      <div class="card">
+        <div class="hd">
+          <div>
+            <h2>יצירה / עריכה של ליד</h2>
+            <span id="formHint">הוסף ליד חדש ושמור לגיליון</span>
+          </div>
+          <span class="tag gold">Google Sheets</span>
+        </div>
+
+        <div class="bd">
+          <form id="leadForm" autocomplete="off">
+            <input type="hidden" id="lead_id" />
+
+            <div class="row">
+              <div>
+                <label>שם מלא</label>
+                <input id="name" placeholder="ישראל ישראלי" required />
+              </div>
+              <div>
+                <label>טלפון</label>
+                <input id="phone" placeholder="05XXXXXXXX" inputmode="tel" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>אימייל</label>
+                <input id="email" placeholder="name@example.com" inputmode="email" />
+              </div>
+              <div>
+                <label>מוצר / ביטוח</label>
+                <input id="product" placeholder="רכב / דירה / חיים / בריאות..." />
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label>סטטוס</label>
+                <select id="status">
+                  <option value="חדש">חדש</option>
+                  <option value="בטיפול">בטיפול</option>
+                  <option value="חזרו אליי">חזרו אליי</option>
+                  <option value="הצעה נשלחה">הצעה נשלחה</option>
+                  <option value="נסגר">נסגר</option>
+                  <option value="לא רלוונטי">לא רלוונטי</option>
+                </select>
+              </div>
+              <div>
+                <label>מקור ליד</label>
+                <input id="source" placeholder="פייסבוק / אתר / טלפון / המלצה..." />
+              </div>
+            </div>
+
+            <div>
+              <label>הערות</label>
+              <textarea id="notes" placeholder="מה הלקוח צריך? מתי לחזור אליו?"></textarea>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" id="saveBtn" type="submit">שמור לגיליון</button>
+              <button class="btn ghost" id="resetBtn" type="button">נקה טופס</button>
+              <button class="btn danger" id="deleteBtn" type="button" disabled>מחק</button>
+            </div>
+
+            <p class="note" style="margin-top:12px">
+              כפתורי "שלח מייל" ו-"התקשר" עובדים מיידית מהמכשיר (mailto / tel).  
+              שליחה “אמיתית” של מייל אוטומטי בלי לפתוח תוכנת דואר דורשת Backend (אפשר להוסיף בהמשך).
+            </p>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right: List -->
+      <div class="card">
+        <div class="toolbar">
+          <div class="search">
+            <input id="q" placeholder="חיפוש: שם / טלפון / אימייל / מוצר..." />
+            <button class="btn ghost" id="refreshBtn" type="button">רענן</button>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi">סה״כ: <b id="kTotal">0</b></div>
+            <div class="kpi">חדשים: <b id="kNew">0</b></div>
+            <div class="kpi">נסגרו: <b id="kWon">0</b></div>
+          </div>
+        </div>
+
+        <div style="max-height: 70vh; overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:130px">שם</th>
+                <th style="min-width:120px">טלפון</th>
+                <th style="min-width:180px">אימייל</th>
+                <th style="min-width:130px">מוצר</th>
+                <th style="min-width:120px">סטטוס</th>
+                <th style="min-width:160px">פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="6" class="note">טוען נתונים...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bd">
+          <p class="note">
+            טיפ: לחץ על שורה כדי לערוך. המערכת מסתנכרנת מול Google Sheets דרך Apps Script Web App.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /***********************
+     * 1) הגדר כאן את ה-URL של ה-Web App (Apps Script)
+     ***********************/
+    const APPS_SCRIPT_WEBAPP_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+    // אם הוספת סיסמת API ב-Apps Script, שים אותה כאן (אופציונלי)
+    const API_KEY = ""; // למשל: "leadup123"
+
+    /***********************
+     * 2) State
+     ***********************/
+    let leads = [];
+    let filtered = [];
+
+    const els = {
+      connPill: document.getElementById('connPill'),
+      connDot: document.getElementById('connDot'),
+      connText: document.getElementById('connText'),
+      toast: document.getElementById('toast'),
+
+      form: document.getElementById('leadForm'),
+      formHint: document.getElementById('formHint'),
+      saveBtn: document.getElementById('saveBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      deleteBtn: document.getElementById('deleteBtn'),
+
+      lead_id: document.getElementById('lead_id'),
+      name: document.getElementById('name'),
+      phone: document.getElementById('phone'),
+      email: document.getElementById('email'),
+      product: document.getElementById('product'),
+      status: document.getElementById('status'),
+      source: document.getElementById('source'),
+      notes: document.getElementById('notes'),
+
+      q: document.getElementById('q'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      tbody: document.getElementById('tbody'),
+
+      kTotal: document.getElementById('kTotal'),
+      kNew: document.getElementById('kNew'),
+      kWon: document.getElementById('kWon'),
+    };
+
+    function toast(msg){
+      els.toast.innerHTML = msg;
+      els.toast.classList.add('show');
+      setTimeout(()=>els.toast.classList.remove('show'), 3200);
+    }
+
+    function setConnected(ok){
+      els.connDot.className = "dot " + (ok ? "ok" : "bad");
+      els.connText.textContent = ok ? "מחובר" : "לא מחובר";
+    }
+
+    function esc(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function normalizePhone(p){
+      return (p||"").toString().trim().replace(/[^\d+]/g,'');
+    }
+
+    function statusTagClass(st){
+      if(st === "נסגר") return "ok";
+      if(st === "לא רלוונטי") return "bad";
+      if(st === "חדש") return "gold";
+      return "";
+    }
+
+    /***********************
+     * 3) API calls to Apps Script
+     *    expected endpoints:
+     *    GET  ?action=list&key=...
+     *    POST {action:"upsert", lead:{...}, key:"..."}
+     *    POST {action:"delete", id:"...", key:"..."}
+     ***********************/
+    async function apiList(){
+      const url = new URL(APPS_SCRIPT_WEBAPP_URL);
+      url.searchParams.set("action","list");
+      if(API_KEY) url.searchParams.set("key", API_KEY);
+
+      const res = await fetch(url.toString(), { method:"GET" });
+      if(!res.ok) throw new Error("List failed");
+      return res.json();
+    }
+
+    async function apiUpsert(lead){
+      const res = await fetch(APPS_SCRIPT_WEBAPP_URL, {
+        method:"POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ action:"upsert", key: API_KEY, lead })
+      });
+      if(!res.ok) throw new Error("Upsert failed");
+      return res.json();
+    }
+
+    async function apiDelete(id){
+      const res = await fetch(APPS_SCRIPT_WEBAPP_URL, {
+        method:"POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ action:"delete", key: API_KEY, id })
+      });
+      if(!res.ok) throw new Error("Delete failed");
+      return res.json();
+    }
+
+    /***********************
+     * 4) Render
+     ***********************/
+    function calcKpis(list){
+      const total = list.length;
+      const news = list.filter(x => (x.status||"") === "חדש").length;
+      const won  = list.filter(x => (x.status||"") === "נסגר").length;
+      els.kTotal.textContent = total;
+      els.kNew.textContent = news;
+      els.kWon.textContent = won;
+    }
+
+    function applyFilter(){
+      const q = (els.q.value||"").trim().toLowerCase();
+      if(!q){
+        filtered = [...leads];
+      }else{
+        filtered = leads.filter(l => {
+          const blob = [
+            l.name, l.phone, l.email, l.product, l.status, l.source, l.notes
+          ].join(" ").toLowerCase();
+          return blob.includes(q);
+        });
+      }
+      renderTable(filtered);
+      calcKpis(filtered);
+    }
+
+    function renderTable(list){
+      if(!list.length){
+        els.tbody.innerHTML = `<tr><td colspan="6" class="note">אין נתונים להצגה.</td></tr>`;
+        return;
+      }
+
+      els.tbody.innerHTML = list.map(l => {
+        const p = normalizePhone(l.phone);
+        const mail = (l.email||"").trim();
+        const mailto = mail ? `mailto:${encodeURIComponent(mail)}?subject=${encodeURIComponent("LEADUP | פנייה מסוכנות הביטוח")}&body=${encodeURIComponent("היי "+(l.name||"")+",\n\n")}` : "";
+        const tel = p ? `tel:${p}` : "";
+
+        return `
+          <tr data-id="${esc(l.id)}">
+            <td>
+              <div style="font-weight:700">${esc(l.name||"—")}</div>
+              <div class="note">${esc(l.source||"")}</div>
+            </td>
+            <td>${p ? esc(p) : `<span class="note">—</span>`}</td>
+            <td>${mail ? esc(mail) : `<span class="note">—</span>`}</td>
+            <td>${esc(l.product||"—")}</td>
+            <td><span class="tag ${statusTagClass(l.status)}">${esc(l.status||"")}</span></td>
+            <td>
+              <div class="mini">
+                <a href="#" data-act="edit">ערוך</a>
+                ${tel ? `<a href="${tel}" data-act="call">התקשר</a>` : `<a href="#" data-act="call" style="opacity:.45; pointer-events:none">התקשר</a>`}
+                ${mailto ? `<a href="${mailto}" data-act="mail">שלח מייל</a>` : `<a href="#" data-act="mail" style="opacity:.45; pointer-events:none">שלח מייל</a>`}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /***********************
+     * 5) Form helpers
+     ***********************/
+    function resetForm(){
+      els.lead_id.value = "";
+      els.name.value = "";
+      els.phone.value = "";
+      els.email.value = "";
+      els.product.value = "";
+      els.status.value = "חדש";
+      els.source.value = "";
+      els.notes.value = "";
+      els.deleteBtn.disabled = true;
+      els.formHint.textContent = "הוסף ליד חדש ושמור לגיליון";
+      els.saveBtn.textContent = "שמור לגיליון";
+    }
+
+    function loadToForm(lead){
+      els.lead_id.value = lead.id || "";
+      els.name.value = lead.name || "";
+      els.phone.value = lead.phone || "";
+      els.email.value = lead.email || "";
+      els.product.value = lead.product || "";
+      els.status.value = lead.status || "חדש";
+      els.source.value = lead.source || "";
+      els.notes.value = lead.notes || "";
+      els.deleteBtn.disabled = !lead.id;
+      els.formHint.textContent = "עריכת ליד קיים";
+      els.saveBtn.textContent = "עדכן";
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function formToLead(){
+      return {
+        id: (els.lead_id.value||"").trim(),
+        name: (els.name.value||"").trim(),
+        phone: (els.phone.value||"").trim(),
+        email: (els.email.value||"").trim(),
+        product: (els.product.value||"").trim(),
+        status: els.status.value,
+        source: (els.source.value||"").trim(),
+        notes: (els.notes.value||"").trim(),
+      };
+    }
+
+    /***********************
+     * 6) Events
+     ***********************/
+    els.q.addEventListener('input', applyFilter);
+
+    els.refreshBtn.addEventListener('click', () => loadAll(true));
+
+    els.resetBtn.addEventListener('click', resetForm);
+
+    els.form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if(APPS_SCRIPT_WEBAPP_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")){
+        toast(`<b>שים את ה-Web App URL</b> בקוד (APPS_SCRIPT_WEBAPP_URL) ואז רענן.`);
+        return;
+      }
+
+      const lead = formToLead();
+      if(!lead.name){
+        toast("חובה שם מלא.");
+        return;
+      }
+
+      els.saveBtn.disabled = true;
+      try{
+        const out = await apiUpsert(lead);
+        if(!out || out.ok !== true) throw new Error(out?.error || "upsert error");
+
+        toast(out.created ? "ליד נוסף בהצלחה ✅" : "ליד עודכן בהצלחה ✅");
+        resetForm();
+        await loadAll(false);
+      }catch(err){
+        console.error(err);
+        toast(`<b>שגיאה בשמירה</b> — בדוק הרשאות/URL של Apps Script`);
+        setConnected(false);
+      }finally{
+        els.saveBtn.disabled = false;
+      }
+    });
+
+    els.deleteBtn.addEventListener('click', async () => {
+      const id = (els.lead_id.value||"").trim();
+      if(!id) return;
+
+      if(!confirm("למחוק את הליד?")) return;
+
+      els.deleteBtn.disabled = true;
+      try{
+        const out = await apiDelete(id);
+        if(!out || out.ok !== true) throw new Error(out?.error || "delete error");
+
+        toast("נמחק בהצלחה 🗑️");
+        resetForm();
+        await loadAll(false);
+      }catch(err){
+        console.error(err);
+        toast(`<b>שגיאה במחיקה</b> — בדוק חיבור/הרשאות`);
+        setConnected(false);
+        els.deleteBtn.disabled = false;
+      }
+    });
+
+    // Table clicks (edit)
+    els.tbody.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if(!a) return;
+
+      const tr = e.target.closest('tr');
+      const id = tr?.dataset?.id;
+      if(!id) return;
+
+      const lead = leads.find(x => x.id === id);
+      const act = a.dataset.act;
+
+      if(act === "edit"){
+        e.preventDefault();
+        loadToForm(lead);
+      }
+      // call/mail links should work normally
+    });
+
+    /***********************
+     * 7) Load all
+     ***********************/
+    async function loadAll(showToast){
+      if(APPS_SCRIPT_WEBAPP_URL.includes("PASTE_YOUR_WEB_APP_URL_HERE")){
+        setConnected(false);
+        els.tbody.innerHTML = `<tr><td colspan="6" class="note">שים את ה-Web App URL בקוד כדי להתחבר לגיליון.</td></tr>`;
+        calcKpis([]);
+        return;
+      }
+
+      try{
+        const out = await apiList();
+        if(!out || out.ok !== true) throw new Error(out?.error || "list error");
+
+        leads = Array.isArray(out.data) ? out.data : [];
+        setConnected(true);
+        if(showToast) toast("רוענן בהצלחה 🔄");
+
+        applyFilter();
+      }catch(err){
+        console.error(err);
+        setConnected(false);
+        els.tbody.innerHTML = `<tr><td colspan="6" class="note"><b>לא הצלחתי להתחבר.</b> בדוק: Web App URL, הרשאות פריסה, ושניתן גישה ל-Anyone.</td></tr>`;
+        calcKpis([]);
+      }
+    }
+
+    // init
+    resetForm();
+    loadAll(false);
+  </script>
+</body>
+</html>
 
