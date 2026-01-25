@@ -44,6 +44,7 @@
       grid-template-columns: 290px 1fr;
       height:100vh;
     }
+
     /* Sidebar */
     .side{
       border-left:1px solid var(--line);
@@ -435,6 +436,7 @@
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.04);
       cursor:pointer;
+      color:var(--text);
     }
     .toast{
       position:fixed;
@@ -466,7 +468,7 @@
     .miniCard h3{margin:0 0 10px 0; font-size:13px}
     .timeline{
       display:flex; flex-direction:column; gap:10px;
-      max-height:350px; overflow:auto; padding-left:4px;
+      max-height:500px; overflow:auto; padding-left:4px;
     }
     .event{
       border:1px solid rgba(255,255,255,.10);
@@ -487,6 +489,19 @@
     }
     .small{font-size:12px}
     .sep{height:1px;background:rgba(255,255,255,.10); margin:12px 0}
+
+    .twoCols{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:900px){ .twoCols{grid-template-columns:1fr} }
+
+    .frame{
+      width:100%;
+      height:460px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .frame iframe{width:100%;height:100%;border:0}
   </style>
 </head>
 
@@ -755,17 +770,51 @@
    ======================= */
 
 const LS_KEY = "leadup_v1";
+
+const el = (id)=>document.getElementById(id);
 const nowISO = () => new Date().toISOString();
-const fmtDT = (iso) => {
+const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+
+function escapeHTML(str){
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function fmtDT(iso){
   if(!iso) return "—";
   const d = new Date(iso);
   if(Number.isNaN(d.getTime())) return "—";
   return d.toLocaleString("he-IL", { dateStyle:"medium", timeStyle:"short" });
-};
-const todayKey = () => new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
-const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+}
+function todayKey(){
+  return new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
+}
+function toLocalDT(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return "";
+  const pad = (x)=>String(x).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth()+1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+function fromLocalDT(local){
+  if(!local) return "";
+  const d = new Date(local);
+  if(Number.isNaN(d.getTime())) return "";
+  return d.toISOString();
+}
 
-const appState = loadState();
+function uid(prefix="id"){
+  return prefix + "_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
 
 function defaultState(){
   return {
@@ -785,13 +834,11 @@ function loadState(){
     return defaultState();
   }
 }
+const appState = loadState();
+
 function saveState(){
   localStorage.setItem(LS_KEY, JSON.stringify(appState));
   renderAll();
-}
-
-function uid(prefix="id"){
-  return prefix + "_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
 
 /* ===== Activity Timeline ===== */
@@ -802,17 +849,10 @@ function addEvent(type, text, meta={}){
     who: appState.user?.name || "משתמש",
     type, text, meta
   });
-  // keep events reasonable
-  appState.events = appState.events.slice(0, 500);
+  appState.events = appState.events.slice(0, 800);
 }
 
-/* ===== Lead Score =====
-   1–100 based on:
-   - contactCount (talks)
-   - days since lastContact / createdAt
-   - source warmth
-   - status stage
-*/
+/* ===== Lead Score ===== */
 function sourceWeight(source){
   const s = (source||"").toLowerCase();
   if(["הפניה","ref","referral"].some(x=>s.includes(x))) return 22;
@@ -843,14 +883,14 @@ function computeScore(lead){
 
   const refDate = lead.lastContactAt || lead.createdAt || nowISO();
   const days = Math.floor((Date.now() - new Date(refDate).getTime()) / (1000*60*60*24));
-  const recencyPenalty = clamp(days * 1.6, 0, 40); // older => lower
+  const recencyPenalty = clamp(days * 1.6, 0, 40);
+
   let score = base + src + st + talkScore - recencyPenalty;
 
   if(lead.status === "נסגר") score += 10;
   if(lead.status === "לא רלוונטי") score = Math.min(score, 15);
 
-  score = clamp(Math.round(score), 1, 100);
-  return score;
+  return clamp(Math.round(score), 1, 100);
 }
 function heatTag(score){
   if(score >= 75) return { cls:"hot", label:"חם" };
@@ -859,7 +899,6 @@ function heatTag(score){
 }
 
 /* ===== Views ===== */
-const el = (id)=>document.getElementById(id);
 const nav = el("nav");
 nav.addEventListener("click", (e)=>{
   const btn = e.target.closest("button[data-view]");
@@ -868,7 +907,7 @@ nav.addEventListener("click", (e)=>{
 });
 function setView(view){
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
-  // hide/show cards
+
   el("viewLeads").style.display = (view==="leads") ? "" : "none";
   el("viewRight").style.display = (view==="leads") ? "" : "none";
   el("viewTasks").style.display = (view==="tasks") ? "" : "none";
@@ -901,16 +940,6 @@ el("modalClose").addEventListener("click", closeModal);
 el("modalBack").addEventListener("click", (e)=>{
   if(e.target === el("modalBack")) closeModal();
 });
-document.addEventListener("keydown", (e)=>{
-  if(e.key==="Escape") closeModal();
-  if(e.key==="/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA"){
-    e.preventDefault();
-    el("q").focus();
-  }
-  if((e.key==="n" || e.key==="N") && !el("modalBack").style.display.includes("flex")){
-    openLeadForm();
-  }
-});
 
 /* ===== Toast ===== */
 let toastTimer=null;
@@ -929,7 +958,7 @@ el("fSource").addEventListener("change", renderLeads);
 el("sortBy").addEventListener("change", renderLeads);
 
 /* ===== Buttons ===== */
-el("btnAddLead").addEventListener("click", openLeadForm);
+el("btnAddLead").addEventListener("click", ()=>openLeadForm());
 el("btnQuickTask").addEventListener("click", ()=> openTaskForm());
 el("btnOpenInsights").addEventListener("click", ()=> openInsights());
 el("btnSeed").addEventListener("click", seedSample);
@@ -940,6 +969,19 @@ el("btnReset").addEventListener("click", ()=>{
   if(confirm("לאפס את כל הנתונים? פעולה בלתי הפיכה.")){
     localStorage.removeItem(LS_KEY);
     location.reload();
+  }
+});
+
+/* ===== Shortcuts ===== */
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="Escape") closeModal();
+  if(e.key==="/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName||"")){
+    e.preventDefault();
+    el("q").focus();
+  }
+  const modalOpen = (el("modalBack").style.display === "flex");
+  if((e.key==="n" || e.key==="N") && !modalOpen){
+    openLeadForm();
   }
 });
 
@@ -981,10 +1023,13 @@ function importJSON(){
   inp.click();
 }
 
-/* ===== Leads CRUD ===== */
+/* =======================
+   Leads CRUD
+   ======================= */
 function openLeadForm(leadId=null){
   const lead = leadId ? appState.leads.find(l=>l.id===leadId) : null;
   const isEdit = !!lead;
+
   const data = lead || {
     id: uid("lead"),
     name:"",
@@ -1100,13 +1145,12 @@ function openLeadForm(leadId=null){
             <button type="button" class="iconBtn" title="אימייל" id="qaMail">✉️</button>
             <button type="button" class="iconBtn" title="העתק טלפון" id="qaCopy">📋</button>
           </div>
-          <div class="help">בגלל שביקשת “ללא חלון חיצוני” — כאן מוצג טקסט/קישור להעתקה בתוך המודאל.</div>
+          <div class="help">כאן הכל בתוך מודאל (לא נפתח חלון חדש).</div>
         </div>
       </div>
     </div>
   `);
 
-  // form handlers
   const form = document.getElementById("leadForm");
   form.addEventListener("submit", (e)=>{
     e.preventDefault();
@@ -1116,7 +1160,6 @@ function openLeadForm(leadId=null){
       updated[k] = v;
     }
     updated.nextFollowUpAt = fromLocalDT(updated.nextFollowUpAt);
-    // keep createdAt
     updated.createdAt = data.createdAt || nowISO();
 
     const idx = appState.leads.findIndex(l=>l.id===updated.id);
@@ -1133,17 +1176,18 @@ function openLeadForm(leadId=null){
     closeModal();
   });
 
-  // Touch (log contact)
   document.getElementById("btnTouch").addEventListener("click", ()=>{
     data.contactCount = Number(data.contactCount||0) + 1;
     data.lastContactAt = nowISO();
     addEvent("contact", `שיחה/מענה סומן לליד: ${data.name||"(ללא שם)"}`, {leadId:data.id});
-    toast("סומן שיחה ✅ (אל תשכח לשמור)");
-    // re-open to refresh score visuals
-    openLeadForm(data.id ? data.id : null);
+    toast("סומן שיחה ✅");
+    const idx = appState.leads.findIndex(l=>l.id===data.id);
+    if(idx>=0) appState.leads[idx] = data;
+    else appState.leads.unshift(data);
+    saveState();
+    openLeadForm(data.id);
   });
 
-  // delete
   if(isEdit){
     document.getElementById("btnDeleteLead").addEventListener("click", ()=>{
       if(!confirm("למחוק את הליד?")) return;
@@ -1156,26 +1200,606 @@ function openLeadForm(leadId=null){
     });
   }
 
-  // create task for lead
   document.getElementById("btnCreateTask").addEventListener("click", ()=>{
     openTaskForm({ leadId: data.id, leadName: data.name, presetDate: data.nextFollowUpAt });
   });
 
-  // contact actions in-modal
   document.getElementById("btnOpenContact").addEventListener("click", ()=>{
     openContactPanel(data);
   });
+
   document.getElementById("qaWA").addEventListener("click", ()=> openContactPanel(data, "wa"));
   document.getElementById("qaCall").addEventListener("click", ()=> openContactPanel(data, "call"));
   document.getElementById("qaMail").addEventListener("click", ()=> openContactPanel(data, "mail"));
-  document.getElementById("qaCopy").addEventListener("click", ()=>{
-    navigator.clipboard?.writeText(data.phone||"");
-    toast("הטלפון הועתק 📋");
+  document.getElementById("qaCopy").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(data.phone||"");
+      toast("הטלפון הועתק 📋");
+    }catch{
+      toast("לא ניתן להעתיק בדפדפן הזה");
+    }
   });
 }
 
+/* ===== Contact panel (in-modal) ===== */
+function normalizeILPhone(phone){
+  const digits = String(phone||"").replace(/[^\d]/g,"");
+  if(!digits) return "";
+  // if starts with 0 -> IL
+  if(digits.startsWith("0")) return "972" + digits.slice(1);
+  // already includes country?
+  if(digits.startsWith("972")) return digits;
+  // fallback
+  return digits;
+}
+
 function openContactPanel(lead, focus="wa"){
-  const phoneDigits = (lead.phone||"").replace(/[^\d]/g,"");
-  const waLink = phoneDigits ? `https://wa.me/972${phoneDigits.replace(/^0/,"")}` : "";
-  const callLink = phoneDigits ? `tel:${phoneDigits}` : "";
-  const mailLink = (lead.email||"
+  const phoneIL = normalizeILPhone(lead.phone);
+  const mail = (lead.email||"").trim();
+  const waWeb = phoneIL ? `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}` : "";
+  const tel = (lead.phone||"").trim();
+  const mailto = mail ? `mailto:${encodeURIComponent(mail)}?subject=${encodeURIComponent("LEADUP - פניה")}` : "";
+
+  openModal(`פעולות קשר • ${lead.name || "ליד"}`, `
+    <div class="twoCols">
+      <div class="miniCard">
+        <h3>פרטי קשר</h3>
+        <div class="small muted">טלפון: <b>${escapeHTML(lead.phone||"—")}</b></div>
+        <div class="small muted" style="margin-top:6px">אימייל: <b>${escapeHTML(mail||"—")}</b></div>
+        <div class="sep"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="cWA" ${waWeb? "":"disabled"}>💬 וואטסאפ</button>
+          <button class="btn" type="button" id="cCall" ${tel? "":"disabled"}>📞 התקשר</button>
+          <button class="btn" type="button" id="cMail" ${mailto? "":"disabled"}>✉️ מייל</button>
+          <button class="btn" type="button" id="cCopyPhone" ${tel? "":"disabled"}>📋 העתק טלפון</button>
+          <button class="btn" type="button" id="cCopyMail" ${mail? "":"disabled"}>📋 העתק מייל</button>
+        </div>
+
+        <div class="help">
+          הערה: “התקשר” / “מייל” לא נפתחים בתוך iframe בגלל מגבלות דפדפן,
+          אבל נשארים בתוך המודאל עם כפתורי העתקה + קישור.
+        </div>
+
+        <div class="sep"></div>
+        <div class="miniCard" style="margin:0; background:rgba(255,255,255,.02)">
+          <h3 style="margin-bottom:8px">הודעה מהירה לוואטסאפ</h3>
+          <label>טקסט</label>
+          <textarea id="waText" placeholder="היי ${escapeHTML(lead.name||"")}, מדבר/ת מ-...">${escapeHTML(`היי ${lead.name||""}, מדבר/ת מ-LEADUP. אפשר לעזור?`)}</textarea>
+          <button class="btn gold" type="button" id="waOpenMsg" style="margin-top:10px" ${waWeb? "":"disabled"}>🚀 פתח וואטסאפ עם ההודעה</button>
+        </div>
+      </div>
+
+      <div class="miniCard">
+        <h3>תצוגה בתוך המערכת</h3>
+        ${waWeb ? `
+          <div class="frame">
+            <iframe id="waFrame" src="${escapeHTML(waWeb)}"></iframe>
+          </div>
+          <div class="help">אם לא התחברת ל-WhatsApp Web במחשב, תצטרך להתחבר פעם אחת.</div>
+        ` : `
+          <div class="help">אין טלפון לליד — הוסף מספר ואז תוכל לפתוח WhatsApp Web כאן.</div>
+        `}
+      </div>
+    </div>
+  `);
+
+  // wire buttons
+  const cWA = document.getElementById("cWA");
+  const cCall = document.getElementById("cCall");
+  const cMail = document.getElementById("cMail");
+  const cCopyPhone = document.getElementById("cCopyPhone");
+  const cCopyMail = document.getElementById("cCopyMail");
+
+  if(cWA) cWA.addEventListener("click", ()=>{
+    if(!waWeb) return;
+    const frame = document.getElementById("waFrame");
+    if(frame) frame.src = waWeb;
+    addEvent("contact_open", `נפתח וואטסאפ לליד: ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+  });
+
+  if(cCall) cCall.addEventListener("click", async ()=>{
+    // keep inside modal: show link and copy
+    addEvent("call_hint", `ניסיון התקשרות (קישור Tel) לליד: ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+    toast("העתקנו לך/צירפנו קישור להתקשרות בתוך המודאל");
+    openModal(`התקשר • ${lead.name||"ליד"}`, `
+      <div class="miniCard">
+        <h3>התקשרות</h3>
+        <div class="small muted">מספר: <b>${escapeHTML(tel||"—")}</b></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="ccCopy">📋 העתק מספר</button>
+          <a class="btn" href="${escapeHTML(tel ? "tel:"+tel.replace(/[^\d+]/g,"") : "#")}" style="text-decoration:none; ${tel? "":"pointer-events:none;opacity:.6"}">📞 חייג (אם הדפדפן מאפשר)</a>
+        </div>
+        <div class="help">במחשב לפעמים Tel לא עובד — אז הכי טוב להעתיק ולהתקשר מהנייד.</div>
+      </div>
+    `);
+    document.getElementById("ccCopy")?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(tel||""); toast("המספר הועתק 📋"); }catch{}
+    });
+  });
+
+  if(cMail) cMail.addEventListener("click", ()=>{
+    addEvent("mail_hint", `נפתח מייל (mailto) לליד: ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+    openModal(`מייל • ${lead.name||"ליד"}`, `
+      <div class="miniCard">
+        <h3>שליחת מייל</h3>
+        <div class="small muted">כתובת: <b>${escapeHTML(mail||"—")}</b></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="cmCopy">📋 העתק מייל</button>
+          <a class="btn" href="${escapeHTML(mailto)}" style="text-decoration:none; ${mailto? "":"pointer-events:none;opacity:.6"}">✉️ פתח תוכנת מייל</a>
+        </div>
+        <div class="help">mailto תלוי בהגדרות המחשב שלך (Gmail/Outlook וכו'). אם לא נפתח—פשוט העתק.</div>
+      </div>
+    `);
+    document.getElementById("cmCopy")?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(mail||""); toast("המייל הועתק 📋"); }catch{}
+    });
+  });
+
+  if(cCopyPhone) cCopyPhone.addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(tel||""); toast("הטלפון הועתק 📋"); }catch{ toast("לא ניתן להעתיק");}
+  });
+  if(cCopyMail) cCopyMail.addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(mail||""); toast("המייל הועתק 📋"); }catch{ toast("לא ניתן להעתיק");}
+  });
+
+  document.getElementById("waOpenMsg")?.addEventListener("click", ()=>{
+    if(!phoneIL) return;
+    const txt = document.getElementById("waText")?.value || "";
+    // WhatsApp web message param
+    const url = `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}&text=${encodeURIComponent(txt)}`;
+    const frame = document.getElementById("waFrame");
+    if(frame) frame.src = url;
+    addEvent("wa_msg", `נפתח וואטסאפ עם הודעה לליד: ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+  });
+
+  // focus
+  if(focus==="wa") cWA?.click();
+}
+
+/* =======================
+   Tasks CRUD
+   ======================= */
+function openTaskForm(opts={}){
+  // opts: { taskId, leadId, leadName, presetDate }
+  const task = opts.taskId ? appState.tasks.find(t=>t.id===opts.taskId) : null;
+  const isEdit = !!task;
+
+  const leadId = opts.leadId || task?.leadId || "";
+  const lead = leadId ? appState.leads.find(l=>l.id===leadId) : null;
+
+  const data = task || {
+    id: uid("task"),
+    leadId: leadId || "",
+    title: "",
+    dueAt: opts.presetDate || "",
+    priority: "בינונית",
+    status: "פתוחה",
+    createdAt: nowISO()
+  };
+
+  openModal(isEdit ? "עריכת משימה" : "משימה חדשה", `
+    <form id="taskForm">
+      <div class="row">
+        <div>
+          <label>שייך לליד</label>
+          <select name="leadId">
+            <option value="">ללא שיוך</option>
+            ${appState.leads.map(l=>`
+              <option value="${escapeHTML(l.id)}" ${l.id===data.leadId?"selected":""}>${escapeHTML(l.name || "(ללא שם)")}</option>
+            `).join("")}
+          </select>
+          <div class="help">${lead ? `נבחר: <b>${escapeHTML(lead.name)}</b>` : "אפשר לבחור ליד או להשאיר ללא שיוך."}</div>
+        </div>
+        <div>
+          <label>מתי (תאריך/שעה)</label>
+          <input name="dueAt" type="datetime-local" value="${escapeHTML(toLocalDT(data.dueAt))}"/>
+          <div class="help">אפשר גם “לחזור אליו עוד X ימים” למטה.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>עדיפות</label>
+          <select name="priority">
+            ${["גבוהה","בינונית","נמוכה"].map(p=>`
+              <option ${p===data.priority?"selected":""}>${p}</option>
+            `).join("")}
+          </select>
+        </div>
+        <div>
+          <label>סטטוס</label>
+          <select name="status">
+            ${["פתוחה","בוצעה"].map(s=>`
+              <option ${s===data.status?"selected":""}>${s}</option>
+            `).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>תיאור</label>
+        <textarea name="title" placeholder="לדוגמה: לחזור לליד ולתת הצעת מחיר…">${escapeHTML(data.title||"")}</textarea>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <div>
+          <label>לחזור אליו עוד X ימים</label>
+          <div style="display:flex; gap:10px">
+            <input id="xDays" type="number" min="0" placeholder="לדוגמה: 3"/>
+            <button type="button" class="btn" id="btnApplyX">📅 קבע תאריך</button>
+          </div>
+          <div class="help">יקבע Due לפי עכשיו + X ימים.</div>
+        </div>
+        <div>
+          <label>פעולות</label>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn gold" type="submit">💾 שמירה</button>
+            ${isEdit ? `<button class="btn danger" type="button" id="btnDeleteTask">🗑️ מחיקה</button>` : ""}
+          </div>
+        </div>
+      </div>
+    </form>
+  `);
+
+  document.getElementById("btnApplyX")?.addEventListener("click", ()=>{
+    const x = Number(document.getElementById("xDays")?.value || 0);
+    const d = new Date();
+    d.setDate(d.getDate() + (Number.isFinite(x)? x : 0));
+    const local = toLocalDT(d.toISOString());
+    const due = document.querySelector('#taskForm input[name="dueAt"]');
+    if(due) due.value = local;
+    toast("נקבע תאריך ✅");
+  });
+
+  const form = document.getElementById("taskForm");
+  form.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const updated = { ...data };
+    for(const [k,v] of fd.entries()){
+      updated[k] = v;
+    }
+    updated.dueAt = fromLocalDT(updated.dueAt);
+
+    const idx = appState.tasks.findIndex(t=>t.id===updated.id);
+    const leadName = updated.leadId ? (appState.leads.find(l=>l.id===updated.leadId)?.name || "ליד") : "ללא שיוך";
+    if(idx>=0){
+      appState.tasks[idx] = updated;
+      addEvent("task_update", `עודכנה משימה (${updated.priority}) • ${leadName}`, {taskId: updated.id, leadId: updated.leadId||""});
+      toast("משימה עודכנה ✅");
+    }else{
+      appState.tasks.unshift(updated);
+      addEvent("task_create", `נוצרה משימה (${updated.priority}) • ${leadName}`, {taskId: updated.id, leadId: updated.leadId||""});
+      toast("משימה נוספה ✅");
+    }
+    saveState();
+    closeModal();
+  });
+
+  if(isEdit){
+    document.getElementById("btnDeleteTask")?.addEventListener("click", ()=>{
+      if(!confirm("למחוק את המשימה?")) return;
+      appState.tasks = appState.tasks.filter(t=>t.id!==data.id);
+      addEvent("task_delete", `נמחקה משימה`, {taskId: data.id, leadId: data.leadId||""});
+      saveState();
+      closeModal();
+      toast("משימה נמחקה 🗑️");
+    });
+  }
+}
+
+function toggleTaskDone(taskId){
+  const t = appState.tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  t.status = (t.status==="בוצעה") ? "פתוחה" : "בוצעה";
+  addEvent("task_toggle", `סטטוס משימה: ${t.status}`, {taskId: t.id, leadId: t.leadId||""});
+  saveState();
+}
+
+/* =======================
+   Rendering
+   ======================= */
+function renderAll(){
+  renderStats();
+  renderLeads();
+  renderTasks();
+  renderTimeline();
+  renderNavCounts();
+}
+
+function renderNavCounts(){
+  el("navCount").textContent = String(appState.leads.length);
+  const openTasks = appState.tasks.filter(t=>t.status!=="בוצעה").length;
+  el("navTasks").textContent = String(openTasks);
+  el("navEvents").textContent = String(appState.events.length);
+}
+
+function renderStats(){
+  const total = appState.leads.length;
+  const scores = appState.leads.map(l=>computeScore(l));
+  const hot = scores.filter(s=>s>=75).length;
+
+  const today = todayKey();
+  const todayFollow = appState.leads.filter(l=>{
+    if(!l.nextFollowUpAt) return false;
+    const d = new Date(l.nextFollowUpAt);
+    if(Number.isNaN(d.getTime())) return false;
+    const k = d.toLocaleDateString("sv-SE");
+    return k === today;
+  }).length;
+
+  const openTasks = appState.tasks.filter(t=>t.status!=="בוצעה").length;
+
+  el("stTotal").textContent = String(total);
+  el("stHot").textContent = String(hot);
+  el("stToday").textContent = String(todayFollow);
+  el("stTasks").textContent = String(openTasks);
+}
+
+function getFilteredSortedLeads(){
+  const q = (el("q").value||"").trim().toLowerCase();
+  const fStatus = el("fStatus").value;
+  const fSource = el("fSource").value;
+  const sortBy = el("sortBy").value;
+
+  let arr = [...appState.leads];
+
+  if(q){
+    arr = arr.filter(l=>{
+      const hay = [
+        l.name, l.phone, l.email, l.status, l.source, l.owner, l.note
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if(fStatus) arr = arr.filter(l=> (l.status||"")===fStatus);
+  if(fSource) arr = arr.filter(l=> (l.source||"")===fSource);
+
+  const scoreOf = (l)=>computeScore(l);
+  const nextTime = (l)=> l.nextFollowUpAt ? new Date(l.nextFollowUpAt).getTime() : Infinity;
+  const createdTime = (l)=> l.createdAt ? new Date(l.createdAt).getTime() : 0;
+
+  if(sortBy==="hot"){
+    arr.sort((a,b)=> scoreOf(b)-scoreOf(a));
+  }else if(sortBy==="next"){
+    arr.sort((a,b)=> nextTime(a)-nextTime(b));
+  }else if(sortBy==="newest"){
+    arr.sort((a,b)=> createdTime(b)-createdTime(a));
+  }else if(sortBy==="oldest"){
+    arr.sort((a,b)=> createdTime(a)-createdTime(b));
+  }
+  return arr;
+}
+
+function renderLeads(){
+  const tbody = el("leadsTbody");
+  const leads = getFilteredSortedLeads();
+
+  el("emptyLeads").style.display = (appState.leads.length===0) ? "" : "none";
+
+  tbody.innerHTML = leads.map(l=>{
+    const score = computeScore(l);
+    const ht = heatTag(score);
+    return `
+      <tr>
+        <td><b>${escapeHTML(l.name||"—")}</b><div class="small muted">${escapeHTML(l.owner||"")}</div></td>
+        <td>${escapeHTML(l.phone||"—")}</td>
+        <td><span class="tag">${escapeHTML(l.status||"—")}</span></td>
+        <td><span class="tag">${escapeHTML(l.source||"—")}</span></td>
+        <td>
+          <div class="score">
+            <span class="tag ${ht.cls}">${ht.label}</span>
+            <b>${score}</b>
+          </div>
+          <div class="bar" style="margin-top:8px"><i style="width:${score}%"></i></div>
+        </td>
+        <td>${l.nextFollowUpAt ? fmtDT(l.nextFollowUpAt) : "—"}</td>
+        <td>
+          <div class="actions">
+            <button class="iconBtn gold" title="ערוך" data-act="edit" data-id="${escapeHTML(l.id)}">✎</button>
+            <button class="iconBtn" title="משימה" data-act="task" data-id="${escapeHTML(l.id)}">⏰</button>
+            <button class="iconBtn" title="קשר" data-act="contact" data-id="${escapeHTML(l.id)}">📲</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-act]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-act");
+      if(act==="edit") openLeadForm(id);
+      if(act==="task"){
+        const lead = appState.leads.find(l=>l.id===id);
+        openTaskForm({ leadId:id, leadName: lead?.name || "" , presetDate: lead?.nextFollowUpAt || ""});
+      }
+      if(act==="contact"){
+        const lead = appState.leads.find(l=>l.id===id);
+        if(lead) openContactPanel(lead);
+      }
+    });
+  });
+}
+
+function renderTasks(){
+  const tbody = el("tasksTbody");
+  const tasks = [...appState.tasks].sort((a,b)=>{
+    const da = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
+    const db = b.dueAt ? new Date(b.dueAt).getTime() : Infinity;
+    return da-db;
+  });
+
+  const openTasks = tasks.filter(t=>t.status!=="בוצעה");
+  el("emptyTasks").style.display = (openTasks.length===0) ? "" : "none";
+
+  tbody.innerHTML = openTasks.map(t=>{
+    const leadName = t.leadId ? (appState.leads.find(l=>l.id===t.leadId)?.name || "ליד") : "—";
+    const priTag = t.priority==="גבוהה" ? "hot" : (t.priority==="בינונית" ? "ok" : "cold");
+    return `
+      <tr>
+        <td>${t.dueAt ? fmtDT(t.dueAt) : "—"}</td>
+        <td><span class="tag ${priTag}">${escapeHTML(t.priority||"")}</span></td>
+        <td>${escapeHTML(leadName)}</td>
+        <td>${escapeHTML(t.title||"")}</td>
+        <td><span class="tag">${escapeHTML(t.status||"")}</span></td>
+        <td>
+          <div class="actions">
+            <button class="iconBtn gold" title="ערוך" data-tact="edit" data-id="${escapeHTML(t.id)}">✎</button>
+            <button class="iconBtn" title="בוצעה/פתוחה" data-tact="done" data-id="${escapeHTML(t.id)}">✓</button>
+            <button class="iconBtn" title="מחיקה" data-tact="del" data-id="${escapeHTML(t.id)}">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-tact]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-tact");
+      if(act==="edit") openTaskForm({ taskId:id });
+      if(act==="done") toggleTaskDone(id);
+      if(act==="del"){
+        if(!confirm("למחוק משימה?")) return;
+        appState.tasks = appState.tasks.filter(t=>t.id!==id);
+        addEvent("task_delete", "נמחקה משימה", {taskId:id});
+        saveState();
+      }
+    });
+  });
+}
+
+function renderTimeline(){
+  const list = el("timelineList");
+  const events = appState.events.slice(0, 200);
+  el("emptyTimeline").style.display = (events.length===0) ? "" : "none";
+
+  list.innerHTML = events.map(ev=>{
+    const who = ev.who || "משתמש";
+    return `
+      <div class="event">
+        <div class="t">${fmtDT(ev.at)} • ${escapeHTML(who)} • <span class="muted">${escapeHTML(ev.type||"")}</span></div>
+        <div class="d">${escapeHTML(ev.text||"")}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* =======================
+   Insights
+   ======================= */
+function openInsights(){
+  const total = appState.leads.length;
+  const scores = appState.leads.map(l=>computeScore(l));
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+
+  const byStatus = {};
+  for(const l of appState.leads){
+    const k = l.status || "לא מוגדר";
+    byStatus[k] = (byStatus[k]||0)+1;
+  }
+  const bySource = {};
+  for(const l of appState.leads){
+    const k = l.source || "לא מוגדר";
+    bySource[k] = (bySource[k]||0)+1;
+  }
+
+  const topHot = [...appState.leads]
+    .sort((a,b)=>computeScore(b)-computeScore(a))
+    .slice(0, 5);
+
+  openModal("סטטיסטיקות • LEADUP", `
+    <div class="twoCols">
+      <div class="miniCard">
+        <h3>סיכום</h3>
+        <div class="small muted">סה״כ לידים: <b>${total}</b></div>
+        <div class="small muted">ממוצע Score: <b>${avg}</b></div>
+        <div class="sep"></div>
+        <h3>Top 5 חמים</h3>
+        ${topHot.length ? topHot.map(l=>`
+          <div class="event">
+            <div class="t">${escapeHTML(l.name||"—")} • ${escapeHTML(l.status||"")}</div>
+            <div class="d"><b>${computeScore(l)}</b>/100 • ${l.nextFollowUpAt ? "מעקב: "+fmtDT(l.nextFollowUpAt) : "ללא מעקב"}</div>
+          </div>
+        `).join("") : `<div class="help">אין לידים.</div>`}
+      </div>
+
+      <div class="miniCard">
+        <h3>התפלגות</h3>
+        <div class="small muted"><b>לפי סטטוס</b></div>
+        ${Object.keys(byStatus).length ? Object.entries(byStatus).map(([k,v])=>`
+          <div class="event"><div class="t">${escapeHTML(k)}</div><div class="d">${v}</div></div>
+        `).join("") : `<div class="help">אין נתונים.</div>`}
+        <div class="sep"></div>
+        <div class="small muted"><b>לפי מקור</b></div>
+        ${Object.keys(bySource).length ? Object.entries(bySource).map(([k,v])=>`
+          <div class="event"><div class="t">${escapeHTML(k)}</div><div class="d">${v}</div></div>
+        `).join("") : `<div class="help">אין נתונים.</div>`}
+      </div>
+    </div>
+  `);
+}
+
+/* =======================
+   Seed sample data
+   ======================= */
+function seedSample(){
+  if(appState.leads.length && !confirm("כבר יש לידים. להוסיף עוד דוגמאות?")) return;
+
+  const mkLead = (name, phone, status, source, nextDays, talks=0)=>({
+    id: uid("lead"),
+    name, phone,
+    email: "",
+    status, source,
+    owner: "מנהל",
+    note: "דוגמה",
+    createdAt: new Date(Date.now() - (Math.random()*8+1)*86400000).toISOString(),
+    lastContactAt: talks ? new Date(Date.now() - (Math.random()*4+1)*86400000).toISOString() : "",
+    nextFollowUpAt: nextDays!=null ? new Date(Date.now()+nextDays*86400000).toISOString() : "",
+    contactCount: talks
+  });
+
+  const demo = [
+    mkLead("איתי כהן","052-1234567","מתעניין","הפניה",1,3),
+    mkLead("נועה לוי","054-9876543","נוצר קשר","פייסבוק",0,1),
+    mkLead("דניאל אוחנה","050-2223344","הצעת מחיר","גוגל",2,4),
+    mkLead("רועי ביטון","053-5556677","חדש","אתר",3,0),
+    mkLead("שחר ממן","052-7654321","נסגר","טלפון",null,6),
+  ];
+
+  appState.leads.unshift(...demo);
+  addEvent("seed", "נוצרו לידים לדוגמה");
+  // גם משימות לדוגמה
+  appState.tasks.unshift(
+    { id: uid("task"), leadId: demo[0].id, title:"לחזור עם הצעת מחיר", dueAt: new Date(Date.now()+86400000).toISOString(), priority:"גבוהה", status:"פתוחה", createdAt: nowISO() },
+    { id: uid("task"), leadId: demo[2].id, title:"בדיקת מסמכים", dueAt: new Date(Date.now()+2*86400000).toISOString(), priority:"בינונית", status:"פתוחה", createdAt: nowISO() }
+  );
+  addEvent("seed", "נוצרו משימות לדוגמה");
+  saveState();
+  toast("נוצרו דוגמאות ✅");
+}
+
+/* =======================
+   Init
+   ======================= */
+(function init(){
+  if(!appState.events.length){
+    addEvent("init", "המערכת עלתה • מצב LocalStorage");
+    saveState();
+  }else{
+    renderAll();
+  }
+})();
+</script>
+</body>
+</html>
