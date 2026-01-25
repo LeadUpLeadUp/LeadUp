@@ -3,123 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeadUp Enterprise | Smart CRM</title>
+    <title>LeadUp | Insurance Enterprise CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --gold: #C5A059; --obsidian: #050505; --glass: rgba(15, 15, 15, 0.9); }
-        body { font-family: 'Assistant', sans-serif; background-color: var(--obsidian); color: #ffffff; margin: 0; overflow: hidden; }
+        :root {
+            --gold-primary: #C5A059;
+            --gold-soft: #AF8F52;
+            --bg-deep: #0A0B0D;
+            --sidebar-bg: #000000;
+        }
 
-        /* יוקרה ועיצוב */
-        .glass-panel { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid rgba(197, 160, 89, 0.15); border-radius: 30px; }
-        .gold-btn { background: linear-gradient(135deg, #E2C275 0%, #C5A059 100%); color: #000; font-weight: 800; border-radius: 15px; transition: 0.3s; box-shadow: 0 8px 20px rgba(197, 160, 89, 0.2); }
-        .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(197, 160, 89, 0.4); }
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: var(--bg-deep);
+            color: #E2E2E2;
+            margin: 0;
+            overflow: hidden;
+        }
 
-        /* פאנל פרטים נפתח (Side Panel) */
-        .details-panel { position: fixed; left: 0; top: 0; width: 450px; height: 100vh; background: #080808; border-right: 1px solid var(--gold); transform: translateX(-100%); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; padding: 40px; box-shadow: 20px 0 50px rgba(0,0,0,0.9); }
+        /* עיצוב הלוגו */
+        .logo-box {
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .logo-img {
+            width: 140px;
+            height: auto;
+            margin: 0 auto;
+            filter: grayscale(0.2) contrast(1.1);
+        }
+
+        /* Side Panel - עיצוב שקט ויוקרתי */
+        .details-panel {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 480px;
+            height: 100vh;
+            background: rgba(10, 11, 13, 0.98);
+            border-right: 1px solid rgba(197, 160, 89, 0.2);
+            transform: translateX(-100%);
+            transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            box-shadow: 40px 0 80px rgba(0,0,0,0.8);
+        }
+
         .details-panel.open { transform: translateX(0); }
 
-        /* סרגל צד */
-        .sidebar { width: 300px; background: #000; border-left: 1px solid rgba(255, 255, 255, 0.05); height: 100vh; display: flex; flex-direction: column; }
-        .nav-item { padding: 18px 35px; color: #666; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; font-weight: 600; }
-        .nav-item.active { color: var(--gold); background: rgba(197, 160, 89, 0.05); border-right: 4px solid var(--gold); }
+        /* כפתורי Enterprise */
+        .btn-gold {
+            background-color: var(--gold-primary);
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.4s ease;
+            border: 1px solid var(--gold-primary);
+        }
 
-        /* טבלה והיסטוריה */
-        tr { border-bottom: 1px solid rgba(255, 255, 255, 0.03); cursor: pointer; }
-        tr:hover { background: rgba(197, 160, 89, 0.03); }
-        .history-card { background: rgba(255,255,255,0.03); border-right: 3px solid var(--gold); padding: 15px; border-radius: 0 10px 10px 0; margin-bottom: 15px; }
+        .btn-gold:hover {
+            background-color: transparent;
+            color: var(--gold-primary);
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+        }
+
+        .nav-item {
+            padding: 16px 32px;
+            color: #94A3B8;
+            font-size: 15px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--gold-primary);
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.05) 0%, transparent 100%);
+        }
+
+        /* טבלה נקייה */
+        .crm-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .crm-table tr {
+            background: rgba(255, 255, 255, 0.02);
+            transition: 0.3s;
+        }
+
+        .crm-table tr:hover {
+            background: rgba(197, 160, 89, 0.04);
+            transform: scale(1.002);
+        }
+
+        .crm-table td {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex">
 
-    <div id="detailsPanel" class="details-panel overflow-y-auto no-scrollbar">
-        <button onclick="closeDetails()" class="text-gray-500 hover:text-white mb-10 flex items-center gap-2 uppercase text-xs tracking-widest">
-            <i data-lucide="arrow-right"></i> חזרה למאגר
-        </button>
-        <h2 id="det-name" class="text-4xl font-black gold-text italic mb-2 tracking-tighter"></h2>
-        <p id="det-phone" class="text-gray-500 mb-10 text-lg"></p>
-
-        <div class="space-y-8">
-            <div class="glass-panel p-6 bg-white/5 border-white/10">
-                <h4 class="text-xs font-bold uppercase text-gray-400 mb-4 tracking-widest">תיעוד פעולה חדשה</h4>
-                <textarea id="noteInput" placeholder="סיכום שיחה, סטטוס טיפול..." class="w-full bg-black border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-gold h-32 resize-none"></textarea>
-                <button onclick="addNote()" class="gold-btn w-full py-4 mt-4">שמור תיעוד ב-LeadUp</button>
-            </div>
-
-            <div>
-                <h4 class="text-xs font-bold uppercase text-gray-400 mb-6 tracking-widest">היסטוריית תקשורת</h4>
-                <div id="notesContainer" class="space-y-2"></div>
-            </div>
-        </div>
-    </div>
-
-    <aside class="sidebar">
-        <div class="p-10 text-center">
-            <img src="logo.png.png" alt="LeadUp" class="w-40 mx-auto drop-shadow-2xl">
-            <p class="text-[9px] text-gray-600 tracking-[0.4em] uppercase mt-6 font-bold">Smart Enterprise CRM</p>
-        </div>
-        <nav class="flex-1 mt-4">
-            <div onclick="switchSection('dash')" id="nav-dash" class="nav-item active"><i data-lucide="layout-grid"></i> <span>דאשבורד שליטה</span></div>
-            <div onclick="switchSection('leads')" id="nav-leads" class="nav-item"><i data-lucide="users"></i> <span>מאגר לידים חכם</span></div>
-            <div class="nav-item opacity-40"><i data-lucide="calendar"></i> <span>פגישות</span></div>
-        </nav>
-        <div class="p-8"><div class="glass-panel p-4 text-center border-white/5"><span class="text-[10px] text-green-500 font-bold uppercase animate-pulse">● מחובר לענן</span></div></div>
-    </aside>
-
-    <main class="flex-1 overflow-y-auto h-screen p-12 bg-[#080808] no-scrollbar">
-        <header class="flex justify-between items-end mb-16">
-            <div>
-                <h1 id="page-title" class="text-5xl font-extrabold tracking-tighter italic text-white">מבט על <span class="text-gray-600 font-light">LeadUp</span></h1>
-                <p class="text-gray-500 mt-2">ברוך הבא, אביב. המערכת מסונכרנת.</p>
-            </div>
-            <button onclick="toggleModal(true)" class="gold-btn px-10 py-4 flex items-center gap-2">+ הוספת ליד</button>
+    <div id="detailsPanel" class="details-panel p-12 no-scrollbar overflow-y-auto">
+        <header class="flex justify-between items-center mb-12">
+            <button onclick="closeDetails()" class="text-xs tracking-widest text-gray-500 hover:text-white uppercase flex items-center gap-2">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i> חזרה למאגר
+            </button>
+            <span class="text-[10px] text-gold border border-gold/30 px-3 py-1 rounded-full uppercase tracking-tighter">פרופיל פרימיום</span>
         </header>
 
-        <div id="section-dash" class="space-y-10">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div class="glass-panel p-8"><p class="text-gray-500 text-xs font-bold uppercase">סה"כ לידים</p><h3 id="stat-total" class="text-5xl font-black mt-2">0</h3></div>
-                <div class="glass-panel p-8 border-r-4 border-gold"><p class="text-gold text-xs font-bold uppercase">לידים חמים</p><h3 id="stat-hot" class="text-5xl font-black mt-2">0</h3></div>
-                <div class="glass-panel p-8"><p class="text-gray-500 text-xs font-bold uppercase">תיעודים שבוצעו</p><h3 id="stat-notes" class="text-5xl font-black mt-2 text-blue-400">0</h3></div>
-                <div class="glass-panel p-8"><p class="text-gray-500 text-xs font-bold uppercase">יחס סגירה</p><h3 class="text-5xl font-black mt-2 text-green-500">28%</h3></div>
+        <h2 id="det-name" class="text-4xl font-light text-white mb-2" style="font-family: 'Playfair Display', serif;"></h2>
+        <p id="det-phone" class="text-gray-500 mb-12 font-light text-lg tracking-widest"></p>
+
+        <section class="space-y-10">
+            <div>
+                <h4 class="text-[11px] font-bold uppercase text-gray-500 mb-4 tracking-[0.2em]">תיעוד שיחה וסטטוס</h4>
+                <textarea id="noteInput" placeholder="הזן סיכום פגישה או שיחה טלפונית..." class="w-full bg-white/5 border border-white/10 p-6 rounded-lg text-white outline-none focus:border-gold/50 h-32 transition"></textarea>
+                <button onclick="addNote()" class="btn-gold w-full py-4 mt-4 text-xs uppercase tracking-widest">שמור תיעוד רשמי</button>
             </div>
-            <div class="glass-panel p-10"><h4 class="text-xl font-bold mb-8 italic">מגמת צמיחה חודשית</h4><canvas id="mainChart" height="100"></canvas></div>
+
+            <div class="pt-8 border-t border-white/5">
+                <h4 class="text-[11px] font-bold uppercase text-gray-500 mb-6 tracking-[0.2em]">היסטוריית טיפול</h4>
+                <div id="notesContainer" class="space-y-6"></div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="w-72 bg-black border-l border-white/5 flex flex-col h-full z-50">
+        <div class="logo-box">
+            <img src="logo.png.png" alt="LeadUp" class="logo-img">
+        </div>
+
+        <nav class="flex-1 mt-10">
+            <div onclick="switchSection('dash')" id="nav-dash" class="nav-item active cursor-pointer">
+                <i data-lucide="compass" class="w-5 h-5"></i> <span>סקירה ניהולית</span>
+            </div>
+            <div onclick="switchSection('leads')" id="nav-leads" class="nav-item cursor-pointer">
+                <i data-lucide="layers" class="w-5 h-5"></i> <span>ניהול תיק לקוחות</span>
+            </div>
+            <div class="nav-item cursor-not-allowed opacity-30">
+                <i data-lucide="file-text" class="w-5 h-5"></i> <span>הפקת פוליסות</span>
+            </div>
+        </nav>
+
+        <div class="p-8 border-t border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="w-2 h-2 rounded-full bg-green-900 shadow-[0_0_10px_green]"></div>
+                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">שרת מאובטח פעיל</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-16 custom-scroll">
+        
+        <header class="flex justify-between items-end mb-20">
+            <div>
+                <h1 id="page-title" class="text-6xl font-light tracking-tighter" style="font-family: 'Playfair Display', serif;">ביצועים</h1>
+                <p class="text-gray-500 mt-4 text-sm font-light uppercase tracking-widest">LeadUp | Insurance Solutions Enterprise</p>
+            </div>
+            <button onclick="toggleModal(true)" class="btn-gold px-12 py-4 rounded-sm text-xs uppercase tracking-[0.2em]">
+                הוספת ליד חדש
+            </button>
+        </header>
+
+        <div id="section-dash" class="space-y-16 animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="border-r border-white/5 pr-8"><p class="text-gray-600 text-[10px] uppercase font-bold tracking-widest">סה"כ לקוחות</p><h3 id="stat-total" class="text-5xl font-light mt-2">0</h3></div>
+                <div class="border-r border-white/5 pr-8"><p class="text-gold text-[10px] uppercase font-bold tracking-widest">תיקים בטיפול</p><h3 id="stat-hot" class="text-5xl font-light mt-2 text-gold">0</h3></div>
+                <div class="border-r border-white/5 pr-8"><p class="text-gray-600 text-[10px] uppercase font-bold tracking-widest">פעולות שתועדו</p><h3 id="stat-notes" class="text-5xl font-light mt-2 text-blue-200">0</h3></div>
+                <div class="pr-8"><p class="text-gray-600 text-[10px] uppercase font-bold tracking-widest">יחס המרה</p><h3 class="text-5xl font-light mt-2 text-green-700">22%</h3></div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 pt-10">
+                <div class="lg:col-span-2"><h4 class="text-xs uppercase font-bold text-gray-600 mb-10 tracking-[0.3em]">מגמת מכירות פוליסות</h4><canvas id="mainChart" height="110"></canvas></div>
+                <div class="bg-white/[0.01] p-10 border border-white/5 rounded-sm"><h4 class="text-xs uppercase font-bold text-gold mb-8 tracking-[0.3em]">עדכוני מערכת</h4><div id="activity-log" class="space-y-6"></div></div>
+            </div>
         </div>
 
         <div id="section-leads" class="hidden">
-            <div class="glass-panel overflow-hidden">
-                <div class="p-8 bg-white/5 flex gap-4"><input type="text" id="searchInput" oninput="renderLeads()" placeholder="חפש לפי שם או טלפון..." class="bg-black border border-white/10 rounded-2xl px-8 py-4 flex-1 outline-none focus:border-gold text-xl"></div>
-                <table class="w-full text-right">
-                    <thead class="bg-black/80 text-[10px] uppercase text-gray-500 tracking-[0.2em]">
-                        <tr><th class="p-8">לקוח</th><th class="p-8">סטטוס</th><th class="p-8">ציון חום</th><th class="p-8">פעולות</th></tr>
-                    </thead>
-                    <tbody id="leads-body"></tbody>
-                </table>
-            </div>
+            <div class="mb-12"><input type="text" id="searchInput" oninput="renderLeads()" placeholder="חיפוש בתיק לקוחות (שם/טלפון)..." class="w-full bg-transparent border-b border-white/10 py-6 text-2xl font-light outline-none focus:border-gold transition"></div>
+            <table class="crm-table">
+                <thead class="text-[10px] uppercase text-gray-500 tracking-[0.2em]">
+                    <tr><th class="text-right p-6">שם הלקוח</th><th class="text-right p-6">סטטוס</th><th class="text-right p-6">ציון חום</th><th class="text-left p-6">ניהול</th></tr>
+                </thead>
+                <tbody id="leads-body"></tbody>
+            </table>
         </div>
     </main>
 
-    <div id="addModal" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center hidden">
-        <div class="glass-panel p-12 w-full max-w-xl border-t-4 border-gold">
-            <h2 class="text-3xl font-black mb-10 gold-text italic">הוספת רשומה חדשה</h2>
-            <div class="space-y-6">
-                <input type="text" id="f-name" placeholder="שם מלא" class="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none focus:border-gold text-xl">
-                <div class="grid grid-cols-2 gap-6">
-                    <input type="text" id="f-phone" placeholder="מספר טלפון" class="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none focus:border-gold">
-                    <select id="f-status" class="w-full bg-black border border-white/10 p-5 rounded-2xl outline-none focus:border-gold"><option value="חם">🔥 VIP</option><option value="מעקב">מעקב</option><option value="חדש">חדש</option></select>
+    <div id="addModal" class="fixed inset-0 bg-black/98 z-[100] flex items-center justify-center hidden">
+        <div class="w-full max-w-2xl p-20 border border-white/5">
+            <h2 class="text-5xl font-light mb-12 text-white italic" style="font-family: 'Playfair Display', serif;">רישום ליד חדש</h2>
+            <div class="space-y-8">
+                <input type="text" id="f-name" placeholder="שם מלא" class="w-full bg-transparent border-b border-white/10 py-4 outline-none focus:border-gold text-xl font-light">
+                <div class="grid grid-cols-2 gap-10">
+                    <input type="text" id="f-phone" placeholder="טלפון" class="w-full bg-transparent border-b border-white/10 py-4 outline-none focus:border-gold">
+                    <select id="f-status" class="bg-transparent border-b border-white/10 py-4 outline-none text-gray-400"><option value="חם">ליד חם (VIP)</option><option value="מעקב">בהמתנה/מעקב</option></select>
                 </div>
-                <button onclick="saveLead()" class="gold-btn w-full py-5 text-xl mt-6">אשר ושמור ב-LeadUp</button>
+                <div class="flex gap-10 pt-10">
+                    <button onclick="saveLead()" class="btn-gold px-12 py-5 text-sm uppercase flex-1">אישור ורישום</button>
+                    <button onclick="toggleModal(false)" class="text-gray-600 uppercase text-xs tracking-widest hover:text-white transition">ביטול</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const GOOGLE_URL = ""; // הדבק כאן את כתובת ה-Apps Script לחיבור לענן
-        let leads = JSON.parse(localStorage.getItem('leadup_vfinal')) || [];
+        let leads = JSON.parse(localStorage.getItem('leadup_enterprise_v1')) || [];
         let currentLeadId = null;
 
         function init() { lucide.createIcons(); updateStats(); renderLeads(); renderChart(); }
@@ -129,7 +229,7 @@
             document.getElementById('section-leads').classList.toggle('hidden', id !== 'leads');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-' + id).classList.add('active');
-            document.getElementById('page-title').innerHTML = id === 'dash' ? 'מבט על <span class="text-gray-600 font-light">LeadUp</span>' : 'ניהול <span class="text-gray-600 font-light">מאגר חכם</span>';
+            document.getElementById('page-title').innerText = id === 'dash' ? 'ביצועים' : 'תיק לקוחות';
         }
 
         function toggleModal(show) { document.getElementById('addModal').classList.toggle('hidden', !show); }
@@ -137,10 +237,8 @@
         function saveLead() {
             const name = document.getElementById('f-name').value;
             const phone = document.getElementById('f-phone').value;
-            if(!name || !phone) return alert("מלא פרטים בבקשה");
-            const lead = { id: Date.now(), name, phone, status: document.getElementById('f-status').value, score: 85, notes: [] };
-            leads.unshift(lead);
-            if(GOOGLE_URL) fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(lead) });
+            if(!name || !phone) return;
+            leads.unshift({ id: Date.now(), name, phone, status: document.getElementById('f-status').value, score: 85, notes: [] });
             save(); toggleModal(false); renderLeads(); updateStats();
         }
 
@@ -167,7 +265,7 @@
         function renderNotes() {
             const lead = leads.find(l => l.id === currentLeadId);
             document.getElementById('notesContainer').innerHTML = lead.notes.map(n => `
-                <div class="history-card"><p class="text-sm font-medium">${n.txt}</p><p class="text-[10px] text-gray-500 mt-2 uppercase">${n.date}</p></div>
+                <div class="border-b border-white/5 pb-4"><p class="text-sm font-light leading-relaxed">${n.txt}</p><p class="text-[9px] text-gray-600 mt-2 uppercase tracking-widest">${n.date}</p></div>
             `).join('');
         }
 
@@ -175,11 +273,11 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             document.getElementById('leads-body').innerHTML = leads.filter(l => l.name.toLowerCase().includes(query) || l.phone.includes(query))
                 .map(l => `
-                <tr onclick="openDetails(${l.id})" class="group">
-                    <td class="p-8"><div class="text-xl font-bold">${l.name}</div><div class="text-xs text-gray-500">${l.phone}</div></td>
-                    <td class="p-8"><span class="px-4 py-1 rounded-full text-[10px] font-black border border-white/10 ${l.status === 'חם' ? 'bg-red-500/10 text-red-500' : 'text-gold'}">${l.status}</span></td>
-                    <td class="p-8 text-gold font-bold">${l.score}%</td>
-                    <td class="p-8 text-left"><div class="flex justify-end gap-6 opacity-40 group-hover:opacity-100 transition"><i data-lucide="chevron-left"></i></div></td>
+                <tr onclick="openDetails(${l.id})">
+                    <td class="p-6"><div class="text-xl font-light">${l.name}</div><div class="text-[10px] text-gray-600 uppercase tracking-widest mt-1">${l.phone}</div></td>
+                    <td class="p-6"><span class="text-[9px] font-bold uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full ${l.status === 'חם' ? 'text-gold border-gold/30' : 'text-gray-500'}">${l.status}</span></td>
+                    <td class="p-6 text-gold text-sm font-bold tracking-tighter">${l.score}%</td>
+                    <td class="p-6 text-left"><i data-lucide="arrow-left" class="w-4 h-4 opacity-20 group-hover:opacity-100"></i></td>
                 </tr>
             `).join('');
             lucide.createIcons();
@@ -192,17 +290,17 @@
             document.getElementById('stat-notes').innerText = n;
         }
 
-        function save() { localStorage.setItem('leadup_vfinal', JSON.stringify(leads)); }
+        function save() { localStorage.setItem('leadup_enterprise_v1', JSON.stringify(leads)); }
 
         function renderChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['שבוע 1', 'שבוע 2', 'שבוע 3', 'שבוע 4'],
-                    datasets: [{ data: [15, 30, 25, 45], borderColor: '#C5A059', tension: 0.4, fill: true, backgroundColor: 'rgba(197, 160, 89, 0.05)', pointRadius: 0 }]
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [{ data: [15, 30, 22, 48, 35], borderColor: '#C5A059', tension: 0.5, borderWeight: 2, fill: false, pointRadius: 0 }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { color: 'rgba(255,255,255,0.02)' } } } }
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#333' } } } }
             });
         }
 
