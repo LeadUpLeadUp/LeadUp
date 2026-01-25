@@ -3,313 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gold & Black Insurance CRM | Enterprise</title>
+    <title>INSURE PRO | Ultra Premium CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Assistant:wght@300;400;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
-        
         :root {
-            --gold: #D4AF37;
-            --gold-light: #F9E79F;
-            --black-pearl: #0B0E11;
+            --gold-primary: #C5A059;
+            --gold-secondary: #8E6E37;
+            --bg-deep: #050505;
+            --card-bg: rgba(23, 23, 23, 0.8);
         }
 
-        body { font-family: 'Assistant', sans-serif; background-color: #0f1115; color: #e5e7eb; }
-        
-        .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%); }
-        .gold-text { color: var(--gold); }
-        .card-dark { background: #1a1d23; border: 1px solid #2d3139; }
-        .input-dark { background: #0b0e11; border: 1px solid #3f444e; color: white; }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        body {
+            font-family: 'Assistant', 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: #f1f1f1;
+            letter-spacing: -0.01em;
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        /* Gold Gradient Text & Buttons */
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #F9E79F 0%, #C5A059 50%, #8E6E37 100%);
+        }
+
+        .gold-text {
+            background: linear-gradient(135deg, #F9E79F 0%, #C5A059 50%, #8E6E37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hover Effects */
+        .premium-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .premium-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            border-color: var(--gold-primary);
+        }
+
+        /* Sidebar Item Active */
+        .nav-active {
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.1) 0%, rgba(0,0,0,0) 100%);
+            border-right: 3px solid var(--gold-primary);
+            color: var(--gold-primary);
+        }
+
+        /* Lead Score Pulse */
+        .score-pulse {
+            box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(197, 160, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
+        }
+
+        /* Hide scrollbar for clean look */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-black border-l border-gray-800 flex flex-col items-center py-8">
-        <div class="mb-10 text-center">
-            <h1 class="text-2xl font-bold gold-text tracking-widest">INSURE <span class="text-white">PRO</span></h1>
-            <p class="text-xs text-gray-500">Premium Management</p>
+    <aside class="w-72 bg-black border-l border-white/5 flex flex-col h-full z-50">
+        <div class="p-10">
+            <h1 class="text-3xl font-extrabold tracking-tighter gold-text">INSURE PRO</h1>
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 mt-1">Elite Management Suite</p>
         </div>
-        
-        <nav class="w-full px-4 space-y-2">
-            <button onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-900 transition text-gold-light border-r-2 border-gold"><i data-lucide="layout-dashboard"></i> דאשבורד</button>
-            <button onclick="switchTab('leads')" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-900 transition text-gray-400"><i data-lucide="users"></i> לידים</button>
-            <button onclick="switchTab('tasks')" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-900 transition text-gray-400"><i data-lucide="check-square"></i> משימות</button>
-            <button onclick="exportCSV()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-900 transition text-gray-400 mt-20"><i data-lucide="download"></i> ייצוא נתונים</button>
+
+        <nav class="flex-1 px-6 space-y-4">
+            <div class="nav-active flex items-center gap-4 p-4 rounded-xl cursor-pointer transition">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                <span class="font-semibold">מרכז בקרה</span>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-xl cursor-pointer hover:bg-white/5 text-gray-400 transition">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span class="font-semibold">תיק לקוחות</span>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-xl cursor-pointer hover:bg-white/5 text-gray-400 transition">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+                <span class="font-semibold">תזכורות פרימיום</span>
+            </div>
         </nav>
+
+        <div class="p-8">
+            <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                <p class="text-xs text-gray-500 mb-2">מחובר כעת:</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full gold-gradient-bg flex items-center justify-center text-black font-bold">AD</div>
+                    <span class="text-sm font-bold">אביב מנהל</span>
+                </div>
+            </div>
+        </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-8">
-        
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h2 id="tab-title" class="text-3xl font-bold">דאשבורד KPI</h2>
-                <p id="current-user" class="text-gray-500">שלום, מנהל (Admin)</p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="openModal()" class="gold-gradient text-black font-bold px-6 py-2 rounded-full shadow-lg hover:scale-105 transition">+ ליד חדש</button>
-            </div>
-        </header>
+    <main class="flex-1 bg-[#0a0a0a] relative overflow-y-auto no-scrollbar">
+        <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-yellow-900/10 to-transparent pointer-events-none"></div>
 
-        <section id="dashboard-view">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div class="card-dark p-6 rounded-xl">
-                    <p class="text-gray-400 text-sm">סה"כ לידים</p>
-                    <h3 class="text-3xl font-bold mt-2" id="stat-total-leads">0</h3>
-                    <span class="text-green-500 text-xs">↑ 12% החודש</span>
-                </div>
-                <div class="card-dark p-6 rounded-xl border-r-4 border-gold">
-                    <p class="text-gray-400 text-sm">לידים חמים</p>
-                    <h3 class="text-3xl font-bold mt-2 gold-text" id="stat-hot-leads">0</h3>
-                </div>
-                <div class="card-dark p-6 rounded-xl">
-                    <p class="text-gray-400 text-sm">יחס המרה</p>
-                    <h3 class="text-3xl font-bold mt-2">24%</h3>
-                </div>
-                <div class="card-dark p-6 rounded-xl">
-                    <p class="text-gray-400 text-sm">משימות להיום</p>
-                    <h3 class="text-3xl font-bold mt-2 text-red-500" id="stat-tasks">0</h3>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card-dark p-6 rounded-xl col-span-2">
-                    <h4 class="mb-4 font-semibold">ביצועי מכירות חודשיים</h4>
-                    <canvas id="salesChart" height="100"></canvas>
-                </div>
-                <div class="card-dark p-6 rounded-xl">
-                    <h4 class="mb-4 font-semibold">לוג פעולות אחרון (Timeline)</h4>
-                    <ul id="timeline" class="space-y-4 text-sm text-gray-400">
-                        </ul>
-                </div>
-            </div>
-        </section>
-
-        <section id="leads-view" class="hidden">
-            <div class="card-dark p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
-                <input type="text" id="searchLeads" oninput="renderLeads()" placeholder="חיפוש לפי שם או טלפון..." class="input-dark px-4 py-2 rounded-lg flex-1">
-                <select id="filterStatus" onchange="renderLeads()" class="input-dark px-4 py-2 rounded-lg">
-                    <option value="all">כל הסטטוסים</option>
-                    <option value="חם">🔥 חם</option>
-                    <option value="מעקב">⏳ מעקב</option>
-                    <option value="סגור">✅ סגור</option>
-                </select>
-                <select id="sortBy" onchange="renderLeads()" class="input-dark px-4 py-2 rounded-lg">
-                    <option value="date">מיון לפי תאריך</option>
-                    <option value="score">מיון לפי Lead Score</option>
-                </select>
-            </div>
+        <div class="max-w-7xl mx-auto p-10 relative">
             
-            <div class="card-dark rounded-xl overflow-hidden">
-                <table class="w-full text-right">
-                    <thead class="bg-black text-gold border-b border-gray-800">
-                        <tr>
-                            <th class="p-4">שם</th>
-                            <th class="p-4">Lead Score</th>
-                            <th class="p-4">סטטוס</th>
-                            <th class="p-4">משימה הבאה</th>
-                            <th class="p-4">פעולות מהירות</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leads-table-body"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
-
-    <div id="leadModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
-        <div class="card-dark p-8 rounded-2xl w-full max-w-md border border-gold">
-            <h3 class="text-xl font-bold mb-6 gold-text">הוספת ליד חדש</h3>
-            <div class="space-y-4 text-right">
+            <header class="flex justify-between items-end mb-12">
                 <div>
-                    <label class="block text-sm mb-1">שם מלא</label>
-                    <input type="text" id="form-name" class="input-dark w-full p-2 rounded">
+                    <h2 class="text-4xl font-bold text-white mb-2">סקירה כללית</h2>
+                    <p class="text-gray-500">יום שני, 26 בינואר 2026</p>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-1">טלפון</label>
-                        <input type="text" id="form-phone" class="input-dark w-full p-2 rounded">
+                <button onclick="toggleModal(true)" class="gold-gradient-bg text-black font-black px-8 py-3 rounded-xl shadow-[0_10px_20px_rgba(197,160,89,0.3)] hover:scale-105 transition-all">
+                    + הוספת ליד יוקרתי
+                </button>
+            </header>
+
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <div class="glass p-8 rounded-3xl premium-card">
+                    <div class="flex justify-between items-start mb-4">
+                        <i data-lucide="trending-up" class="text-gold-primary"></i>
+                        <span class="text-xs text-green-400 font-bold">+18%</span>
                     </div>
-                    <div>
-                        <label class="block text-sm mb-1">סטטוס</label>
-                        <select id="form-status" class="input-dark w-full p-2 rounded">
-                            <option value="חם">חם</option>
-                            <option value="מעקב">מעקב</option>
-                            <option value="ישן">ישן</option>
-                        </select>
+                    <p class="text-gray-500 text-sm uppercase tracking-wider">שווי צבר לידים</p>
+                    <h3 class="text-3xl font-bold mt-1">₪420,500</h3>
+                </div>
+                <div class="glass p-8 rounded-3xl premium-card border-r-2 border-gold-primary">
+                    <p class="text-gray-500 text-sm uppercase tracking-wider">לידים בטיפול</p>
+                    <h3 class="text-4xl font-bold mt-1 gold-text">124</h3>
+                </div>
+                <div class="glass p-8 rounded-3xl premium-card">
+                    <p class="text-gray-500 text-sm uppercase tracking-wider">משימות פתוחות</p>
+                    <h3 class="text-4xl font-bold mt-1 text-white">12</h3>
+                </div>
+                <div class="glass p-8 rounded-3xl premium-card">
+                    <p class="text-gray-400 text-sm uppercase tracking-wider italic font-bold">Lead Score AVG</p>
+                    <h3 class="text-4xl font-bold mt-1 text-gold-primary">82</h3>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2 glass rounded-3xl overflow-hidden">
+                    <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+                        <h4 class="font-bold text-lg">לידים אחרונים במערכת</h4>
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="חיפוש חכם..." class="bg-black/50 border border-white/10 rounded-lg px-4 py-1 text-sm focus:border-gold-primary outline-none transition">
+                        </div>
                     </div>
+                    <table class="w-full text-right">
+                        <thead class="text-[10px] uppercase text-gray-500 tracking-widest bg-black/30">
+                            <tr>
+                                <th class="p-6">לקוח</th>
+                                <th class="p-6">סטטוס</th>
+                                <th class="p-6">ציון איכות</th>
+                                <th class="p-6">פעולה</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-body">
+                            </tbody>
+                    </table>
                 </div>
-                <div class="flex gap-4 mt-6">
-                    <button onclick="saveLead()" class="gold-gradient text-black flex-1 py-2 rounded font-bold">שמור</button>
-                    <button onclick="closeModal()" class="bg-gray-700 text-white flex-1 py-2 rounded">ביטול</button>
+
+                <div class="glass rounded-3xl p-8">
+                    <h4 class="font-bold text-lg mb-8 border-b border-gold-primary/20 pb-4">פעילות אחרונה</h4>
+                    <div id="activity-log" class="space-y-6">
+                        </div>
                 </div>
+
             </div>
         </div>
-    </div>
-
-    <script>
-        // --- Core Data & Initialization ---
-        let leads = JSON.parse(localStorage.getItem('crm_leads')) || [];
-        let logs = JSON.parse(localStorage.getItem('crm_logs')) || [];
-
-        function init() {
-            lucide.createIcons();
-            renderStats();
-            renderTimeline();
-            initChart();
-            renderLeads();
-        }
-
-        // --- Tabs Logic ---
-        function switchTab(tab) {
-            document.getElementById('dashboard-view').classList.add('hidden');
-            document.getElementById('leads-view').classList.add('hidden');
-            document.getElementById(tab + '-view').classList.remove('hidden');
-            document.getElementById('tab-title').innerText = tab === 'dashboard' ? 'דאשבורד KPI' : 'ניהול לידים';
-        }
-
-        // --- Lead Management ---
-        function openModal() { document.getElementById('leadModal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('leadModal').classList.add('hidden'); }
-
-        function saveLead() {
-            const name = document.getElementById('form-name').value;
-            const phone = document.getElementById('form-phone').value;
-            const status = document.getElementById('form-status').value;
-
-            const newLead = {
-                id: Date.now(),
-                name,
-                phone,
-                status,
-                score: Math.floor(Math.random() * 50) + 50, // Initial Lead Score
-                createdAt: new Date(),
-                lastContact: new Date(),
-                interactions: 1
-            };
-
-            leads.push(newLead);
-            addLog(`ליד חדש נוסף: ${name}`, 'Admin');
-            updateStorage();
-            closeModal();
-            renderLeads();
-            renderStats();
-        }
-
-        function renderLeads() {
-            const tbody = document.getElementById('leads-table-body');
-            const search = document.getElementById('searchLeads').value.toLowerCase();
-            const filter = document.getElementById('filterStatus').value;
-
-            tbody.innerHTML = '';
-
-            const filtered = leads.filter(l => 
-                (l.name.toLowerCase().includes(search) || l.phone.includes(search)) &&
-                (filter === 'all' || l.status === filter)
-            );
-
-            filtered.forEach(lead => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-800 hover:bg-gray-900 transition";
-                tr.innerHTML = `
-                    <td class="p-4">
-                        <div class="font-bold">${lead.name}</div>
-                        <div class="text-xs text-gray-500">${lead.phone}</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="w-16 bg-gray-700 h-2 rounded-full">
-                            <div class="bg-gold h-2 rounded-full" style="width: ${lead.score}%"></div>
-                        </div>
-                        <span class="text-xs">${lead.score}/100</span>
-                    </td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${lead.status === 'חם' ? 'bg-red-900 text-red-200' : 'bg-blue-900 text-blue-200'}">${lead.status}</span></td>
-                    <td class="p-4 text-xs">בעוד 2 ימים</td>
-                    <td class="p-4">
-                        <div class="flex gap-2">
-                            <a href="https://wa.me/${lead.phone}" class="p-1 hover:text-green-500"><i data-lucide="message-circle" class="w-4"></i></a>
-                            <button onclick="deleteLead(${lead.id})" class="p-1 hover:text-red-500"><i data-lucide="trash-2" class="w-4"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        function deleteLead(id) {
-            leads = leads.filter(l => l.id !== id);
-            addLog("ליד הוסר מהמערכת", "Admin");
-            updateStorage();
-            renderLeads();
-            renderStats();
-        }
-
-        // --- Logs & Stats ---
-        function addLog(action, user) {
-            logs.unshift({ action, user, time: new Date().toLocaleTimeString('he-IL') });
-            if (logs.length > 5) logs.pop();
-            updateStorage();
-            renderTimeline();
-        }
-
-        function renderTimeline() {
-            const list = document.getElementById('timeline');
-            list.innerHTML = logs.map(log => `
-                <li class="border-r border-gold pr-4">
-                    <p class="text-white">${log.action}</p>
-                    <small>${log.time} | על ידי ${log.user}</small>
-                </li>
-            `).join('');
-        }
-
-        function renderStats() {
-            document.getElementById('stat-total-leads').innerText = leads.length;
-            document.getElementById('stat-hot-leads').innerText = leads.filter(l => l.status === 'חם').length;
-            document.getElementById('stat-tasks').innerText = Math.floor(leads.length / 2);
-        }
-
-        function updateStorage() {
-            localStorage.setItem('crm_leads', JSON.stringify(leads));
-            localStorage.setItem('crm_logs', JSON.stringify(logs));
-        }
-
-        // --- Chart ---
-        function initChart() {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['ינואר', 'פברואר', 'מרץ', 'אפריל'],
-                    datasets: [{
-                        label: 'סגירות (₪)',
-                        data: [12000, 19000, 15000, 25000],
-                        borderColor: '#D4AF37',
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(212, 175, 55, 0.1)'
-                    }]
-                },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
-            });
-        }
-
-        function exportCSV() {
-            let csv = "Name,Phone,Status,Score\n";
-            leads.forEach(l => csv += `${l.name},${l.phone},${l.status},${l.score}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'leads_export.csv');
-            a.click();
-        }
-
-        init();
-    </script>
-</body>
-</html>
+    </main>
