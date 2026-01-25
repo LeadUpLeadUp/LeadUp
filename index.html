@@ -3,158 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INSURE PRO | Elite CRM v2.0</title>
+    <title>INSURE PRO | Elite Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;400;700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --gold: #C5A059;
-            --deep-black: #050505;
-            --glass: rgba(23, 23, 23, 0.85);
+            --gold: #D4AF37;
+            --gold-glow: rgba(212, 175, 55, 0.3);
+            --bg: #030303;
         }
 
         body {
             font-family: 'Assistant', sans-serif;
-            background-color: var(--deep-black);
-            color: #e5e7eb;
-            overflow-x: hidden;
+            background-color: var(--bg);
+            color: #ffffff;
+            letter-spacing: 0.5px;
         }
 
-        .glass {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(197, 160, 89, 0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* Glass Cards */
+        .premium-glass {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
         }
 
-        .gold-grad { background: linear-gradient(135deg, #F9E79F 0%, #C5A059 50%, #8E6E37 100%); }
-        .gold-text {
-            background: linear-gradient(135deg, #F9E79F 0%, #C5A059 50%, #8E6E37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .premium-glass:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.1);
         }
 
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        /* Gold Gradient Elements */
+        .gold-btn {
+            background: linear-gradient(135deg, #D4AF37 0%, #F9E79F 50%, #B8860B 100%);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
 
-        .btn-hover { transition: all 0.3s ease; }
-        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(197, 160, 89, 0.4); }
+        .gold-btn:hover {
+            filter: brightness(1.1);
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* Custom Table */
+        tr { transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        tr:hover { background: rgba(212, 175, 55, 0.05); }
+
+        /* Lead Score Pulse */
+        .pulse-gold {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="flex h-screen">
+<body class="flex h-screen overflow-hidden">
 
-    <aside class="w-72 bg-black border-l border-white/5 flex flex-col p-8 z-50">
-        <div class="mb-12">
-            <h1 class="text-3xl font-black gold-text italic tracking-tighter">INSURE PRO</h1>
-            <p class="text-[10px] text-gray-500 tracking-[0.4em] uppercase">Elite CRM System</p>
+    <aside class="w-80 bg-black/80 border-l border-white/5 flex flex-col p-8 space-y-10">
+        <div class="text-center">
+            <h1 class="text-4xl font-black italic tracking-tighter" style="color: var(--gold);">INSURE PRO</h1>
+            <p class="text-[10px] uppercase tracking-[0.5em] text-gray-500">Elite Management</p>
         </div>
 
-        <nav class="space-y-4 flex-1">
-            <div onclick="switchSection('dashboard')" class="flex items-center gap-4 p-4 rounded-2xl cursor-pointer hover:bg-white/5 transition text-gold border-r-2 border-gold bg-white/5">
-                <i data-lucide="layout-dashboard"></i> <span class="font-bold">דאשבורד</span>
-            </div>
-            <div onclick="switchSection('leads')" class="flex items-center gap-4 p-4 rounded-2xl cursor-pointer hover:bg-white/5 transition text-gray-400">
-                <i data-lucide="users"></i> <span class="font-bold">ניהול לידים</span>
-            </div>
-            <div onclick="exportCSV()" class="flex items-center gap-4 p-4 rounded-2xl cursor-pointer hover:bg-white/5 transition text-gray-400">
-                <i data-lucide="download"></i> <span class="font-bold">ייצוא נתונים</span>
-            </div>
-        </nav>
-
-        <div class="bg-white/5 p-4 rounded-2xl border border-gold/20">
-            <p class="text-[10px] text-gray-500">סטטוס חיבור גוגל:</p>
-            <div class="flex items-center gap-2 mt-1">
-                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                <span class="text-xs font-bold">מחובר לענן</span>
-            </div>
-        </div>
-    </aside>
-
-    <main class="flex-1 overflow-y-auto p-10 custom-scroll relative">
-        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gold/5 blur-[120px] pointer-events-none"></div>
-
-        <header class="flex justify-between items-center mb-12">
-            <div>
-                <h2 id="main-title" class="text-4xl font-extrabold">סקירה כללית</h2>
-                <p class="text-gray-500 mt-1">ברוך הבא, מנהל המערכת</p>
-            </div>
-            <button onclick="openModal()" class="gold-grad text-black font-black px-8 py-3 rounded-xl btn-hover">
-                + ליד חדש
-            </button>
-        </header>
-
-        <div id="section-dashboard" class="space-y-10">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="glass p-8 rounded-[30px] border-b-4 border-gold">
-                    <p class="text-gray-400 text-sm">סה"כ לידים</p>
-                    <h3 id="stat-total" class="text-4xl font-bold mt-2">0</h3>
-                </div>
-                <div class="glass p-8 rounded-[30px]">
-                    <p class="text-gray-400 text-sm">לידים חמים</p>
-                    <h3 id="stat-hot" class="text-4xl font-bold mt-2 gold-text">0</h3>
-                </div>
-                <div class="glass p-8 rounded-[30px]">
-                    <p class="text-gray-400 text-sm">משימות להיום</p>
-                    <h3 id="stat-tasks" class="text-4xl font-bold mt-2 text-white">0</h3>
-                </div>
-                <div class="glass p-8 rounded-[30px]">
-                    <p class="text-gray-400 text-sm">צפי סגירות</p>
-                    <h3 class="text-4xl font-bold mt-2 text-green-500">92%</h3>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 glass p-8 rounded-[30px]">
-                    <h4 class="font-bold text-xl mb-6">ביצועים חודשיים</h4>
-                    <canvas id="mainChart" height="120"></canvas>
-                </div>
-                <div class="glass p-8 rounded-[30px]">
-                    <h4 class="font-bold text-xl mb-6 border-b border-gold/20 pb-2">Timeline פעילות</h4>
-                    <div id="timeline" class="space-y-6 text-sm">
-                        </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-leads" class="hidden">
-            <div class="glass rounded-[30px] overflow-hidden">
-                <div class="p-6 border-b border-white/5 flex gap-4 bg-white/5">
-                    <input type="text" id="leadSearch" oninput="renderLeads()" placeholder="חפש ליד לפי שם או טלפון..." class="bg-black border border-gold/20 rounded-xl px-6 py-2 flex-1 outline-none focus:border-gold transition">
-                    <select id="filterStatus" onchange="renderLeads()" class="bg-black border border-gold/20 rounded-xl px-4 py-2 outline-none">
-                        <option value="all">כל הסטטוסים</option>
-                        <option value="חם">🔥 חם</option>
-                        <option value="מעקב">⏳ מעקב</option>
-                        <option value="סגור">✅ סגור</option>
-                    </select>
-                </div>
-                <table class="w-full text-right">
-                    <thead class="text-xs text-gold uppercase tracking-widest bg-black/40">
-                        <tr>
-                            <th class="p-6">שם הלקוח</th>
-                            <th class="p-6">Lead Score</th>
-                            <th class="p-6">סטטוס</th>
-                            <th class="p-6">משימה קרובה</th>
-                            <th class="p-6 text-left">פעולות</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leads-list"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <div id="modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[100] flex items-center justify-center p-4">
-        <div class="glass p-10 rounded-[40px] w-full max-w-lg">
-            <h2 class="text-3xl font-bold gold-text mb-8">הוספת רשומה חדשה</h2>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-2 uppercase tracking-tighter">שם מלא</label>
-                    <input type="text" id="f-name" class="w-full bg-black border border-white/10 p-4 rounded-2xl outline-none focus:border-gold transition">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-2 uppercase tracking-tighter">טלפון</label>
-                        <input type="text" id="f-phone" class="w-full
+        <nav class="flex-1 space-y-2">
+            <div onclick="showSection('dash
