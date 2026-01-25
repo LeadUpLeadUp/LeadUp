@@ -1,304 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>LeadUp CRM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>מערכת CRM פנימית – סוכנות ביטוח</title>
 
 <style>
 :root{
---bg:#0e0e0e;
---panel:#1a1a1a;
---card:#ffffff;
+--bg:#0b0b0b;
+--panel:#111;
 --gold:#d4af37;
---muted:#999;
+--gold2:#f3e7b7;
+--line:rgba(255,255,255,.14);
 --radius:16px;
---shadow:0 10px 30px rgba(0,0,0,.25);
+--red:#ff4d4d;
+--green:#2ecc71;
 }
-
-*{box-sizing:border-box;font-family:system-ui,Segoe UI,Arial;}
+*{box-sizing:border-box}
 body{
 margin:0;
-background:linear-gradient(120deg,#111,#222);
-color:#111;
-}
-
-/* Layout */
-.app{
-display:grid;
-grid-template-columns:260px 1fr;
-min-height:100vh;
-}
-
-/* Sidebar */
-.sidebar{
-background:linear-gradient(180deg,#111,#000);
+font-family:system-ui;
+background:radial-gradient(900px 600px at 20% -10%, rgba(212,175,55,.18), transparent 60%),var(--bg);
 color:#fff;
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:20px;
 }
-
-.logo{
-display:flex;
-align-items:center;
-gap:10px;
-font-size:20px;
-font-weight:bold;
-color:var(--gold);
+.hidden{display:none}
+.btn{
+border:none;border-radius:12px;
+padding:10px 14px;font-weight:800;cursor:pointer
 }
-
-.menu button{
-width:100%;
-background:none;
-border:none;
-color:#ddd;
-text-align:right;
-padding:12px 10px;
-border-radius:10px;
-cursor:pointer;
-transition:.2s;
+.btnGold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#111}
+.btnDark{background:rgba(255,255,255,.1);color:#fff;border:1px solid var(--line)}
+.input,select,textarea{
+width:100%;border-radius:10px;padding:8px;border:1px solid #ccc
 }
-.menu button:hover,
-.menu button.active{
-background:rgba(212,175,55,.15);
-color:var(--gold);
-}
-
-/* Main */
-.main{
-padding:24px;
-display:grid;
-grid-template-columns:1fr 360px;
-gap:20px;
-}
-
-/* KPI cards */
-.kpis{
-grid-column:1 / -1;
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:16px;
-}
-
-.kpi{
-background:var(--card);
+.wrap{display:grid;grid-template-columns:260px 1fr 420px;gap:12px;padding:12px;min-height:100vh}
+.card,.sidebar,.right{
+background:rgba(255,255,255,.06);
+border:1px solid var(--line);
 border-radius:var(--radius);
-box-shadow:var(--shadow);
-padding:18px;
-}
-.kpi h3{
-margin:0;
-font-size:14px;
-color:#777;
-}
-.kpi .num{
-font-size:34px;
-color:var(--gold);
-font-weight:700;
-}
-
-/* Tables */
-.panel{
-background:var(--card);
-border-radius:var(--radius);
-box-shadow:var(--shadow);
-padding:16px;
-}
-
-.panel h2{
-margin:0 0 12px 0;
-font-size:18px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-font-size:14px;
-}
-th,td{
-padding:10px 6px;
-border-bottom:1px solid #eee;
-text-align:right;
-}
-th{color:#777;font-weight:600;}
-
-.badge{
-padding:4px 10px;
-border-radius:20px;
-font-size:12px;
-color:#fff;
-display:inline-block;
-}
-.new{background:#d4af37;}
-.contacting{background:#888;}
-.quote{background:#3b82f6;}
-.sla{background:#dc2626;}
-
-/* Details */
-.details{
-display:flex;
-flex-direction:column;
-gap:12px;
-}
-
-.profile{
-display:flex;
-gap:12px;
-align-items:center;
-}
-.profile img{
-width:64px;
-height:64px;
-border-radius:50%;
-}
-
-.field label{
-font-size:12px;
-color:#777;
-}
-.field select, .field input{
-width:100%;
-padding:8px;
-border-radius:8px;
-border:1px solid #ddd;
-}
-
-.actions button{
-width:100%;
 padding:12px;
-border-radius:10px;
-border:none;
-cursor:pointer;
-background:linear-gradient(120deg,#e8c86b,#caa234);
-color:#000;
-font-weight:700;
 }
-
-/* Responsive */
-@media(max-width:1100px){
-.main{grid-template-columns:1fr;}
-.kpis{grid-template-columns:repeat(2,1fr);}
+.sidebar button{width:100%;margin-bottom:8px;text-align:right}
+.row{
+display:grid;
+grid-template-columns:1fr 1fr .8fr .8fr;
+padding:8px;border-bottom:1px dashed rgba(255,255,255,.12);
+cursor:pointer
 }
+.row:hover{background:rgba(212,175,55,.12)}
+.row.overdue{background:rgba(255,0,0,.15)}
+.badge{padding:2px 8px;border-radius:999px;font-size:12px}
+.badge.red{background:rgba(255,77,77,.2)}
+.badge.gold{background:rgba(212,175,55,.25)}
+.noteList{max-height:200px;overflow:auto;border:1px solid #ddd;border-radius:10px;padding:6px;background:#fff;color:#111}
+.noteItem{border-bottom:1px dashed #ccc;padding:6px 0}
+.noteItem:last-child{border-bottom:none}
+.small{font-size:12px;opacity:.7}
+hr{border:none;height:1px;background:rgba(255,255,255,.15);margin:10px 0}
 </style>
 </head>
 
 <body>
-<div class="app">
 
-<!-- Sidebar -->
-<aside class="sidebar">
-<div class="logo">🛡️ LeadUp CRM</div>
-<div class="menu">
-<button class="active">Dashboard</button>
-<button>Leads</button>
-<button>Customers</button>
-<button>Tasks</button>
-<button>Reports</button>
-<button>Users</button>
-</div>
-</aside>
-
-<!-- Main -->
-<main class="main">
-
-<!-- KPIs -->
-<section class="kpis">
-<div class="kpi"><h3>New Leads</h3><div class="num">24</div></div>
-<div class="kpi"><h3>Past Follow-Ups</h3><div class="num">8</div></div>
-<div class="kpi"><h3>SLA Breaches</h3><div class="num">5</div></div>
-<div class="kpi"><h3>My Tasks</h3><div class="num">7</div></div>
-</section>
-
-<!-- Leads table -->
-<section class="panel">
-<h2>Lead List</h2>
-<table>
-<thead>
-<tr>
-<th>שם</th>
-<th>סטטוס</th>
-<th>סוכן</th>
-<th>SLA</th>
-<th>עדכון</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Michael Levy</td>
-<td><span class="badge new">NEW</span></td>
-<td>Dani</td>
-<td>20:20</td>
-<td>גבוה</td>
-</tr>
-<tr>
-<td>Dana Cohen</td>
-<td><span class="badge contacting">CONTACTING</span></td>
-<td>Eyal</td>
-<td>18:10</td>
-<td>רגיל</td>
-</tr>
-<tr>
-<td>Amit Green</td>
-<td><span class="badge quote">QUOTE</span></td>
-<td>Amit</td>
-<td>12:30</td>
-<td>נמוך</td>
-</tr>
-<tr>
-<td>Ariel Weizman</td>
-<td><span class="badge sla">SLA</span></td>
-<td>Dani</td>
-<td>חריגה</td>
-<td>גבוה</td>
-</tr>
-</tbody>
-</table>
-</section>
-
-<!-- Lead details -->
-<aside class="panel details">
-<h2>Lead Details</h2>
-
-<div class="profile">
-<img src="https://i.pravatar.cc/100?img=12">
-<div>
-<b>Dana Cohen</b><br>
-📞 050-346-7891<br>
-✉ dana@email.com
+<!-- LOGIN -->
+<div id="loginView" class="wrap" style="grid-template-columns:1fr">
+<div class="card" style="max-width:420px;margin:auto">
+<h3>🔐 כניסה למערכת</h3>
+<input id="inUser" class="input" placeholder="שם משתמש"><br><br>
+<input id="inPin" type="password" class="input" placeholder="קוד"><br><br>
+<button class="btn btnGold" id="btnLogin">התחבר</button>
 </div>
 </div>
 
-<div class="field">
-<label>סטטוס</label>
-<select>
-<option>CONTACTING</option>
+<!-- APP -->
+<div id="appView" class="wrap hidden">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h3>📊 תפריט</h3>
+<button class="btn btnGold" id="btnTakeNext">⚡ קח את הבא</button>
+<button class="btn btnDark" id="btnRefresh">🔄 רענן</button>
+<button class="btn btnDark" id="btnLogout">🚪 יציאה</button>
+<hr>
+<div class="small">התראות / SLA / תזמונים עובדים אוטומטית</div>
+</div>
+
+<!-- MAIN -->
+<div class="card">
+<h3>📋 לידים</h3>
+<input id="q" class="input" placeholder="חיפוש">
+<div class="row" style="font-weight:700;opacity:.7">
+<div>שם</div><div>טלפון</div><div>סטטוס</div><div>דחיפות</div>
+</div>
+<div id="leadRows"></div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+<div id="noFocus">בחר ליד</div>
+
+<div id="focusBox" class="hidden">
+
+<div class="card" style="background:#fff;color:#111">
+<b id="fName"></b><br>
+📞 <span id="fPhone"></span><br>
+מוצר: <span id="fProd"></span>
+<div style="margin-top:6px">
+<button class="btn btnGold" id="btnCall">חייג</button>
+</div>
+</div>
+
+<div class="card" style="background:#fff;color:#111">
+<label><b>סטטוס</b></label>
+<select id="fStatus" class="input">
 <option>NEW</option>
-<option>QUOTE</option>
+<option>CONTACTING</option>
+<option>SOLD</option>
+<option>LOST</option>
 </select>
+
+<label style="margin-top:6px"><b>תיעוד חובה</b></label>
+<textarea id="actionNote" class="input"></textarea>
+
+<button class="btn btnGold" style="margin-top:8px" id="btnSave">💾 שמור</button>
 </div>
 
-<div class="field">
-<label>Follow-Up</label>
-<input type="datetime-local">
-</div>
-
-<div class="field">
-<label>עדיפות</label>
-<select>
-<option>גבוה</option>
-<option>רגיל</option>
-<option>נמוך</option>
+<!-- Scheduling -->
+<div class="card" style="background:#fff;color:#111">
+<h4>⏱️ תזמון</h4>
+<input id="schAt" type="datetime-local" class="input">
+<select id="schType" class="input" style="margin-top:6px">
+<option value="call">📞 שיחה</option>
+<option value="whatsapp">💬 וואטסאפ</option>
+<option value="docs">📄 מסמכים</option>
+<option value="renewal">♻️ חידוש</option>
 </select>
+<input id="schNote" class="input" placeholder="הערה" style="margin-top:6px">
+<button class="btn btnGold" style="margin-top:8px" id="btnAddSchedule">➕ הוסף תזמון</button>
 </div>
 
-<div class="actions">
-<button>💾 שמור שינויים</button>
+<!-- Schedules -->
+<div class="card" style="background:#fff;color:#111">
+<b>📅 תזמונים</b>
+<div id="schList" class="noteList">—</div>
 </div>
-</aside>
 
-</main>
+<!-- Notes -->
+<div class="card" style="background:#fff;color:#111">
+<b>📝 תיעוד</b>
+<div id="notesBox" class="noteList">—</div>
 </div>
+
+</div>
+</div>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const SCRIPT_URL = "PASTE_SCRIPT_URL_HERE";
+const API_KEY = "PASTE_API_KEY_HERE";
+/* ========================================= */
+
+const $=id=>document.getElementById(id);
+let token=localStorage.getItem("crm_token")||"";
+let leads=[], focused=null;
+
+/* ---------- API ---------- */
+async function api(action,payload={}){
+const body={action,apiKey:API_KEY,token,...payload};
+const r=await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify(body)});
+return r.json();
+}
+
+/* ---------- AUTH ---------- */
+async function doLogin(){
+const r=await api("login",{username:$("inUser").value,pin:$("inPin").value});
+if(!r.ok) return alert("שגיאה בהתחברות");
+token=r.token;
+localStorage.setItem("crm_token",token);
+showApp();
+}
+function doLogout(){
+localStorage.removeItem("crm_token");
+location.reload();
+}
+
+/* ---------- UI ---------- */
+function showApp(){
+$("loginView").classList.add("hidden");
+$("appView").classList.remove("hidden");
+refreshLeads();
+}
+
+function renderLeads(){
+const box=$("leadRows"); box.innerHTML="";
+leads.forEach(l=>{
+const overdue = l.followUpAt && new Date(l.followUpAt)<new Date();
+const d=document.createElement("div");
+d.className="row"+(overdue?" overdue":"");
+d.innerHTML=`
+<div>${l.name}</div>
+<div>${l.phone}</div>
+<div>${l.status}</div>
+<div>${overdue?'<span class="badge red">איחור</span>':'<span class="badge gold">תקין</span>'}</div>
+`;
+d.onclick=()=>setFocus(l);
+box.appendChild(d);
+});
+}
+
+async function setFocus(l){
+focused=l;
+$("noFocus").classList.add("hidden");
+$("focusBox").classList.remove("hidden");
+$("fName").textContent=l.name;
+$("fPhone").textContent=l.phone;
+$("fProd").textContent=l.productType||"";
+$("fStatus").value=l.status||"NEW";
+loadNotes();
+loadSchedules();
+}
+
+/* ---------- LOADERS ---------- */
+async function refreshLeads(){
+const r=await api("listleads",{q:$("q").value});
+if(r.ok){leads=r.leads||[];renderLeads();}
+}
+
+async function loadNotes(){
+if(!focused) return;
+const r=await api("readlead",{leadId:focused.id});
+if(!r.ok) return;
+const notes=r.lead.notes||[];
+$("notesBox").innerHTML = notes.length
+? notes.map(n=>`<div class="noteItem">${n.ts} • ${n.by}<br>${n.text}</div>`).join("")
+: "אין תיעוד";
+}
+
+async function loadSchedules(){
+if(!focused) return;
+const r=await api("listschedules",{leadId:focused.id});
+if(!r.ok) return;
+const arr=r.schedules||[];
+$("schList").innerHTML = arr.length
+? arr.map(s=>`<div class="noteItem">⏰ ${s.at}<br>${s.type} — ${s.note||""}</div>`).join("")
+: "אין תזמונים";
+}
+
+/* ---------- ACTIONS ---------- */
+async function saveLead(){
+if(!$("actionNote").value.trim()) return alert("חובה תיעוד");
+const r=await api("updatelead",{
+leadId:focused.id,
+patch:{
+status:$("fStatus").value,
+actionNote:$("actionNote").value
+}
+});
+if(r.ok){
+$("actionNote").value="";
+refreshLeads();
+loadNotes();
+}
+}
+
+async function addSchedule(){
+if(!focused) return;
+if(!$("actionNote").value.trim()) return alert("חובה תיעוד לפני תזמון");
+const iso = new Date($("schAt").value).toISOString();
+const r = await api("addschedule",{
+leadId:focused.id,
+at:iso,
+type:$("schType").value,
+note:$("schNote").value,
+actionNote:$("actionNote").value
+});
+if(r.ok){
+$("schNote").value="";
+$("actionNote").value="";
+loadSchedules();
+}
+}
+
+function callLead(){
+if(!focused?.phone) return;
+window.location.href="tel:"+focused.phone.replace(/\D/g,"");
+}
+
+/* ---------- EVENTS ---------- */
+$("btnLogin").onclick=doLogin;
+$("btnLogout").onclick=doLogout;
+$("btnRefresh").onclick=refreshLeads;
+$("btnSave").onclick=saveLead;
+$("btnAddSchedule").onclick=addSchedule;
+$("btnCall").onclick=callLead;
+$("btnTakeNext").onclick=async ()=>{
+const r=await api("takenext",{});
+if(r.leadId) refreshLeads();
+};
+
+/* ---------- BOOT ---------- */
+if(token) showApp();
+</script>
+
 </body>
 </html>
+
