@@ -1,446 +1,597 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>מערכת CRM פנימית – סוכנות ביטוח</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>מערכת CRM פנימית – סוכנות ביטוח</title>
 
-<style>
-:root{
-  --bg:#0b0b0b;
-  --panel:#111;
-  --gold:#d4af37;
-  --gold2:#f3e7b7;
-  --line:rgba(255,255,255,.14);
-  --radius:16px;
-  --red:#ff4d4d;
-  --green:#2ecc71;
-}
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:#111;
+      --gold:#d4af37;
+      --gold2:#f3e7b7;
+      --line:rgba(255,255,255,.14);
+      --radius:16px;
+      --red:#ff4d4d;
+      --green:#2ecc71;
+    }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui;
-  background:radial-gradient(900px 600px at 20% -10%, rgba(212,175,55,.18), transparent 60%),var(--bg);
-  color:#fff;
-}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui, -apple-system, Segoe UI, Arial;
+      color:#fff;
+      background:
+        radial-gradient(900px 600px at 20% -10%, rgba(212,175,55,.18), transparent 60%),
+        radial-gradient(700px 500px at 110% 10%, rgba(212,175,55,.10), transparent 55%),
+        var(--bg);
+      overflow-x:hidden;
+    }
 
-/* ---------- AUTH STATES ---------- */
-body.locked{
-  overflow:hidden; /* אין גלילה במסך התחברות */
-}
-body.locked #appView{
-  display:none !important; /* המערכת לא מוצגת בכלל */
-}
-body.authed #loginOverlay{
-  display:none !important;
-}
-body.authed #appView{
-  display:grid !important;
-}
+    .hidden{display:none !important}
 
-/* ---------- LOGIN OVERLAY ---------- */
-#loginOverlay{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  background:
-    radial-gradient(900px 600px at 30% 10%, rgba(212,175,55,.20), transparent 60%),
-    rgba(0,0,0,.72);
-  backdrop-filter: blur(8px);
-}
-#loginCard{
-  width:min(440px, 100%);
-  background:rgba(255,255,255,.06);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:16px;
-  box-shadow:0 30px 80px rgba(0,0,0,.55);
-}
-#loginCard h3{
-  margin:0 0 12px 0;
-}
-.loginHint{
-  font-size:12px;
-  opacity:.75;
-  margin-top:10px;
-}
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .08s ease, opacity .15s ease;
+      user-select:none;
+    }
+    .btn:active{transform:scale(.98)}
+    .btnGold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#111}
+    .btnDark{background:rgba(255,255,255,.10);color:#fff;border:1px solid var(--line)}
+    .btnSmall{padding:8px 10px;border-radius:10px;font-weight:800}
 
-/* ---------- COMMON ---------- */
-.hidden{display:none}
-.btn{
-  border:none;border-radius:12px;
-  padding:10px 14px;font-weight:800;cursor:pointer
-}
-.btnGold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#111}
-.btnDark{background:rgba(255,255,255,.1);color:#fff;border:1px solid var(--line)}
-.input,select,textarea{
-  width:100%;border-radius:10px;padding:10px;border:1px solid #ccc
-}
+    .input,select,textarea{
+      width:100%;
+      border-radius:10px;
+      padding:10px 10px;
+      border:1px solid rgba(0,0,0,.15);
+      outline:none;
+      font-size:14px;
+    }
 
-/* ---------- APP LAYOUT ---------- */
-.wrap{
-  display:grid;
-  grid-template-columns:260px 1fr 420px;
-  gap:12px;
-  padding:12px;
-  min-height:100vh;
-  align-items:start;
-}
-.card,.sidebar,.right{
-  background:rgba(255,255,255,.06);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:12px;
-}
-.sidebar button{width:100%;margin-bottom:8px;text-align:right}
+    .glass{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:12px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
 
-.row{
-  display:grid;
-  grid-template-columns:1fr 1fr .8fr .8fr;
-  padding:8px;
-  border-bottom:1px dashed rgba(255,255,255,.12);
-  cursor:pointer
-}
-.row:hover{background:rgba(212,175,55,.12)}
-.row.overdue{background:rgba(255,0,0,.15)}
-.badge{padding:2px 8px;border-radius:999px;font-size:12px}
-.badge.red{background:rgba(255,77,77,.2)}
-.badge.gold{background:rgba(212,175,55,.25)}
-.noteList{max-height:200px;overflow:auto;border:1px solid #ddd;border-radius:10px;padding:6px;background:#fff;color:#111}
-.noteItem{border-bottom:1px dashed #ccc;padding:6px 0}
-.noteItem:last-child{border-bottom:none}
-.small{font-size:12px;opacity:.7}
-hr{border:none;height:1px;background:rgba(255,255,255,.15);margin:10px 0}
+    /* ---------- LOGIN (FULLSCREEN) ---------- */
+    .loginPage{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .loginCard{
+      width:min(440px, 100%);
+      position:relative;
+      overflow:hidden;
+    }
+    .loginCard::before{
+      content:"";
+      position:absolute; inset:-40px;
+      background:radial-gradient(circle at 30% 20%, rgba(212,175,55,.25), transparent 45%);
+      filter: blur(10px);
+      pointer-events:none;
+    }
+    .loginInner{position:relative}
+    .loginTitle{
+      display:flex; align-items:center; justify-content:space-between;
+      margin:0 0 10px 0;
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .loginHint{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.75;
+      line-height:1.35;
+    }
+    .loginActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      margin-top:12px;
+    }
 
-/* ---------- MOBILE ---------- */
-@media (max-width: 980px){
-  .wrap{grid-template-columns:1fr}
-  .row{grid-template-columns:1fr 1fr}
-  .row > div:nth-child(3),
-  .row > div:nth-child(4){display:none}
-}
-</style>
+    /* ---------- APP LAYOUT ---------- */
+    .appGrid{
+      display:grid;
+      grid-template-columns:260px 1fr 420px;
+      gap:12px;
+      padding:12px;
+      min-height:100vh;
+    }
+
+    .sidebar button{width:100%;margin-bottom:8px;text-align:right}
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr .8fr .8fr;
+      padding:10px 8px;
+      border-bottom:1px dashed rgba(255,255,255,.12);
+      cursor:pointer;
+    }
+    .row:hover{background:rgba(212,175,55,.12)}
+    .row.overdue{background:rgba(255,0,0,.15)}
+    .badge{padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;display:inline-block}
+    .badge.red{background:rgba(255,77,77,.20)}
+    .badge.gold{background:rgba(212,175,55,.25)}
+
+    .noteList{
+      max-height:220px;
+      overflow:auto;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:10px;
+      padding:8px;
+      background:#fff;
+      color:#111;
+    }
+    .noteItem{border-bottom:1px dashed #ccc;padding:8px 0}
+    .noteItem:last-child{border-bottom:none}
+    .small{font-size:12px;opacity:.75}
+    hr{border:none;height:1px;background:rgba(255,255,255,.15);margin:10px 0}
+
+    .whiteCard{
+      background:#fff;
+      color:#111;
+      border-radius:var(--radius);
+      padding:12px;
+      border:1px solid rgba(0,0,0,.10);
+    }
+
+    .topRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    /* ---------- MOBILE ---------- */
+    @media (max-width: 1100px){
+      .appGrid{grid-template-columns:240px 1fr}
+      .right{grid-column:1/-1}
+    }
+    @media (max-width: 820px){
+      .appGrid{grid-template-columns:1fr}
+      .sidebar{order:1}
+      .main{order:2}
+      .right{order:3}
+      .row{grid-template-columns:1.2fr 1fr .9fr .8fr; font-size:13px}
+    }
+  </style>
 </head>
 
-<body class="locked">
+<body>
 
-<!-- LOGIN OVERLAY (קבוע על כל המסך) -->
-<div id="loginOverlay">
-  <div id="loginCard">
-    <h3>🔐 כניסה למערכת</h3>
-    <input id="inUser" class="input" placeholder="שם משתמש" autocomplete="username">
-    <br><br>
-    <input id="inPin" type="password" class="input" placeholder="קוד" autocomplete="current-password">
-    <br><br>
+  <!-- LOGIN -->
+  <div id="loginView" class="loginPage">
+    <div class="glass loginCard">
+      <div class="loginInner">
+        <div class="loginTitle">
+          <span>🔐 כניסה למערכת</span>
+          <span style="opacity:.85">🔒</span>
+        </div>
 
-    <button class="btn btnGold" id="btnLogin">התחבר</button>
-    <button class="btn btnDark" id="btnClearToken" style="margin-right:8px">איפוס התחברות</button>
+        <input id="inUser" class="input" placeholder="שם משתמש" autocomplete="username">
+        <div style="height:10px"></div>
+        <input id="inPin" type="password" class="input" placeholder="קוד" autocomplete="current-password">
 
-    <div class="loginHint">אם אתה רואה "doGet לא נמצא" ב־WebApp — זה תקין. המערכת עובדת ב־POST.</div>
-  </div>
-</div>
+        <div class="loginActions">
+          <button class="btn btnDark btnSmall" id="btnClear">איפוס</button>
+          <button class="btn btnGold" id="btnLogin">התחבר</button>
+        </div>
 
-<!-- APP -->
-<div id="appView" class="wrap" style="display:none">
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <h3>📊 תפריט</h3>
-    <button class="btn btnGold" id="btnTakeNext">⚡ קח את הבא</button>
-    <button class="btn btnDark" id="btnRefresh">🔄 רענן</button>
-    <button class="btn btnDark" id="btnLogout">🚪 יציאה</button>
-    <hr>
-    <div class="small">התראות / SLA / תזמונים עובדים אוטומטית</div>
-  </div>
-
-  <!-- MAIN -->
-  <div class="card">
-    <h3>📋 לידים</h3>
-    <input id="q" class="input" placeholder="חיפוש">
-    <div class="row" style="font-weight:700;opacity:.7">
-      <div>שם</div><div>טלפון</div><div>סטטוס</div><div>דחיפות</div>
+        <div class="loginHint">
+          אם אתה רואה שגיאת <b>doGet לא נמצא</b> ב־WebApp – זה תקין. המערכת עובדת ב־POST.<br>
+          התחברות ראשונה לרוב: <b>admin</b> / <b>1234</b>
+        </div>
+      </div>
     </div>
-    <div id="leadRows"></div>
   </div>
 
-  <!-- RIGHT -->
-  <div class="right">
-    <div id="noFocus">בחר ליד</div>
+  <!-- APP -->
+  <div id="appView" class="appGrid hidden">
 
-    <div id="focusBox" class="hidden">
-      <div class="card" style="background:#fff;color:#111">
-        <b id="fName"></b><br>
-        📞 <span id="fPhone"></span><br>
-        מוצר: <span id="fProd"></span>
-        <div style="margin-top:6px">
-          <button class="btn btnGold" id="btnCall">חייג</button>
+    <!-- SIDEBAR -->
+    <div class="glass sidebar">
+      <h3 style="margin:0 0 10px 0">📊 תפריט</h3>
+      <button class="btn btnGold" id="btnTakeNext">⚡ קח את הבא</button>
+      <button class="btn btnDark" id="btnRefresh">🔄 רענן</button>
+      <button class="btn btnDark" id="btnLogout">🚪 יציאה</button>
+      <hr>
+      <div class="small">התראות / SLA / תזמונים עובדים אוטומטית</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="glass main">
+      <div class="topRow">
+        <h3 style="margin:0">📋 לידים</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex:1;justify-content:flex-end;min-width:260px">
+          <input id="q" class="input" placeholder="חיפוש (שם/טלפון/סטטוס)" style="max-width:380px">
+          <button class="btn btnDark btnSmall" id="btnSearch">חפש</button>
         </div>
       </div>
 
-      <div class="card" style="background:#fff;color:#111">
-        <label><b>סטטוס</b></label>
-        <select id="fStatus" class="input">
-          <option>NEW</option>
-          <option>CONTACTING</option>
-          <option>SOLD</option>
-          <option>LOST</option>
-        </select>
-
-        <label style="margin-top:6px"><b>תיעוד חובה</b></label>
-        <textarea id="actionNote" class="input"></textarea>
-
-        <button class="btn btnGold" style="margin-top:8px" id="btnSave">💾 שמור</button>
+      <div class="row" style="font-weight:900;opacity:.75;cursor:default">
+        <div>שם</div><div>טלפון</div><div>סטטוס</div><div>דחיפות</div>
       </div>
-
-      <!-- Scheduling -->
-      <div class="card" style="background:#fff;color:#111">
-        <h4>⏱️ תזמון</h4>
-        <input id="schAt" type="datetime-local" class="input">
-        <select id="schType" class="input" style="margin-top:6px">
-          <option value="call">📞 שיחה</option>
-          <option value="whatsapp">💬 וואטסאפ</option>
-          <option value="docs">📄 מסמכים</option>
-          <option value="renewal">♻️ חידוש</option>
-        </select>
-        <input id="schNote" class="input" placeholder="הערה" style="margin-top:6px">
-        <button class="btn btnGold" style="margin-top:8px" id="btnAddSchedule">➕ הוסף תזמון</button>
-      </div>
-
-      <!-- Schedules -->
-      <div class="card" style="background:#fff;color:#111">
-        <b>📅 תזמונים</b>
-        <div id="schList" class="noteList">—</div>
-      </div>
-
-      <!-- Notes -->
-      <div class="card" style="background:#fff;color:#111">
-        <b>📝 תיעוד</b>
-        <div id="notesBox" class="noteList">—</div>
-      </div>
-
+      <div id="leadRows"></div>
     </div>
+
+    <!-- RIGHT -->
+    <div class="glass right">
+      <div id="noFocus" class="small">בחר ליד כדי לראות פרטים</div>
+
+      <div id="focusBox" class="hidden">
+
+        <div class="whiteCard">
+          <b id="fName"></b><br>
+          📞 <span id="fPhone"></span><br>
+          מוצר: <span id="fProd"></span>
+          <div style="margin-top:8px;display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btnGold btnSmall" id="btnCall">חייג</button>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="whiteCard">
+          <label><b>סטטוס</b></label>
+          <select id="fStatus" class="input">
+            <option>NEW</option>
+            <option>CONTACTING</option>
+            <option>SOLD</option>
+            <option>LOST</option>
+          </select>
+
+          <div style="height:8px"></div>
+
+          <label><b>תיעוד חובה</b></label>
+          <textarea id="actionNote" class="input" rows="3" placeholder="מה עשית? מה נאמר? מה הצעד הבא?"></textarea>
+
+          <button class="btn btnGold" style="margin-top:10px;width:100%" id="btnSave">💾 שמור</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="whiteCard">
+          <h4 style="margin:0 0 10px 0">⏱️ תזמון</h4>
+          <input id="schAt" type="datetime-local" class="input">
+          <div style="height:8px"></div>
+          <select id="schType" class="input">
+            <option value="call">📞 שיחה</option>
+            <option value="whatsapp">💬 וואטסאפ</option>
+            <option value="docs">📄 מסמכים</option>
+            <option value="renewal">♻️ חידוש</option>
+          </select>
+          <div style="height:8px"></div>
+          <input id="schNote" class="input" placeholder="הערה">
+          <button class="btn btnGold" style="margin-top:10px;width:100%" id="btnAddSchedule">➕ הוסף תזמון</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="whiteCard">
+          <b>📅 תזמונים</b>
+          <div style="height:8px"></div>
+          <div id="schList" class="noteList">—</div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="whiteCard">
+          <b>📝 תיעוד</b>
+          <div style="height:8px"></div>
+          <div id="notesBox" class="noteList">—</div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
-</div>
 
-<script>
-/* ================= CONFIG ================= */
+  <script>
+    /* ================= CONFIG ================= */
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqNiWXKxI1PqXVzWVeJdqMI4pEJLKlNfxeW1Pbym8qZQmIpLvta1GgpqJbtpTJxYmnRw/exec";
+    const API_KEY = "LeadUp";
+    /* ========================================= */
 
+    const $ = (id) => document.getElementById(id);
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-JBoOr586Id_RJ7-D6IVxDkUomKYKghIsR9j9ZuLK/dev"
-const API_KEY = "LeadUp";  
-/* ========================================= */
+    let token = localStorage.getItem("crm_token") || "";
+    let leads = [];
+    let focused = null;
 
-const $=id=>document.getElementById(id);
-let token = localStorage.getItem("crm_token") || "";
-let leads=[], focused=null;
+    /* ---------- API ---------- */
+    async function api(action, payload = {}) {
+      const body = { action, apiKey: API_KEY, token, ...payload };
 
-/* ---------- API ---------- */
-async function api(action,payload={}){
-  const body={action, apiKey:API_KEY, token, ...payload};
-  const r = await fetch(SCRIPT_URL,{
-    method:"POST",
-    headers: {"Content-Type":"text/plain;charset=utf-8"},
-    body: JSON.stringify(body)
-  });
-  const data = await r.json().catch(()=>({ok:false, error:"Bad JSON"}));
-  return data;
-}
+      let res, data;
+      try {
+        res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script friendly
+          body: JSON.stringify(body),
+        });
+        data = await res.json();
+      } catch (e) {
+        console.error(e);
+        return { ok: false, error: "NETWORK_OR_PARSE_ERROR" };
+      }
+      return data;
+    }
 
-/* ---------- AUTH ---------- */
-async function doLogin(){
-  const username = $("inUser").value.trim();
-  const pin      = $("inPin").value.trim();
-  if(!username || !pin) return alert("נא למלא שם משתמש וקוד");
+    /* ---------- AUTH ---------- */
+    async function doLogin() {
+      const username = $("inUser").value.trim();
+      const pin = $("inPin").value.trim();
 
-  $("btnLogin").disabled = true;
-  $("btnLogin").textContent = "מתחבר...";
+      if (!username || !pin) return alert("נא למלא שם משתמש וקוד");
 
-  const r = await api("login",{username, pin}).catch(()=>({ok:false}));
-  $("btnLogin").disabled = false;
-  $("btnLogin").textContent = "התחבר";
+      const r = await api("login", { username, pin });
 
-  if(!r.ok) return alert("שגיאה בהתחברות");
+      if (!r || !r.ok) {
+        console.log("login response:", r);
+        return alert("לא התחבר. בדוק שם משתמש/קוד או התאמת API_KEY.");
+      }
 
-  token = r.token;
-  localStorage.setItem("crm_token",token);
-  setAuthedUI(true);
-  refreshLeads();
-}
+      token = r.token;
+      localStorage.setItem("crm_token", token);
+      showApp();
+    }
 
-function doLogout(){
-  localStorage.removeItem("crm_token");
-  token = "";
-  location.reload();
-}
-
-function clearToken(){
-  localStorage.removeItem("crm_token");
-  token = "";
-  alert("אופס, איפסתי התחברות. עכשיו תתחבר מחדש.");
-  location.reload();
-}
-
-/* ---------- UI STATE ---------- */
-function setAuthedUI(isAuthed){
-  document.body.classList.toggle("authed", isAuthed);
-  document.body.classList.toggle("locked", !isAuthed);
-}
-
-/* ---------- UI ---------- */
-function renderLeads(){
-  const box=$("leadRows"); box.innerHTML="";
-  leads.forEach(l=>{
-    const overdue = l.followUpAt && new Date(l.followUpAt) < new Date();
-    const d=document.createElement("div");
-    d.className="row"+(overdue?" overdue":"");
-    d.innerHTML=`
-      <div>${escapeHtml(l.name||"")}</div>
-      <div>${escapeHtml(l.phone||"")}</div>
-      <div>${escapeHtml(l.status||"")}</div>
-      <div>${overdue?'<span class="badge red">איחור</span>':'<span class="badge gold">תקין</span>'}</div>
-    `;
-    d.onclick=()=>setFocus(l);
-    box.appendChild(d);
-  });
-}
-
-async function setFocus(l){
-  focused=l;
-  $("noFocus").classList.add("hidden");
-  $("focusBox").classList.remove("hidden");
-  $("fName").textContent=l.name||"";
-  $("fPhone").textContent=l.phone||"";
-  $("fProd").textContent=l.productType||"";
-  $("fStatus").value=l.status||"NEW";
-  loadNotes();
-  loadSchedules();
-}
-
-/* ---------- LOADERS ---------- */
-async function refreshLeads(){
-  const r=await api("listleads",{q:$("q").value});
-  if(r.ok){
-    leads=r.leads||[];
-    renderLeads();
-  } else {
-    // אם הטוקן לא תקין – תחזור למסך התחברות
-    if(r.error && String(r.error).toLowerCase().includes("token")){
+    function doLogout() {
       localStorage.removeItem("crm_token");
-      setAuthedUI(false);
+      token = "";
+      focused = null;
+      leads = [];
+      showLogin();
     }
-  }
-}
 
-async function loadNotes(){
-  if(!focused) return;
-  const r=await api("readlead",{leadId:focused.id});
-  if(!r.ok) return;
-  const notes=(r.lead && r.lead.notes) ? r.lead.notes : [];
-  $("notesBox").innerHTML = notes.length
-    ? notes.map(n=>`<div class="noteItem">${escapeHtml(n.ts||"")} • ${escapeHtml(n.by||"")}<br>${escapeHtml(n.text||"")}</div>`).join("")
-    : "אין תיעוד";
-}
-
-async function loadSchedules(){
-  if(!focused) return;
-  const r=await api("listschedules",{leadId:focused.id});
-  if(!r.ok) return;
-  const arr=r.schedules||[];
-  $("schList").innerHTML = arr.length
-    ? arr.map(s=>`<div class="noteItem">⏰ ${escapeHtml(s.at||"")}<br>${escapeHtml(s.type||"")} — ${escapeHtml(s.note||"")}</div>`).join("")
-    : "אין תזמונים";
-}
-
-/* ---------- ACTIONS ---------- */
-async function saveLead(){
-  if(!focused) return;
-  if(!$("actionNote").value.trim()) return alert("חובה תיעוד");
-  const r=await api("updatelead",{
-    leadId:focused.id,
-    patch:{
-      status:$("fStatus").value,
-      actionNote:$("actionNote").value
+    function showApp() {
+      $("loginView").classList.add("hidden");
+      $("appView").classList.remove("hidden");
+      refreshLeads();
     }
-  });
-  if(r.ok){
-    $("actionNote").value="";
-    refreshLeads();
-    loadNotes();
-  }
-}
 
-async function addSchedule(){
-  if(!focused) return;
-  if(!$("actionNote").value.trim()) return alert("חובה תיעוד לפני תזמון");
-  if(!$("schAt").value) return alert("בחר תאריך ושעה לתזמון");
+    function showLogin() {
+      $("appView").classList.add("hidden");
+      $("loginView").classList.remove("hidden");
+      $("inPin").value = "";
+    }
 
-  const iso = new Date($("schAt").value).toISOString();
-  const r = await api("addschedule",{
-    leadId:focused.id,
-    at:iso,
-    type:$("schType").value,
-    note:$("schNote").value,
-    actionNote:$("actionNote").value
-  });
-  if(r.ok){
-    $("schNote").value="";
-    $("actionNote").value="";
-    loadSchedules();
-  }
-}
+    /* ---------- UI ---------- */
+    function renderLeads() {
+      const box = $("leadRows");
+      box.innerHTML = "";
 
-function callLead(){
-  if(!focused?.phone) return;
-  window.location.href="tel:"+String(focused.phone).replace(/\D/g,"");
-}
+      if (!leads.length) {
+        box.innerHTML = `<div class="small" style="padding:10px;opacity:.8">אין לידים להצגה</div>`;
+        return;
+      }
 
-/* ---------- HELPERS ---------- */
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, s => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[s]));
-}
+      leads.forEach((l) => {
+        const overdue = l.followUpAt && new Date(l.followUpAt) < new Date();
+        const d = document.createElement("div");
+        d.className = "row" + (overdue ? " overdue" : "");
+        d.innerHTML = `
+          <div>${escapeHtml(l.name || "")}</div>
+          <div>${escapeHtml(l.phone || "")}</div>
+          <div>${escapeHtml(l.status || "")}</div>
+          <div>${overdue ? '<span class="badge red">איחור</span>' : '<span class="badge gold">תקין</span>'}</div>
+        `;
+        d.onclick = () => setFocus(l);
+        box.appendChild(d);
+      });
+    }
 
-/* ---------- EVENTS ---------- */
-$("btnLogin").onclick=doLogin;
-$("btnLogout").onclick=doLogout;
-$("btnRefresh").onclick=refreshLeads;
-$("btnSave").onclick=saveLead;
-$("btnAddSchedule").onclick=addSchedule;
-$("btnCall").onclick=callLead;
-$("btnClearToken").onclick=clearToken;
+    async function setFocus(l) {
+      focused = l;
 
-$("btnTakeNext").onclick=async ()=>{
-  const r=await api("takenext",{});
-  if(r.leadId) refreshLeads();
-};
+      $("noFocus").classList.add("hidden");
+      $("focusBox").classList.remove("hidden");
 
-$("q").addEventListener("input", ()=>{
-  // רענון קטן אחרי הקלדה
-  clearTimeout(window.__qT);
-  window.__qT = setTimeout(refreshLeads, 250);
-});
+      $("fName").textContent = l.name || "";
+      $("fPhone").textContent = l.phone || "";
+      $("fProd").textContent = l.productType || "";
+      $("fStatus").value = l.status || "NEW";
 
-$("inPin").addEventListener("keydown",(e)=>{
-  if(e.key==="Enter") doLogin();
-});
+      await loadNotes();
+      await loadSchedules();
+    }
 
-/* ---------- BOOT ---------- */
-(function boot(){
-  // אם יש טוקן – ננסה להיכנס ישר למערכת
-  if(token){
-    setAuthedUI(true);
-    refreshLeads();
-  }else{
-    setAuthedUI(false);
-  }
-})();
-</script>
+    /* ---------- LOADERS ---------- */
+    async function refreshLeads() {
+      const r = await api("listleads", { q: $("q").value || "" });
 
+      if (!r || !r.ok) {
+        console.log("listleads response:", r);
+        // אם יש טוקן לא תקין – נחזיר למסך התחברות
+        if (r && (r.error === "UNAUTH" || r.error === "BAD_TOKEN")) {
+          doLogout();
+          return;
+        }
+        return alert("שגיאה בטעינת לידים");
+      }
+
+      leads = r.leads || [];
+      renderLeads();
+    }
+
+    async function loadNotes() {
+      if (!focused) return;
+
+      const r = await api("readlead", { leadId: focused.id });
+      if (!r || !r.ok) {
+        console.log("readlead response:", r);
+        $("notesBox").textContent = "שגיאה בטעינת תיעוד";
+        return;
+      }
+
+      const notes = (r.lead && r.lead.notes) ? r.lead.notes : [];
+      $("notesBox").innerHTML = notes.length
+        ? notes.map(n => `<div class="noteItem">${escapeHtml(n.ts || "")} • ${escapeHtml(n.by || "")}<br>${escapeHtml(n.text || "")}</div>`).join("")
+        : "אין תיעוד";
+    }
+
+    async function loadSchedules() {
+      if (!focused) return;
+
+      const r = await api("listschedules", { leadId: focused.id });
+      if (!r || !r.ok) {
+        console.log("listschedules response:", r);
+        $("schList").textContent = "שגיאה בטעינת תזמונים";
+        return;
+      }
+
+      const arr = r.schedules || [];
+      $("schList").innerHTML = arr.length
+        ? arr.map(s => `<div class="noteItem">⏰ ${escapeHtml(s.at || "")}<br>${escapeHtml(s.type || "")} — ${escapeHtml(s.note || "")}</div>`).join("")
+        : "אין תזמונים";
+    }
+
+    /* ---------- ACTIONS ---------- */
+    async function saveLead() {
+      if (!focused) return;
+
+      const note = $("actionNote").value.trim();
+      if (!note) return alert("חובה תיעוד");
+
+      const r = await api("updatelead", {
+        leadId: focused.id,
+        patch: {
+          status: $("fStatus").value,
+          actionNote: note
+        }
+      });
+
+      if (!r || !r.ok) {
+        console.log("updatelead response:", r);
+        return alert("שגיאה בשמירה");
+      }
+
+      $("actionNote").value = "";
+      await refreshLeads();
+      await loadNotes();
+    }
+
+    async function addSchedule() {
+      if (!focused) return;
+
+      const note = $("actionNote").value.trim();
+      if (!note) return alert("חובה תיעוד לפני תזמון");
+
+      const dt = $("schAt").value;
+      if (!dt) return alert("בחר תאריך ושעה");
+
+      const iso = new Date(dt).toISOString();
+
+      const r = await api("addschedule", {
+        leadId: focused.id,
+        at: iso,
+        type: $("schType").value,
+        note: $("schNote").value || "",
+        actionNote: note
+      });
+
+      if (!r || !r.ok) {
+        console.log("addschedule response:", r);
+        return alert("שגיאה בהוספת תזמון");
+      }
+
+      $("schNote").value = "";
+      $("actionNote").value = "";
+      await loadSchedules();
+      await loadNotes();
+    }
+
+    function callLead() {
+      if (!focused?.phone) return;
+      window.location.href = "tel:" + String(focused.phone).replace(/\D/g, "");
+    }
+
+    /* ---------- HELPERS ---------- */
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ---------- EVENTS ---------- */
+    $("btnLogin").onclick = doLogin;
+    $("btnLogout").onclick = doLogout;
+    $("btnRefresh").onclick = refreshLeads;
+    $("btnSave").onclick = saveLead;
+    $("btnAddSchedule").onclick = addSchedule;
+    $("btnCall").onclick = callLead;
+    $("btnSearch").onclick = refreshLeads;
+
+    $("btnTakeNext").onclick = async () => {
+      const r = await api("takenext", {});
+      if (!r || !r.ok) {
+        console.log("takenext response:", r);
+        return alert("שגיאה ב'קח את הבא'");
+      }
+      await refreshLeads();
+      if (r.leadId) {
+        const found = leads.find(x => x.id === r.leadId);
+        if (found) setFocus(found);
+      }
+    };
+
+    $("btnClear").onclick = () => {
+      $("inUser").value = "";
+      $("inPin").value = "";
+      localStorage.removeItem("crm_token");
+      token = "";
+    };
+
+    // Enter to login
+    $("inPin").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doLogin();
+    });
+
+    // simple debounce search
+    let t = null;
+    $("q").addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(refreshLeads, 250);
+    });
+
+    /* ---------- BOOT ---------- */
+    // לא מציגים מערכת רק בגלל שיש token שמור — קודם ננסה לטעון לידים.
+    (async function boot(){
+      if (!token) return showLogin();
+
+      // נסיון "שקט" לטעון לידים עם הטוקן (אם לא תקין נחזור למסך התחברות)
+      const r = await api("listleads", { q: "" });
+      if (r && r.ok) {
+        showApp();
+      } else {
+        localStorage.removeItem("crm_token");
+        token = "";
+        showLogin();
+      }
+    })();
+  </script>
 </body>
 </html>
+
