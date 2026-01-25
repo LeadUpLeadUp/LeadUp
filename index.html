@@ -1,469 +1,304 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LeadUp • CRM</title>
+<meta charset="UTF-8">
+<title>LeadUp CRM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
---bg:#0b0f14;
---card:#111823;
---line:rgba(255,255,255,.12);
---text:#fff;
---muted:rgba(255,255,255,.72);
---green:#00ff88;
---green2:#00cc6e;
---danger:#ff4d4d;
+--bg:#0e0e0e;
+--panel:#1a1a1a;
+--card:#ffffff;
+--gold:#d4af37;
+--muted:#999;
 --radius:16px;
---shadow:0 18px 50px rgba(0,0,0,.55);
---shadow2:0 10px 26px rgba(0,0,0,.35);
-font-synthesis-weight:none;
+--shadow:0 10px 30px rgba(0,0,0,.25);
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Arial;}
 body{
 margin:0;
-font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-background: radial-gradient(1200px 800px at 20% 10%, rgba(0,255,136,.12), transparent 55%),
-radial-gradient(900px 700px at 90% 30%, rgba(0,204,110,.10), transparent 50%),
-var(--bg);
-color:var(--text);
+background:linear-gradient(120deg,#111,#222);
+color:#111;
+}
+
+/* Layout */
+.app{
+display:grid;
+grid-template-columns:260px 1fr;
 min-height:100vh;
 }
 
-.wrap{max-width:1080px;margin:0 auto;padding:22px}
-header{
-display:flex;align-items:center;justify-content:space-between;
-gap:14px;margin-bottom:16px
+/* Sidebar */
+.sidebar{
+background:linear-gradient(180deg,#111,#000);
+color:#fff;
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:20px;
 }
-.brand{display:flex;align-items:center;gap:10px}
-.logo{
-width:38px;height:38px;border-radius:12px;
-background:linear-gradient(135deg,var(--green),var(--green2));
-box-shadow:0 10px 26px rgba(0,255,136,.18);
-}
-.title{line-height:1.1}
-.title b{display:block;font-size:18px}
-.title span{color:var(--muted);font-size:12.5px}
 
-.pill{
-border:1px solid var(--line);
-background:rgba(255,255,255,.03);
-padding:8px 12px;border-radius:999px;
-display:flex;align-items:center;gap:8px;
-color:var(--muted);font-size:13px;
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:20px;
+font-weight:bold;
+color:var(--gold);
 }
-.dot{width:9px;height:9px;border-radius:50%;background:var(--danger)}
-.dot.ok{background:var(--green)}
-.grid{
-display:grid;gap:14px;
-grid-template-columns: 360px 1fr;
-}
-@media (max-width: 920px){
-.grid{grid-template-columns:1fr}
-}
-.card{
-background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-border:1px solid var(--line);
-border-radius:var(--radius);
-box-shadow:var(--shadow2);
-padding:14px;
-}
-h2{margin:0 0 10px;font-size:15px}
-label{display:block;margin:10px 0 6px;color:var(--muted);font-size:12.5px}
-input, select, textarea{
+
+.menu button{
 width:100%;
-border:1px solid var(--line);
-background:rgba(0,0,0,.25);
-color:var(--text);
-border-radius:12px;
-padding:10px 11px;
-outline:none;
-}
-textarea{min-height:84px;resize:vertical}
-.row{display:flex;gap:10px}
-.row > *{flex:1}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-button{
-border:0;
-padding:10px 12px;
-border-radius:12px;
+background:none;
+border:none;
+color:#ddd;
+text-align:right;
+padding:12px 10px;
+border-radius:10px;
 cursor:pointer;
-color:#06120b;
-background:linear-gradient(135deg,var(--green),var(--green2));
+transition:.2s;
+}
+.menu button:hover,
+.menu button.active{
+background:rgba(212,175,55,.15);
+color:var(--gold);
+}
+
+/* Main */
+.main{
+padding:24px;
+display:grid;
+grid-template-columns:1fr 360px;
+gap:20px;
+}
+
+/* KPI cards */
+.kpis{
+grid-column:1 / -1;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:16px;
+}
+
+.kpi{
+background:var(--card);
+border-radius:var(--radius);
+box-shadow:var(--shadow);
+padding:18px;
+}
+.kpi h3{
+margin:0;
+font-size:14px;
+color:#777;
+}
+.kpi .num{
+font-size:34px;
+color:var(--gold);
 font-weight:700;
-box-shadow:0 12px 28px rgba(0,255,136,.15);
 }
-button.secondary{
-background:rgba(255,255,255,.06);
-border:1px solid var(--line);
-color:var(--text);
-box-shadow:none;
-font-weight:600;
+
+/* Tables */
+.panel{
+background:var(--card);
+border-radius:var(--radius);
+box-shadow:var(--shadow);
+padding:16px;
 }
-button.danger{
-background:rgba(255,77,77,.12);
-border:1px solid rgba(255,77,77,.35);
-color:#ffd1d1;
-box-shadow:none;
+
+.panel h2{
+margin:0 0 12px 0;
+font-size:18px;
 }
-.msg{
-margin-top:10px;
-padding:10px 12px;
-border-radius:12px;
-border:1px solid var(--line);
-background:rgba(255,255,255,.04);
-color:var(--muted);
-font-size:13px;
-white-space:pre-wrap;
-}
-.msg.ok{border-color:rgba(0,255,136,.35); color:#c9ffe6; background:rgba(0,255,136,.06)}
-.msg.err{border-color:rgba(255,77,77,.35); color:#ffd1d1; background:rgba(255,77,77,.06)}
 
 table{
 width:100%;
 border-collapse:collapse;
-overflow:hidden;
-border-radius:14px;
-border:1px solid var(--line);
-background:rgba(0,0,0,.18);
+font-size:14px;
 }
-th, td{padding:10px 10px;border-bottom:1px solid var(--line);font-size:13px}
-th{color:var(--muted);text-align:right;background:rgba(255,255,255,.03)}
-tr:hover td{background:rgba(255,255,255,.03)}
-.small{color:var(--muted);font-size:12px}
-.right{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+th,td{
+padding:10px 6px;
+border-bottom:1px solid #eee;
+text-align:right;
+}
+th{color:#777;font-weight:600;}
+
 .badge{
-padding:6px 10px;border-radius:999px;
-border:1px solid var(--line);
-color:var(--muted);
+padding:4px 10px;
+border-radius:20px;
 font-size:12px;
-background:rgba(255,255,255,.03)
+color:#fff;
+display:inline-block;
+}
+.new{background:#d4af37;}
+.contacting{background:#888;}
+.quote{background:#3b82f6;}
+.sla{background:#dc2626;}
+
+/* Details */
+.details{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.profile{
+display:flex;
+gap:12px;
+align-items:center;
+}
+.profile img{
+width:64px;
+height:64px;
+border-radius:50%;
+}
+
+.field label{
+font-size:12px;
+color:#777;
+}
+.field select, .field input{
+width:100%;
+padding:8px;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+.actions button{
+width:100%;
+padding:12px;
+border-radius:10px;
+border:none;
+cursor:pointer;
+background:linear-gradient(120deg,#e8c86b,#caa234);
+color:#000;
+font-weight:700;
+}
+
+/* Responsive */
+@media(max-width:1100px){
+.main{grid-template-columns:1fr;}
+.kpis{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
 
 <body>
-<div class="wrap">
-<header>
-<div class="brand">
-<div class="logo"></div>
-<div class="title">
-<b>LeadUp CRM</b>
-<span>V2 • מחובר ל־Apps Script WebApp</span>
+<div class="app">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+<div class="logo">🛡️ LeadUp CRM</div>
+<div class="menu">
+<button class="active">Dashboard</button>
+<button>Leads</button>
+<button>Customers</button>
+<button>Tasks</button>
+<button>Reports</button>
+<button>Users</button>
 </div>
-</div>
+</aside>
 
-<div class="pill" id="statusPill">
-<span class="dot" id="statusDot"></span>
-<span id="statusText">לא מחובר</span>
-</div>
-</header>
+<!-- Main -->
+<main class="main">
 
-<div class="grid">
-<!-- LEFT: AUTH + CREATE LEAD -->
-<div class="card">
-<h2>התחברות</h2>
+<!-- KPIs -->
+<section class="kpis">
+<div class="kpi"><h3>New Leads</h3><div class="num">24</div></div>
+<div class="kpi"><h3>Past Follow-Ups</h3><div class="num">8</div></div>
+<div class="kpi"><h3>SLA Breaches</h3><div class="num">5</div></div>
+<div class="kpi"><h3>My Tasks</h3><div class="num">7</div></div>
+</section>
 
-<label>שם משתמש</label>
-<input id="username" placeholder="לדוגמה: admin" autocomplete="username"/>
-
-<label>סיסמה / PIN</label>
-<input id="pin" placeholder="••••" type="password" autocomplete="current-password"/>
-
-<div class="btns">
-<button onclick="login()">התחבר</button>
-<button class="secondary" onclick="ping()">בדיקת חיבור</button>
-<button class="danger" onclick="logout()">התנתק</button>
-</div>
-
-<div class="msg" id="authMsg">טיפ: קודם לוחצים "בדיקת חיבור" ואז "התחבר".</div>
-
-<hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
-
-<h2>יצירת ליד</h2>
-<div class="row">
-<div>
-<label>שם</label>
-<input id="leadName" placeholder="שם הלקוח"/>
-</div>
-<div>
-<label>טלפון</label>
-<input id="leadPhone" placeholder="050-0000000"/>
-</div>
-</div>
-
-<div class="row">
-<div>
-<label>אימייל</label>
-<input id="leadEmail" placeholder="name@email.com"/>
-</div>
-<div>
-<label>מקור</label>
-<input id="leadSource" placeholder="Facebook / WhatsApp / Site"/>
-</div>
-</div>
-
-<label>הערות</label>
-<textarea id="leadNotes" placeholder="פרטים נוספים..."></textarea>
-
-<div class="btns">
-<button onclick="createLead()">שמור ליד</button>
-<button class="secondary" onclick="loadLeads()">רענן לידים</button>
-</div>
-
-<div class="msg" id="leadMsg">ממתין…</div>
-
-<div class="small" style="margin-top:10px">
-אם פעולה לא עובדת – יכול להיות שה־action אצלך בקוד נקרא בשם אחר. למטה יש רשימת שמות Actions לשנות.
-</div>
-</div>
-
-<!-- RIGHT: LIST -->
-<div class="card">
-<div class="right">
-<h2 style="margin:0">לידים</h2>
-<span class="badge" id="countBadge">0</span>
-</div>
-
+<!-- Leads table -->
+<section class="panel">
+<h2>Lead List</h2>
 <table>
 <thead>
 <tr>
-<th style="width:22%">שם</th>
-<th style="width:18%">טלפון</th>
-<th style="width:24%">אימייל</th>
-<th style="width:18%">מקור</th>
-<th style="width:18%">סטטוס</th>
+<th>שם</th>
+<th>סטטוס</th>
+<th>סוכן</th>
+<th>SLA</th>
+<th>עדכון</th>
 </tr>
 </thead>
-<tbody id="leadsTbody">
-<tr><td colspan="5" class="small">עוד לא נטענו לידים</td></tr>
+<tbody>
+<tr>
+<td>Michael Levy</td>
+<td><span class="badge new">NEW</span></td>
+<td>Dani</td>
+<td>20:20</td>
+<td>גבוה</td>
+</tr>
+<tr>
+<td>Dana Cohen</td>
+<td><span class="badge contacting">CONTACTING</span></td>
+<td>Eyal</td>
+<td>18:10</td>
+<td>רגיל</td>
+</tr>
+<tr>
+<td>Amit Green</td>
+<td><span class="badge quote">QUOTE</span></td>
+<td>Amit</td>
+<td>12:30</td>
+<td>נמוך</td>
+</tr>
+<tr>
+<td>Ariel Weizman</td>
+<td><span class="badge sla">SLA</span></td>
+<td>Dani</td>
+<td>חריגה</td>
+<td>גבוה</td>
+</tr>
 </tbody>
 </table>
+</section>
 
-<div class="msg" id="apiMsg" style="margin-top:12px">סטטוס API יוצג כאן</div>
+<!-- Lead details -->
+<aside class="panel details">
+<h2>Lead Details</h2>
 
-<div class="small" style="margin-top:10px">
-<b>Actions (אפשר לשנות כאן אם צריך):</b><br>
-ping = <code>ping</code> • login = <code>login</code> • listLeads = <code>listLeads</code> • createLead = <code>createLead</code><br>
-אם אצלך בקוד זה נקרא אחרת (למשל <code>leads</code> במקום <code>listLeads</code>) – פשוט תשנה למטה ב־JS.
+<div class="profile">
+<img src="https://i.pravatar.cc/100?img=12">
+<div>
+<b>Dana Cohen</b><br>
+📞 050-346-7891<br>
+✉ dana@email.com
 </div>
 </div>
+
+<div class="field">
+<label>סטטוס</label>
+<select>
+<option>CONTACTING</option>
+<option>NEW</option>
+<option>QUOTE</option>
+</select>
 </div>
+
+<div class="field">
+<label>Follow-Up</label>
+<input type="datetime-local">
 </div>
 
-<script>
-// ====== CONFIG ======
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwqNiWXKxI1PqXVzWVeJdqMI4pEJLKlNfxeW1Pbym8qZQmIpLvta1GgpqJbtpTJxYmnRw/exec";
-const API_KEY = "LeadUp"; // תואם ל-CFG.API_KEY בקוד שלך
+<div class="field">
+<label>עדיפות</label>
+<select>
+<option>גבוה</option>
+<option>רגיל</option>
+<option>נמוך</option>
+</select>
+</div>
 
-// אם בקוד שלך action-ים נקראים אחרת, שנה כאן:
-const ACTIONS = {
-ping: "ping",
-login: "login",
-listLeads: "listLeads",
-createLead: "createLead",
-};
+<div class="actions">
+<button>💾 שמור שינויים</button>
+</div>
+</aside>
 
-// ====== STATE ======
-let session = {
-token: null,
-username: null
-};
-
-// ====== HELPERS ======
-function setStatus(connected, text){
-const dot = document.getElementById("statusDot");
-const t = document.getElementById("statusText");
-dot.classList.toggle("ok", !!connected);
-t.textContent = text || (connected ? "מחובר" : "לא מחובר");
-}
-
-function showMsg(elId, text, type){
-const el = document.getElementById(elId);
-el.classList.remove("ok","err");
-if(type) el.classList.add(type);
-el.textContent = text;
-}
-
-async function apiCall(payload){
-// תמיד שולחים JSON ל-doPost
-const res = await fetch(WEBAPP_URL, {
-method: "POST",
-headers: { "Content-Type":"application/json" },
-body: JSON.stringify(payload),
-});
-
-const ct = (res.headers.get("content-type") || "").toLowerCase();
-const raw = await res.text();
-
-// נסה לפרש JSON, אם לא מצליח – נחזיר טקסט
-if(ct.includes("application/json")){
-return JSON.parse(raw);
-}
-try { return JSON.parse(raw); } catch(e) {}
-return { ok:false, error:"Non-JSON response", raw };
-}
-
-// ====== ACTIONS ======
-async function ping(){
-showMsg("apiMsg", "בודק חיבור…");
-try{
-const out = await apiCall({ action: ACTIONS.ping, apiKey: API_KEY });
-if(out.ok){
-setStatus(true, "חיבור תקין");
-showMsg("apiMsg", "✅ חיבור תקין:\n" + JSON.stringify(out, null, 2), "ok");
-}else{
-setStatus(false, "לא מחובר");
-showMsg("apiMsg", "❌ ping נכשל:\n" + JSON.stringify(out, null, 2), "err");
-}
-}catch(err){
-setStatus(false, "שגיאת רשת");
-showMsg("apiMsg", "❌ שגיאת רשת:\n" + err, "err");
-}
-}
-
-async function login(){
-const username = document.getElementById("username").value.trim();
-const pin = document.getElementById("pin").value.trim();
-if(!username || !pin){
-showMsg("authMsg", "תמלא שם משתמש וסיסמה/פין.", "err");
-return;
-}
-showMsg("authMsg", "מתחבר…");
-
-try{
-const out = await apiCall({
-action: ACTIONS.login,
-apiKey: API_KEY,
-username,
-pin
-});
-
-if(out.ok){
-// אצלך הטוקן אולי נקרא token / session / jwt — אנחנו ננסה לאתר בכמה שמות נפוצים
-session.token = out.token || out.session || out.jwt || out.data?.token || null;
-session.username = username;
-
-setStatus(true, "מחובר: " + username);
-showMsg("authMsg", "✅ התחברת!\n" + JSON.stringify(out, null, 2), "ok");
-
-// טעינת לידים אם קיים
-await loadLeads();
-}else{
-setStatus(false, "לא מחובר");
-showMsg("authMsg", "❌ התחברות נכשלה:\n" + JSON.stringify(out, null, 2), "err");
-}
-}catch(err){
-setStatus(false, "שגיאת רשת");
-showMsg("authMsg", "❌ שגיאת רשת:\n" + err, "err");
-}
-}
-
-function logout(){
-session.token = null;
-session.username = null;
-setStatus(false, "לא מחובר");
-showMsg("authMsg", "התנתקת.", null);
-}
-
-async function loadLeads(){
-showMsg("apiMsg", "טוען לידים…");
-try{
-const out = await apiCall({
-action: ACTIONS.listLeads,
-apiKey: API_KEY,
-token: session.token, // אם השרת דורש טוקן
-username: session.username
-});
-
-if(!out.ok){
-showMsg("apiMsg", "❌ טעינת לידים נכשלה:\n" + JSON.stringify(out, null, 2), "err");
-return;
-}
-
-const leads = out.leads || out.data || out.items || [];
-renderLeads(Array.isArray(leads) ? leads : []);
-showMsg("apiMsg", "✅ נטענו לידים:\n" + JSON.stringify(out, null, 2), "ok");
-}catch(err){
-showMsg("apiMsg", "❌ שגיאת רשת:\n" + err, "err");
-}
-}
-
-async function createLead(){
-const name = document.getElementById("leadName").value.trim();
-const phone = document.getElementById("leadPhone").value.trim();
-const email = document.getElementById("leadEmail").value.trim();
-const source = document.getElementById("leadSource").value.trim();
-const notes = document.getElementById("leadNotes").value.trim();
-
-if(!name || !phone){
-showMsg("leadMsg", "חובה למלא לפחות שם וטלפון.", "err");
-return;
-}
-
-showMsg("leadMsg", "שומר ליד…");
-
-try{
-const out = await apiCall({
-action: ACTIONS.createLead,
-apiKey: API_KEY,
-token: session.token,
-username: session.username,
-lead: { name, phone, email, source, notes }
-});
-
-if(out.ok){
-showMsg("leadMsg", "✅ ליד נשמר!\n" + JSON.stringify(out, null, 2), "ok");
-// ניקוי טופס
-document.getElementById("leadName").value = "";
-document.getElementById("leadPhone").value = "";
-document.getElementById("leadEmail").value = "";
-document.getElementById("leadSource").value = "";
-document.getElementById("leadNotes").value = "";
-await loadLeads();
-}else{
-showMsg("leadMsg", "❌ שמירה נכשלה:\n" + JSON.stringify(out, null, 2), "err");
-}
-}catch(err){
-showMsg("leadMsg", "❌ שגיאת רשת:\n" + err, "err");
-}
-}
-
-function renderLeads(leads){
-const tb = document.getElementById("leadsTbody");
-const badge = document.getElementById("countBadge");
-badge.textContent = leads.length;
-
-if(!leads.length){
-tb.innerHTML = `<tr><td colspan="5" class="small">אין לידים להצגה</td></tr>`;
-return;
-}
-
-tb.innerHTML = leads.map(l => `
-<tr>
-<td>${esc(l.name || l.fullName || "")}</td>
-<td>${esc(l.phone || "")}</td>
-<td>${esc(l.email || "")}</td>
-<td>${esc(l.source || "")}</td>
-<td>${esc(l.status || l.state || "")}</td>
-</tr>
-`).join("");
-}
-
-function esc(s){
-return String(s ?? "")
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;")
-.replaceAll("'","&#039;");
-}
-
-// התחל בבדיקת חיבור
-setStatus(false, "לא מחובר");
-</script>
+</main>
+</div>
 </body>
 </html>
-
