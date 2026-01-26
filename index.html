@@ -1100,11 +1100,11 @@ const data = lead || {
           <div class="row">
             <div>
               <label>שם מלא</label>
-              <input name="name" value="${escapeHTML(data.name)}" placeholder="לדוגמה: ישראל ישראלי" required/>
+              <input name="name" value="${escapeHTML(data.name)}" placeholder="" required/>
             </div>
             <div>
               <label>טלפון</label>
-              <input name="phone" value="${escapeHTML(data.phone)}" placeholder="05X-XXXXXXX" inputmode="tel"/>
+              <input name="phone" value="${escapeHTML(data.phone)}" placeholder="" inputmode="tel"/>
             </div>
           </div>
 
@@ -1114,7 +1114,7 @@ const data = lead || {
               <input name="email" value="${escapeHTML(data.email)}" placeholder="name@email.com" inputmode="email"/>
             </div>
             <div>
-              <label>בעלים (נציג)</label>
+              <label> (נציג)</label>
               <input name="owner" value="${escapeHTML(data.owner||"מנהל")}" placeholder="שם נציג"/>
             </div>
           </div>
