@@ -771,6 +771,26 @@
    ======================= */
 
 const LS_KEY = "leadup_v1";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyNdbO9dbvKkvWu6mG_jQx0vnzk3HDACRB4FhYkiNQTN_tKEZet-nNaZ7unKGgPGcDMFA/exec";
+
+// Sync settings
+const SYNC = {
+  enabled: true,
+  debounceMs: 700,
+  showToasts: false
+};
+
+// Apps Script WebApp: שולחים text/plain כדי להימנע מבעיות CORS/Preflight
+async function api(action, payload = {}){
+  const res = await fetch(WEBAPP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action, payload })
+  });
+  const data = await res.json().catch(()=>null);
+  if(!data || data.ok !== true) throw new Error((data && data.error) ? data.error : "API error");
+  return data;
+}
 
 const el = (id)=>document.getElementById(id);
 const nowISO = () => new Date().toISOString();
