@@ -870,7 +870,7 @@ function saveState(){
   clearTimeout(syncTimer);
   syncTimer = setTimeout(async ()=>{
     try{
-      await api("push", { state: appState });
+      await api("state_push", { state: appState });
       if(SYNC.showToasts) toast("סונכרן לגוגל שיט ☁️");
     }catch(err){
       console.error("Sync error:", err);
