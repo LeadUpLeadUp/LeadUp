@@ -857,9 +857,28 @@ function loadState(){
 }
 const appState = loadState();
 
+let syncTimer = null;
+
 function saveState(){
+  // שמירה מקומית (כגיבוי ומהירות)
   localStorage.setItem(LS_KEY, JSON.stringify(appState));
   renderAll();
+
+  // סנכרון ל-Google Sheets (עם השהייה קטנה למניעת הצפות)
+  if(!SYNC.enabled) return;
+
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(async ()=>{
+    try{
+      await api("push", { state: appState });
+      if(SYNC.showToasts) toast("סונכרן לגוגל שיט ☁️");
+    }catch(err){
+      console.error("Sync error:", err);
+      toast("⚠️ שגיאת סנכרון לגוגל שיט");
+    }
+  }, SYNC.debounceMs);
+}
+
 }
 
 /* ===== Activity Timeline ===== */
