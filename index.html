@@ -1130,11 +1130,13 @@ const data = lead || {
             </div>
             <div>
               <label>מקור</label>
-              <select name="source">
-                ${["פייסבוק","גוגל","הפניה","טלפון","אתר","אחר"].map(s=>`
-                  <option ${s===data.source?"selected":""}>${s}</option>
-                `).join("")}
-              </select>
+<select name="source">
+  <option value="" ${!data.source ? "selected" : ""}>בחירה</option>
+  ${["פייסבוק","גוגל","הפניה","טלפון","אתר","אחר"].map(s=>`
+    <option ${s===data.source?"selected":""}>${s}</option>
+  `).join("")}
+</select>
+
             </div>
           </div>
 
