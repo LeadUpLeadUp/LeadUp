@@ -1954,10 +1954,1497 @@ function normalizeILPhone(phone){
   return digits;
 }
 
-/* --- שאר הקוד שלך ממשיך כאן בדיוק כפי שהיה --- */
-/* ⚠️ כדי שההודעה לא תהיה ענקית מדי, לא שכפלתי את כל החלקים הנוספים (Tasks/Render/Insights/Seed/Init) כי הם אצלך כבר קיימים. 
-   אם הדבקת את הקובץ הזה כמו שהוא – הוא כולל את כל הדברים החשובים + שינוי החיפוש.
-   אם אתה רוצה שאחזיר גם את "המשך הקובץ" עד הסוף בתוך הודעה אחת — תגיד לי "תשלח גם את ההמשך", ואני אדביק אותו כאן בשלמותו.
+<script>
+/* =======================
+   LEADUP • Local CRM
+   ======================= */
+
+const LS_KEY = "leadup_v1";
+
+const el = (id)=>document.getElementById(id);
+const nowISO = () => new Date().toISOString();
+const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+
+function escapeHTML(str){
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function fmtDT(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("he-IL", { dateStyle:"medium", timeStyle:"short" });
+}
+function todayKey(){
+  return new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD
+}
+function toLocalDT(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return "";
+  const pad = (x)=>String(x).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth()+1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+}
+function fromLocalDT(local){
+  if(!local) return "";
+  const d = new Date(local);
+  if(Number.isNaN(d.getTime())) return "";
+  return d.toISOString();
+}
+
+function uid(prefix="id"){
+  return prefix + "_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+/* ✅ Search helpers */
+function normalizeForSearch(s){
+  return String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+function digitsOnly(s){
+  return String(s ?? "").replace(/[^\d]/g, "");
+}
+function searchLeadsLocal(query){
+  const q = normalizeForSearch(query);
+  if(!q) return [];
+  const qDigits = digitsOnly(q);
+  const isMostlyDigits = qDigits.length >= Math.max(6, Math.floor(q.length * 0.7));
+  return appState.leads.filter(l=>{
+    const name = normalizeForSearch(l.name);
+    const phone = normalizeForSearch(l.phone);
+    const tz = normalizeForSearch(l.tz || l.idNumber || "");
+    if(isMostlyDigits){
+      return digitsOnly(phone).includes(qDigits) || digitsOnly(tz).includes(qDigits);
+    }
+    return name.includes(q) || phone.includes(q) || tz.includes(q);
+  }).slice(0, 25);
+}
+
+function defaultState(){
+  return {
+    user: { name: "מנהל", role: "Admin" },
+    leads: [],
+    tasks: [],
+    events: []
+  };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return { ...defaultState(), ...parsed };
+  }catch(e){
+    return defaultState();
+  }
+}
+const appState = loadState();
+
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(appState));
+  renderAll();
+}
+
+/* ===== Activity Timeline ===== */
+function addEvent(type, text, meta={}){
+  appState.events.unshift({
+    id: uid("ev"),
+    at: nowISO(),
+    who: appState.user?.name || "משתמש",
+    type, text, meta
+  });
+  appState.events = appState.events.slice(0, 800);
+}
+
+/* ===== Lead Score ===== */
+function sourceWeight(source){
+  const s = (source||"").toLowerCase();
+  if(["הפניה","ref","referral"].some(x=>s.includes(x))) return 22;
+  if(s.includes("טלפון")) return 18;
+  if(s.includes("גוגל")) return 16;
+  if(s.includes("אתר")) return 14;
+  if(s.includes("פייסבוק")) return 12;
+  return 10;
+}
+function statusWeight(status){
+  switch(status){
+    case "חדש": return 10;
+    case "נוצר קשר": return 18;
+    case "מתעניין": return 26;
+    case "הצעת מחיר": return 34;
+    case "נסגר": return 40;
+    case "לא רלוונטי": return 2;
+    default: return 10;
+  }
+}
+function computeScore(lead){
+  const talks = clamp(Number(lead.contactCount||0), 0, 20);
+  const talkScore = talks * 2.2; // max 44
+  const base = 18;
+  const src = sourceWeight(lead.source);
+  const st = statusWeight(lead.status);
+
+  const refDate = lead.lastContactAt || lead.createdAt || nowISO();
+  const days = Math.floor((Date.now() - new Date(refDate).getTime()) / (1000*60*60*24));
+  const recencyPenalty = clamp(days * 1.6, 0, 40);
+
+  let score = base + src + st + talkScore - recencyPenalty;
+  if(lead.status === "נסגר") score += 10;
+  if(lead.status === "לא רלוונטי") score = Math.min(score, 15);
+  return clamp(Math.round(score), 1, 100);
+}
+function heatTag(score){
+  if(score >= 75) return { cls:"hot", label:"חם" };
+  if(score >= 45) return { cls:"ok", label:"בינוני" };
+  return { cls:"cold", label:"קר" };
+}
+
+/* ===== Views ===== */
+const nav = el("nav");
+nav.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button[data-view]");
+  if(!btn) return;
+  setView(btn.dataset.view);
+});
+function setView(view){
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
+
+  el("viewLeads").style.display = (view==="leads") ? "" : "none";
+  el("viewRight").style.display = (view==="leads") ? "" : "none";
+  el("viewTasks").style.display = (view==="tasks") ? "" : "none";
+  el("viewTimeline").style.display = (view==="timeline") ? "" : "none";
+  el("viewSettings").style.display = (view==="settings") ? "" : "none";
+
+  const titles = {
+    leads: ["לידים", "ניהול לידים, סטטוסים, פעולות ומעקב"],
+    tasks: ["משימות", "תזכורות עם תאריך/שעה + עדיפות + שיוך לליד"],
+    timeline: ["היסטוריה", "Timeline של כל פעולה ושינוי במערכת"],
+    settings: ["הגדרות", "גיבוי/איפוס וחיבור ל-Google Sheets"]
+  };
+  el("viewTitle").textContent = titles[view][0];
+  el("viewSub").textContent = titles[view][1];
+
+  renderAll();
+}
+
+/* ===== Modal ===== */
+function openModal(title, html){
+  el("modalTitle").textContent = title;
+  el("modalBody").innerHTML = html;
+  el("modalBack").style.display = "flex";
+}
+function closeModal(){
+  el("modalBack").style.display = "none";
+  el("modalBody").innerHTML = "";
+}
+el("modalClose").addEventListener("click", closeModal);
+el("modalBack").addEventListener("click", (e)=>{
+  if(e.target === el("modalBack")) closeModal();
+});
+
+/* ===== Toast ===== */
+let toastTimer=null;
+function toast(msg){
+  const t = el("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.style.display="none", 2600);
+}
+
+/* ===== Filters/Search/Sort ===== */
+el("q").addEventListener("input", renderLeads);
+el("fStatus").addEventListener("change", renderLeads);
+el("fSource").addEventListener("change", renderLeads);
+el("sortBy").addEventListener("change", renderLeads);
+
+/* ===== Buttons ===== */
+el("btnAddLead").addEventListener("click", ()=>openLeadForm());
+el("btnQuickTask").addEventListener("click", ()=> openProcessesPanel());
+el("btnOpenInsights").addEventListener("click", ()=> openInsights());
+el("btnSeed").addEventListener("click", seedSample);
+
+el("btnBackup").addEventListener("click", exportJSON);
+el("btnReset").addEventListener("click", ()=>{
+  if(confirm("לאפס את כל הנתונים? פעולה בלתי הפיכה.")){
+    localStorage.removeItem(LS_KEY);
+    location.reload();
+  }
+});
+
+/* ===== Shortcuts ===== */
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="Escape") closeModal();
+  if(e.key==="/" && !["INPUT","TEXTAREA"].includes(document.activeElement?.tagName||"")){
+    e.preventDefault();
+    el("q").focus();
+  }
+  const modalOpen = (el("modalBack").style.display === "flex");
+  if((e.key==="n" || e.key==="N") && !modalOpen){
+    openLeadForm();
+  }
+});
+
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(appState, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "leadup-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("גיבוי ירד למחשב ✅");
+}
+
+/* =======================
+   NEW: My Processes Panel
+   ======================= */
+function normalizeILPhone(phone){
+  const digits = String(phone||"").replace(/[^\d]/g,"");
+  if(!digits) return "";
+  if(digits.startsWith("0")) return "972" + digits.slice(1);
+  if(digits.startsWith("972")) return digits;
+  return digits;
+}
+
+function getSmartRecommendation(lead, score){
+  const hasNext = !!lead.nextFollowUpAt;
+  const daysFromLast = lead.lastContactAt ? Math.floor((Date.now() - new Date(lead.lastContactAt).getTime())/(86400000)) : null;
+
+  if(lead.status==="נסגר"){
+    return { title:"סגירה! 🎉", note:"הליד נסגר. מומלץ להוסיף משימת שירות/שימור בעוד חודש.", followText:"הגדר תזכורת שימור: עוד 30 ימים." };
+  }
+  if(lead.status==="לא רלוונטי"){
+    return { title:"סגירה כלא רלוונטי", note:"מומלץ להשאיר הערה קצרה למה ולסגור משימות פתוחות.", followText:"אין צורך בפולואפ." };
+  }
+  if(score>=75){
+    return { title:"הליד חם 🔥", note: hasNext ? "יש מעקב מוגדר — תוודא שאתה מתקשר בזמן." : "מומלץ לקבוע מעקב להיום.", followText:"פולואפ מומלץ: היום / תוך 24 שעות." };
+  }
+  if(daysFromLast!=null && daysFromLast>=4){
+    return { title:"עבר זמן מאז פנייה", note:"כדאי לבצע פולואפ (שיחה/וואטסאפ) כדי להחזיר את הליד לחיים.", followText:"פולואפ מומלץ: היום." };
+  }
+  return { title:"להמשיך טיפוח", note:"שמור על רצף: שיחה → הערה → מעקב → משימה.", followText:"פולואפ מומלץ: בעוד 2–3 ימים." };
+}
+
+/* =======================
+   Leads CRUD
+   ======================= */
+function openLeadForm(leadId=null){
+  const lead = leadId ? appState.leads.find(l=>l.id===leadId) : null;
+  const isEdit = !!lead;
+
+  const data = lead || {
+    id: uid("lead"),
+    name:"",
+    phone:"",
+    email:"",
+    status:"חדש",
+    source:"",
+    owner:"",
+    note:"",
+    createdAt: nowISO(),
+    lastContactAt:"",
+    nextFollowUpAt:"",
+    contactCount: 0
+  };
+
+  openModal(isEdit ? "עריכת ליד" : "ליד חדש", `
+    <div class="split">
+      <div>
+        <form id="leadForm">
+          <div class="row">
+            <div>
+              <label>שם מלא</label>
+              <input name="name" value="${escapeHTML(data.name)}" required/>
+            </div>
+            <div>
+              <label>טלפון</label>
+              <input name="phone" value="${escapeHTML(data.phone)}" inputmode="tel"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>אימייל</label>
+              <input name="email" value="${escapeHTML(data.email)}" placeholder="name@email.com" inputmode="email"/>
+            </div>
+            <div>
+              <label>נציג</label>
+              <input name="owner" value="${escapeHTML(data.owner||"מנהל")}" placeholder="שם נציג"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>סטטוס</label>
+              <select name="status">
+                ${["חדש","נוצר קשר","מתעניין","הצעת מחיר","נסגר","לא רלוונטי"].map(s=>`
+                  <option ${s===data.status?"selected":""}>${s}</option>
+                `).join("")}
+              </select>
+            </div>
+            <div>
+              <label>מקור</label>
+              <select name="source">
+                <option value="" ${!data.source ? "selected" : ""}>בחירה</option>
+                ${["פייסבוק","גוגל","הפניה","טלפון","אתר","אחר"].map(s=>`
+                  <option ${s===data.source?"selected":""}>${s}</option>
+                `).join("")}
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>מעקב הבא (תאריך/שעה)</label>
+              <input name="nextFollowUpAt" value="${escapeHTML(toLocalDT(data.nextFollowUpAt))}" type="datetime-local"/>
+            </div>
+            <div>
+              <label>עדכון "דיברנו" (מעלה score)</label>
+              <button type="button" class="btn" id="btnTouch" style="width:100%">☎️ סימון שיחה/מענה</button>
+              <div class="help">מעלה Contact Count + מעדכן Last Contact.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>הערה</label>
+            <textarea name="note" placeholder="רשום פרטים חשובים…">${escapeHTML(data.note||"")}</textarea>
+          </div>
+
+          <div class="sep"></div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-start">
+            <button class="btn gold" type="submit">💾 שמירה</button>
+            <button class="btn" type="button" id="btnCreateTask">⏰ צור משימה לליד</button>
+            ${isEdit ? `<button class="btn danger" type="button" id="btnDeleteLead">🗑️ מחיקה</button>` : ""}
+            <button class="btn" type="button" id="btnOpenContact">📲 פעולות קשר</button>
+            <button class="btn" type="button" id="btnMyProcess">🔄 התהליכים שלי</button>
+          </div>
+
+          <div class="help">Lead Score מתחשב בסטטוס, מקור, כמות שיחות וזמן שעבר.</div>
+        </form>
+      </div>
+
+      <div>
+        <div class="miniCard">
+          <h3>תצוגה מהירה</h3>
+          <div class="small muted">נוצר: ${fmtDT(data.createdAt)}</div>
+          <div class="small muted">שיחה אחרונה: ${data.lastContactAt ? fmtDT(data.lastContactAt) : "—"}</div>
+          <div class="small muted">שיחות/מענים: ${Number(data.contactCount||0)}</div>
+          <div class="sep"></div>
+          <div class="score">
+            <div class="tag ${heatTag(computeScore(data)).cls}">🔥 ${heatTag(computeScore(data)).label}</div>
+            <div style="font-weight:800">${computeScore(data)}/100</div>
+          </div>
+          <div class="bar" style="margin-top:10px"><i style="width:${computeScore(data)}%"></i></div>
+        </div>
+
+        <div class="miniCard" style="margin-top:10px">
+          <h3>פעולות מהירות</h3>
+          <div class="actions">
+            <button type="button" class="iconBtn gold" title="וואטסאפ" id="qaWA">💬</button>
+            <button type="button" class="iconBtn" title="התקשר" id="qaCall">📞</button>
+            <button type="button" class="iconBtn" title="אימייל" id="qaMail">✉️</button>
+            <button type="button" class="iconBtn" title="העתק טלפון" id="qaCopy">📋</button>
+          </div>
+          <div class="help">הכל נפתח בתוך מודאל.</div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  const form = document.getElementById("leadForm");
+  form.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const updated = { ...data };
+    for(const [k,v] of fd.entries()) updated[k] = v;
+
+    updated.nextFollowUpAt = fromLocalDT(updated.nextFollowUpAt);
+    updated.createdAt = data.createdAt || nowISO();
+
+    const idx = appState.leads.findIndex(l=>l.id===updated.id);
+    if(idx>=0){
+      appState.leads[idx] = updated;
+      addEvent("lead_update", `עודכן ליד: ${updated.name}`, {leadId: updated.id});
+      toast("ליד עודכן ✅");
+    }else{
+      appState.leads.unshift(updated);
+      addEvent("lead_create", `נוצר ליד חדש: ${updated.name}`, {leadId: updated.id});
+      toast("ליד נוסף ✅");
+    }
+    saveState();
+    closeModal();
+  });
+
+  document.getElementById("btnTouch").addEventListener("click", ()=>{
+    data.contactCount = Number(data.contactCount||0) + 1;
+    data.lastContactAt = nowISO();
+    addEvent("contact", `שיחה/מענה סומן לליד: ${data.name||"(ללא שם)"}`, {leadId:data.id});
+    toast("סומן שיחה ✅");
+    const idx = appState.leads.findIndex(l=>l.id===data.id);
+    if(idx>=0) appState.leads[idx] = data; else appState.leads.unshift(data);
+    saveState();
+    openLeadForm(data.id);
+  });
+
+  if(isEdit){
+    document.getElementById("btnDeleteLead").addEventListener("click", ()=>{
+      if(!confirm("למחוק את הליד?")) return;
+      appState.leads = appState.leads.filter(l=>l.id!==leadId);
+      appState.tasks = appState.tasks.filter(t=>t.leadId!==leadId);
+      addEvent("lead_delete", `נמחק ליד: ${lead.name}`, {leadId});
+      saveState();
+      closeModal();
+      toast("ליד נמחק 🗑️");
+    });
+  }
+
+  document.getElementById("btnCreateTask").addEventListener("click", ()=>{
+    openTaskForm({ leadId: data.id, leadName: data.name, presetDate: data.nextFollowUpAt });
+  });
+  document.getElementById("btnOpenContact").addEventListener("click", ()=>{
+    openContactPanel(data);
+  });
+  document.getElementById("btnMyProcess").addEventListener("click", ()=>{
+    closeModal();
+    openProcessesPanel(data.id);
+  });
+
+  document.getElementById("qaWA").addEventListener("click", ()=> openContactPanel(data, "wa"));
+  document.getElementById("qaCall").addEventListener("click", ()=> openContactPanel(data, "call"));
+  document.getElementById("qaMail").addEventListener("click", ()=> openContactPanel(data, "mail"));
+  document.getElementById("qaCopy").addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(data.phone||""); toast("הטלפון הועתק 📋"); }
+    catch{ toast("לא ניתן להעתיק"); }
+  });
+}
+
+/* =======================
+   Contact panel (in-modal)
+   ======================= */
+function openContactPanel(lead, focus="wa"){
+  const phoneIL = normalizeILPhone(lead.phone);
+  const waBase = phoneIL ? `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}` : "";
+  const tel = (lead.phone||"").trim();
+  const mail = (lead.email||"").trim();
+  const mailtoBase = mail ? `mailto:${encodeURIComponent(mail)}` : "";
+
+  openModal(`תקשורת • ${lead.name||"ליד"}`, `
+    <div class="miniCard">
+      <h3>פרטי קשר</h3>
+      <div class="small muted">טלפון: <b>${escapeHTML(lead.phone||"—")}</b></div>
+      <div class="small muted" style="margin-top:6px">אימייל: <b>${escapeHTML(mail||"—")}</b></div>
+      <div class="sep"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn gold" type="button" id="ccWA" ${waBase? "":"disabled"}>💬 וואטסאפ</button>
+        <button class="btn" type="button" id="ccCall" ${tel? "":"disabled"}>📞 התקשר</button>
+        <button class="btn" type="button" id="ccMail" ${mailtoBase? "":"disabled"}>✉️ מייל</button>
+        <button class="btn" type="button" id="ccCopyPhone" ${tel? "":"disabled"}>📋 העתק טלפון</button>
+        <button class="btn" type="button" id="ccCopyMail" ${mail? "":"disabled"}>📋 העתק מייל</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <label>הודעת וואטסאפ מוכנה</label>
+      <textarea id="ccWAText">${escapeHTML(`היי ${lead.name||""}, מדבר/ת מ-LEADUP. אשמח לעדכן לגבי הביטוח — מתי נוח לדבר?`)}</textarea>
+      <button class="btn" type="button" id="ccOpenWAMsg" style="margin-top:10px" ${waBase? "":"disabled"}>🚀 פתח וואטסאפ עם הודעה</button>
+
+      <div class="sep"></div>
+
+      ${waBase ? `
+        <div class="miniCard" style="margin:0">
+          <h3>WhatsApp Web בתוך המערכת</h3>
+          <div class="frame"><iframe id="ccWAFrame" src="${escapeHTML(waBase)}"></iframe></div>
+          <div class="help">אם לא התחברת ל-WhatsApp Web, תצטרך להתחבר פעם אחת.</div>
+        </div>
+      ` : `<div class="help">כדי לפתוח וואטסאפ בתוך המערכת צריך מספר טלפון.</div>`}
+    </div>
+  `);
+
+  const frame = document.getElementById("ccWAFrame");
+
+  async function copyText(txt){
+    try{ await navigator.clipboard.writeText(txt||""); toast("הועתק 📋"); }
+    catch{ toast("לא ניתן להעתיק"); }
+  }
+
+  document.getElementById("ccCopyPhone")?.addEventListener("click", ()=>copyText(tel));
+  document.getElementById("ccCopyMail")?.addEventListener("click", ()=>copyText(mail));
+
+  document.getElementById("ccWA")?.addEventListener("click", ()=>{
+    if(frame && waBase) frame.src = waBase;
+    addEvent("contact_open", `נפתח וואטסאפ • ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+  });
+
+  document.getElementById("ccOpenWAMsg")?.addEventListener("click", ()=>{
+    if(!phoneIL) return;
+    const txt = document.getElementById("ccWAText").value || "";
+    const url = `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}&text=${encodeURIComponent(txt)}`;
+    if(frame) frame.src = url;
+    addEvent("wa_msg", `נפתח וואטסאפ עם הודעה • ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+  });
+
+  document.getElementById("ccCall")?.addEventListener("click", ()=>{
+    addEvent("call_hint", `ניסיון התקשרות • ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+    openModal(`התקשר • ${lead.name||"ליד"}`, `
+      <div class="miniCard">
+        <h3>התקשרות</h3>
+        <div class="small muted">מספר: <b>${escapeHTML(tel||"—")}</b></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="cc2Copy">📋 העתק מספר</button>
+          <a class="btn" href="${escapeHTML(tel ? "tel:"+tel.replace(/[^\d+]/g,"") : "#")}" style="text-decoration:none; ${tel? "":"pointer-events:none;opacity:.6"}">📞 חייג</a>
+        </div>
+        <div class="help">במחשב לפעמים Tel לא עובד — אז הכי טוב להעתיק ולהתקשר מהנייד.</div>
+      </div>
+    `);
+    document.getElementById("cc2Copy")?.addEventListener("click", ()=>copyText(tel));
+  });
+
+  document.getElementById("ccMail")?.addEventListener("click", ()=>{
+    if(!mailtoBase) return;
+    const subject = `LEADUP • ${lead.name||""}`;
+    const body = `היי ${lead.name||""},\n\nמדבר/ת מ-LEADUP.\nאשמח לעזור לגבי הביטוח.\nמתי נוח לדבר?\n\nתודה!`;
+    const mailto = `${mailtoBase}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    addEvent("mail_hint", `נפתח מייל • ${lead.name||"—"}`, {leadId: lead.id});
+    saveState();
+    window.location.href = mailto;
+  });
+
+  // focus
+  if(focus==="wa") document.getElementById("ccWA")?.click();
+  if(focus==="mail") document.getElementById("ccMail")?.click();
+  if(focus==="call") document.getElementById("ccCall")?.click();
+}
+
+/* =======================
+   Tasks CRUD
+   ======================= */
+function openTaskForm({ taskId=null, leadId="", leadName="", presetDate="" }={}){
+  const task = taskId ? appState.tasks.find(t=>t.id===taskId) : null;
+  const isEdit = !!task;
+
+  const data = task || {
+    id: uid("task"),
+    leadId: leadId || "",
+    title: "",
+    dueAt: presetDate || "",
+    priority: "בינונית",
+    status: "פתוחה",
+    createdAt: nowISO()
+  };
+
+  const lead = data.leadId ? appState.leads.find(l=>l.id===data.leadId) : null;
+  const leadLabel = leadName || lead?.name || (lead ? lead.name : "");
+
+  openModal(isEdit ? "עריכת משימה" : "משימה חדשה", `
+    <div class="miniCard">
+      <h3>פרטי משימה</h3>
+
+      <div class="row">
+        <div>
+          <label>שיוך לליד</label>
+          <select id="tkLead">
+            <option value="">ללא שיוך</option>
+            ${appState.leads.map(l=>`
+              <option value="${escapeHTML(l.id)}" ${l.id===data.leadId ? "selected":""}>
+                ${escapeHTML(l.name||"(ללא שם)")} • ${escapeHTML(l.phone||"")}
+              </option>
+            `).join("")}
+          </select>
+        </div>
+
+        <div>
+          <label>עדיפות</label>
+          <select id="tkPri">
+            ${["נמוכה","בינונית","גבוהה","דחוף"].map(p=>`
+              <option ${p===data.priority?"selected":""}>${p}</option>
+            `).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>תיאור</label>
+        <input id="tkTitle" value="${escapeHTML(data.title)}" placeholder="לדוגמה: להתקשר, לשלוח הצעה, לבצע פולואפ…"/>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>מתי</label>
+          <input id="tkDue" type="datetime-local" value="${escapeHTML(toLocalDT(data.dueAt))}"/>
+        </div>
+        <div>
+          <label>סטטוס</label>
+          <select id="tkStatus">
+            ${["פתוחה","בוצעה"].map(s=>`
+              <option ${s===data.status?"selected":""}>${s}</option>
+            `).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn gold" type="button" id="tkSave">💾 שמור</button>
+        ${isEdit ? `<button class="btn danger" type="button" id="tkDel">🗑️ מחק</button>` : ""}
+        <button class="btn" type="button" id="tkJumpLead" ${data.leadId ? "" : "disabled"}>🔄 פתח תהליכים של הליד</button>
+      </div>
+
+      <div class="help">שיוך: <b>${escapeHTML(leadLabel || "—")}</b></div>
+    </div>
+  `);
+
+  document.getElementById("tkSave").addEventListener("click", ()=>{
+    const newLeadId = document.getElementById("tkLead").value || "";
+    const newTitle = document.getElementById("tkTitle").value || "";
+    const newPri = document.getElementById("tkPri").value || "בינונית";
+    const newDue = fromLocalDT(document.getElementById("tkDue").value);
+    const newStatus = document.getElementById("tkStatus").value || "פתוחה";
+
+    const updated = { ...data, leadId:newLeadId, title:newTitle, priority:newPri, dueAt:newDue, status:newStatus };
+
+    const idx = appState.tasks.findIndex(t=>t.id===updated.id);
+    if(idx>=0){
+      appState.tasks[idx] = updated;
+      addEvent("task_update", `עודכנה משימה: ${newTitle||"(ללא תיאור)"}`, {taskId: updated.id, leadId: updated.leadId || ""});
+      toast("משימה עודכנה ✅");
+    }else{
+      appState.tasks.unshift(updated);
+      addEvent("task_create", `נוצרה משימה: ${newTitle||"(ללא תיאור)"}`, {taskId: updated.id, leadId: updated.leadId || ""});
+      toast("משימה נוצרה ✅");
+    }
+    saveState();
+    closeModal();
+  });
+
+  if(isEdit){
+    document.getElementById("tkDel").addEventListener("click", ()=>{
+      if(!confirm("למחוק משימה?")) return;
+      appState.tasks = appState.tasks.filter(t=>t.id!==data.id);
+      addEvent("task_delete", "נמחקה משימה", {taskId: data.id, leadId: data.leadId || ""});
+      saveState();
+      closeModal();
+      toast("נמחק 🗑️");
+    });
+  }
+
+  document.getElementById("tkJumpLead").addEventListener("click", ()=>{
+    if(!data.leadId) return;
+    closeModal();
+    openProcessesPanel(data.leadId);
+  });
+}
+
+function toggleTaskDone(taskId){
+  const t = appState.tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  const was = t.status;
+  t.status = (t.status==="בוצעה") ? "פתוחה" : "בוצעה";
+  addEvent("task_done_toggle", `משימה "${t.title||"—"}" → ${t.status}`, {taskId:t.id, leadId:t.leadId||""});
+  saveState();
+  toast(was==="בוצעה" ? "הוחזר לפתוחה" : "סומן בוצעה ✅");
+}
+
+/* =======================
+   Rendering
+   ======================= */
+function renderAll(){
+  updateStats();
+  updateNavBadges();
+  renderLeads();
+  renderTasks();
+  renderTimeline();
+}
+
+function updateNavBadges(){
+  el("navCount").textContent = appState.leads.length;
+  const openTasks = appState.tasks.filter(t=>t.status!=="בוצעה").length;
+  el("navTasks").textContent = openTasks;
+  el("navEvents").textContent = appState.events.length;
+}
+
+function updateStats(){
+  const total = appState.leads.length;
+  const hot = appState.leads.filter(l=>computeScore(l)>=75 && l.status!=="נסגר" && l.status!=="לא רלוונטי").length;
+
+  const today = todayKey();
+  const dueToday = appState.leads.filter(l=>{
+    if(!l.nextFollowUpAt) return false;
+    const d = new Date(l.nextFollowUpAt);
+    if(Number.isNaN(d.getTime())) return false;
+    return d.toLocaleDateString("sv-SE") === today;
+  }).length;
+
+  const openTasks = appState.tasks.filter(t=>t.status!=="בוצעה").length;
+
+  el("stTotal").textContent = total;
+  el("stHot").textContent = hot;
+  el("stToday").textContent = dueToday;
+  el("stTasks").textContent = openTasks;
+}
+
+function filteredSortedLeads(){
+  const q = normalizeForSearch(el("q").value || "");
+  const st = el("fStatus").value || "";
+  const src = el("fSource").value || "";
+  const sortBy = el("sortBy").value || "hot";
+
+  let list = [...appState.leads];
+
+  if(q){
+    const qDigits = digitsOnly(q);
+    const isMostlyDigits = qDigits.length >= Math.max(6, Math.floor(q.length * 0.7));
+    list = list.filter(l=>{
+      const name = normalizeForSearch(l.name);
+      const phone = normalizeForSearch(l.phone);
+      const email = normalizeForSearch(l.email);
+      const note = normalizeForSearch(l.note);
+      if(isMostlyDigits){
+        return digitsOnly(phone).includes(qDigits);
+      }
+      return name.includes(q) || phone.includes(q) || email.includes(q) || note.includes(q);
+    });
+  }
+
+  if(st) list = list.filter(l=>l.status===st);
+  if(src) list = list.filter(l=>l.source===src);
+
+  list.forEach(l=>l._score = computeScore(l));
+
+  if(sortBy==="hot"){
+    list.sort((a,b)=>b._score-a._score);
+  }else if(sortBy==="next"){
+    list.sort((a,b)=>{
+      const da = a.nextFollowUpAt ? new Date(a.nextFollowUpAt).getTime() : Infinity;
+      const db = b.nextFollowUpAt ? new Date(b.nextFollowUpAt).getTime() : Infinity;
+      return da-db;
+    });
+  }else if(sortBy==="newest"){
+    list.sort((a,b)=> new Date(b.createdAt||0).getTime() - new Date(a.createdAt||0).getTime());
+  }else if(sortBy==="oldest"){
+    list.sort((a,b)=> new Date(a.createdAt||0).getTime() - new Date(b.createdAt||0).getTime());
+  }
+
+  return list;
+}
+
+function renderLeads(){
+  const tbody = el("leadsTbody");
+  const list = filteredSortedLeads();
+
+  el("emptyLeads").style.display = appState.leads.length ? "none" : "";
+
+  tbody.innerHTML = list.map(l=>{
+    const score = l._score ?? computeScore(l);
+    const ht = heatTag(score);
+    const next = l.nextFollowUpAt ? fmtDT(l.nextFollowUpAt) : "—";
+    const stCls = (l.status==="נסגר") ? "ok" : (l.status==="לא רלוונטי" ? "cold" : ht.cls);
+
+    return `
+      <tr>
+        <td><b>${escapeHTML(l.name||"—")}</b><div class="muted small">${escapeHTML(l.email||"")}</div></td>
+        <td>${escapeHTML(l.phone||"—")}</td>
+        <td><span class="tag ${stCls}">${escapeHTML(l.status||"—")}</span></td>
+        <td>${escapeHTML(l.source||"—")}</td>
+        <td>
+          <div class="score">
+            <div class="tag ${ht.cls}">🔥 ${ht.label}</div>
+            <div style="font-weight:800">${score}</div>
+          </div>
+          <div class="bar" style="margin-top:8px"><i style="width:${score}%"></i></div>
+        </td>
+        <td>${escapeHTML(next)}</td>
+        <td>
+          <div class="actions">
+            <button class="iconBtn gold" title="תהליכים" data-act="proc" data-id="${escapeHTML(l.id)}">🔄</button>
+            <button class="iconBtn" title="ערוך" data-act="edit" data-id="${escapeHTML(l.id)}">✎</button>
+            <button class="iconBtn" title="משימה" data-act="task" data-id="${escapeHTML(l.id)}">⏰</button>
+            <button class="iconBtn" title="תקשורת" data-act="contact" data-id="${escapeHTML(l.id)}">📲</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-act]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-act");
+      const lead = appState.leads.find(x=>x.id===id);
+      if(!lead) return;
+
+      if(act==="edit") openLeadForm(id);
+      if(act==="proc") openProcessesPanel(id);
+      if(act==="contact") openContactPanel(lead);
+      if(act==="task") openTaskForm({ leadId:id, leadName: lead.name||"", presetDate: lead.nextFollowUpAt || "" });
+    });
+  });
+}
+
+function renderTasks(){
+  const tbody = el("tasksTbody");
+  const openList = [...appState.tasks].sort((a,b)=>{
+    const da = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
+    const db = b.dueAt ? new Date(b.dueAt).getTime() : Infinity;
+    return da-db;
+  });
+
+  el("emptyTasks").style.display = openList.length ? "none" : "";
+
+  tbody.innerHTML = openList.map(t=>{
+    const lead = t.leadId ? appState.leads.find(l=>l.id===t.leadId) : null;
+    const leadName = lead?.name || "—";
+    const due = t.dueAt ? fmtDT(t.dueAt) : "ללא תאריך";
+    const pri = t.priority || "בינונית";
+    const st = t.status || "פתוחה";
+    const tagCls = (pri==="דחוף" || pri==="גבוהה") ? "hot" : (pri==="נמוכה" ? "cold" : "ok");
+
+    return `
+      <tr>
+        <td>${escapeHTML(due)}</td>
+        <td><span class="tag ${tagCls}">${escapeHTML(pri)}</span></td>
+        <td><b>${escapeHTML(leadName)}</b></td>
+        <td>${escapeHTML(t.title||"—")}</td>
+        <td><span class="tag ${st==="בוצעה" ? "ok" : "cold"}">${escapeHTML(st)}</span></td>
+        <td>
+          <div class="actions">
+            <button class="iconBtn" title="בוצעה/פתוחה" data-tact="done" data-id="${escapeHTML(t.id)}">✓</button>
+            <button class="iconBtn" title="ערוך" data-tact="edit" data-id="${escapeHTML(t.id)}">✎</button>
+            <button class="iconBtn gold" title="תהליכים" data-tact="proc" data-id="${escapeHTML(t.id)}">🔄</button>
+            <button class="iconBtn" title="מחק" data-tact="del" data-id="${escapeHTML(t.id)}">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-tact]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-id");
+      const act = btn.getAttribute("data-tact");
+      const task = appState.tasks.find(x=>x.id===id);
+      if(!task) return;
+
+      if(act==="done") toggleTaskDone(id);
+      if(act==="edit") openTaskForm({ taskId:id });
+      if(act==="proc" && task.leadId) openProcessesPanel(task.leadId);
+      if(act==="del"){
+        if(!confirm("למחוק משימה?")) return;
+        appState.tasks = appState.tasks.filter(t=>t.id!==id);
+        addEvent("task_delete", "נמחקה משימה", {taskId:id, leadId: task.leadId||""});
+        saveState();
+      }
+    });
+  });
+}
+
+function renderTimeline(){
+  const box = el("timelineList");
+  const list = appState.events.slice(0, 250);
+  el("emptyTimeline").style.display = list.length ? "none" : "";
+
+  box.innerHTML = list.map(ev=>{
+    const leadId = ev.meta?.leadId || "";
+    const lead = leadId ? appState.leads.find(l=>l.id===leadId) : null;
+    const leadTxt = lead ? ` • <b>${escapeHTML(lead.name||"—")}</b>` : "";
+    return `
+      <div class="event">
+        <div class="t">${escapeHTML(fmtDT(ev.at))} • ${escapeHTML(ev.who||"")} • <span class="muted">${escapeHTML(ev.type||"")}</span>${leadTxt}</div>
+        <div class="d">${escapeHTML(ev.text||"")}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* =======================
+   Insights + Seed
+   ======================= */
+function openInsights(){
+  const total = appState.leads.length;
+  const closed = appState.leads.filter(l=>l.status==="נסגר").length;
+  const lost = appState.leads.filter(l=>l.status==="לא רלוונטי").length;
+  const active = total - closed - lost;
+
+  const hot = appState.leads.filter(l=>computeScore(l)>=75 && l.status!=="נסגר" && l.status!=="לא רלוונטי").length;
+
+  const byStatus = {};
+  appState.leads.forEach(l=>{
+    byStatus[l.status||"לא ידוע"] = (byStatus[l.status||"לא ידוע"]||0) + 1;
+  });
+
+  openModal("סטטיסטיקות", `
+    <div class="miniCard">
+      <h3>סיכום</h3>
+      <div class="row">
+        <div class="event"><div class="t">סה״כ לידים</div><div class="d"><b>${total}</b></div></div>
+        <div class="event"><div class="t">לידים פעילים</div><div class="d"><b>${active}</b></div></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="event"><div class="t">נסגרו</div><div class="d"><b>${closed}</b></div></div>
+        <div class="event"><div class="t">לא רלוונטי</div><div class="d"><b>${lost}</b></div></div>
+      </div>
+      <div class="sep"></div>
+      <div class="event">
+        <div class="t">חמים (Score ≥ 75)</div>
+        <div class="d"><b>${hot}</b></div>
+      </div>
+
+      <div class="sep"></div>
+      <h3 style="margin:0 0 8px 0">חלוקה לפי סטטוס</h3>
+      <div class="miniList">
+        ${Object.entries(byStatus).map(([k,v])=>`
+          <div class="event">
+            <div class="t">${escapeHTML(k)}</div>
+            <div class="d"><b>${v}</b></div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `);
+}
+
+function seedSample(){
+  if(appState.leads.length){
+    if(!confirm("כבר יש נתונים. להוסיף דוגמאות בנוסף?")) return;
+  }
+
+  const samples = [
+    {name:"אלון כהן", phone:"052-1234567", email:"alon@example.com", status:"חדש", source:"פייסבוק"},
+    {name:"שיר לוי", phone:"050-7654321", email:"shir@example.com", status:"נוצר קשר", source:"גוגל"},
+    {name:"דניאל ישראלי", phone:"054-9988776", email:"daniel@example.com", status:"מתעניין", source:"הפניה"},
+    {name:"נועה מזרחי", phone:"053-1112233", email:"noa@example.com", status:"הצעת מחיר", source:"טלפון"},
+    {name:"יואב פרץ", phone:"058-3332211", email:"yoav@example.com", status:"נסגר", source:"אתר"}
+  ];
+
+  samples.forEach((s,i)=>{
+    const lead = {
+      id: uid("lead"),
+      name:s.name,
+      phone:s.phone,
+      email:s.email,
+      status:s.status,
+      source:s.source,
+      owner:"מנהל",
+      note:"דוגמה אוטומטית",
+      createdAt: new Date(Date.now() - (i*86400000)).toISOString(),
+      lastContactAt: i%2===0 ? new Date(Date.now() - (i*3600000*9)).toISOString() : "",
+      nextFollowUpAt: i%3===0 ? new Date(Date.now() + (i*3600000*6)).toISOString() : "",
+      contactCount: i+1
+    };
+    appState.leads.unshift(lead);
+    addEvent("seed", `נוצר ליד דוגמה: ${lead.name}`, {leadId: lead.id});
+  });
+
+  // add a couple tasks
+  if(appState.leads[0]){
+    appState.tasks.unshift({
+      id: uid("task"),
+      leadId: appState.leads[0].id,
+      title: "פולואפ: לתאם שיחה",
+      dueAt: new Date(Date.now()+3600000*4).toISOString(),
+      priority: "גבוהה",
+      status: "פתוחה",
+      createdAt: nowISO()
+    });
+    addEvent("task_create", "נוצרה משימת דוגמה", {leadId: appState.leads[0].id});
+  }
+
+  saveState();
+  toast("נוספו דוגמאות ✅");
+}
+
+/* =======================
+   Processes Panel (הגרסה שלך מההודעה הקודמת)
+   ======================= */
+function openProcessesPanel(presetLeadId=""){
+  const leadOptions = appState.leads.map(l=>`<option value="${escapeHTML(l.id)}">${escapeHTML(l.name||"(ללא שם)")}</option>`).join("");
+
+  openModal("התהליכים שלי • טיפול בליד/לקוח", `
+    <div class="miniCard">
+      <h3 style="margin:0 0 10px 0">חיפוש לקוח</h3>
+
+      <div class="row">
+        <div>
+          <label>חיפוש לפי תעודת זהות / שם מלא / טלפון</label>
+
+          <div style="display:flex; gap:10px; align-items:center">
+            <input id="procLeadSearch" type="search"
+                   placeholder="לדוגמה: 0521234567 / ישראל ישראלי / 123456789"
+                   autocomplete="off" />
+            <button class="btn gold" type="button" id="procLeadSearchBtn">חיפוש</button>
+          </div>
+
+          <div class="help">התוצאות נשלפות מתוך מאגר הלידים במערכת. בחר לקוח כדי לראות את התהליך.</div>
+
+          <div id="procLeadResults" style="margin-top:10px; display:flex; flex-direction:column; gap:8px; max-height:220px; overflow:auto; padding-left:4px"></div>
+
+          <select id="procLeadSelect" style="display:none">
+            <option value="">בחר ליד…</option>
+            ${leadOptions}
+          </select>
+        </div>
+
+        <div>
+          <label>פעולות מהירות</label>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn gold" type="button" id="procOpenLead">✎ ערוך ליד</button>
+            <button class="btn" type="button" id="procAddTask">⏰ הוסף משימה</button>
+            <button class="btn" type="button" id="procMarkTalk">☎️ סימון “דיברנו”</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs" style="margin-top:12px">
+        <button class="tabBtn active" data-tab="status">🟡 סטטוס טיפול</button>
+        <button class="tabBtn" data-tab="comm">📧 תקשורת</button>
+        <button class="tabBtn" data-tab="tasks">⏰ משימות</button>
+        <button class="tabBtn" data-tab="history">🧾 היסטוריה</button>
+        <button class="tabBtn" data-tab="smart">🧠 חכם</button>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div id="procEmpty" class="help">בחר לקוח כדי לראות את התהליך.</div>
+
+    <div class="tabPane active" id="tab_status"></div>
+    <div class="tabPane" id="tab_comm"></div>
+    <div class="tabPane" id="tab_tasks"></div>
+    <div class="tabPane" id="tab_history"></div>
+    <div class="tabPane" id="tab_smart"></div>
+  `);
+
+  const sel = document.getElementById("procLeadSelect");
+  const btnOpenLead = document.getElementById("procOpenLead");
+  const btnAddTask = document.getElementById("procAddTask");
+  const btnMarkTalk = document.getElementById("procMarkTalk");
+
+  const sInp = document.getElementById("procLeadSearch");
+  const sBtn = document.getElementById("procLeadSearchBtn");
+  const resBox = document.getElementById("procLeadResults");
+
+  function renderSearchResults(list){
+    if(!resBox) return;
+
+    if(!list.length){
+      resBox.innerHTML = `<div class="event"><div class="d">לא נמצאו תוצאות. נסה שם מלא / טלפון / ת״ז.</div></div>`;
+      return;
+    }
+
+    resBox.innerHTML = list.map(l=>`
+      <div class="event" style="background:#fff">
+        <div class="t">${escapeHTML(l.name||"—")} • ${escapeHTML(l.phone||"—")}</div>
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
+          <button class="btn gold" type="button" data-pick="${escapeHTML(l.id)}">בחר</button>
+          <button class="btn" type="button" data-edit="${escapeHTML(l.id)}">ערוך</button>
+        </div>
+      </div>
+    `).join("");
+
+    resBox.querySelectorAll("[data-pick]").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id = b.getAttribute("data-pick");
+        sel.value = id;
+        renderProcesses();
+      });
+    });
+    resBox.querySelectorAll("[data-edit]").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id = b.getAttribute("data-edit");
+        openLeadForm(id);
+      });
+    });
+  }
+
+  function runSearch(){
+    const q = (sInp?.value || "").trim();
+    const results = searchLeadsLocal(q);
+    renderSearchResults(results);
+  }
+
+  sBtn?.addEventListener("click", runSearch);
+  sInp?.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter"){ e.preventDefault(); runSearch(); }
+  });
+
+  let t=null;
+  sInp?.addEventListener("input", ()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      if((sInp.value||"").trim().length >= 2) runSearch();
+      else if(resBox) resBox.innerHTML = "";
+    }, 160);
+  });
+
+  document.querySelectorAll(".tabBtn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      document.querySelectorAll(".tabBtn").forEach(x=>x.classList.toggle("active", x===b));
+      const tab = b.getAttribute("data-tab");
+      ["status","comm","tasks","history","smart"].forEach(t=>{
+        document.getElementById("tab_"+t).classList.toggle("active", t===tab);
+      });
+    });
+  });
+
+  function currentLead(){
+    const id = sel.value || "";
+    return id ? appState.leads.find(l=>l.id===id) : null;
+  }
+
+  function renderProcesses(){
+    const lead = currentLead();
+    document.getElementById("procEmpty").style.display = lead ? "none" : "";
+
+    [btnOpenLead, btnAddTask, btnMarkTalk].forEach(b=>{
+      if(!b) return;
+      b.disabled = !lead;
+      b.style.opacity = lead ? "1" : ".6";
+      b.style.pointerEvents = lead ? "" : "none";
+    });
+
+    if(!lead){
+      ["status","comm","tasks","history","smart"].forEach(t=>{
+        document.getElementById("tab_"+t).innerHTML = "";
+      });
+      return;
+    }
+
+    // STATUS
+    document.getElementById("tab_status").innerHTML = `
+      <div class="miniCard">
+        <h3>סטטוס טיפול</h3>
+        <div class="row">
+          <div>
+            <label>סטטוס</label>
+            <select id="procStatus">
+              ${["חדש","נוצר קשר","מתעניין","הצעת מחיר","נסגר","לא רלוונטי"].map(s=>`
+                <option ${s===lead.status?"selected":""}>${s}</option>
+              `).join("")}
+            </select>
+          </div>
+          <div>
+            <label>מעקב הבא (תאריך/שעה)</label>
+            <input id="procNext" type="datetime-local" value="${escapeHTML(toLocalDT(lead.nextFollowUpAt))}"/>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>הערה/סיכום שיחה</label>
+          <textarea id="procNote" placeholder="עדכן מה נאמר, מה נשאר לעשות…">${escapeHTML(lead.note||"")}</textarea>
+        </div>
+
+        <div class="sep"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="procSaveStatus">💾 שמור שינויים</button>
+          <button class="btn" type="button" id="procQuickQuote">📄 סטטוס: “נשלחה הצעה”</button>
+          <button class="btn" type="button" id="procCloseWon">✅ סטטוס: “נסגר”</button>
+          <button class="btn danger" type="button" id="procCloseLost">❌ סטטוס: “לא רלוונטי”</button>
+        </div>
+
+        <div class="help">
+          נוצר: <b>${fmtDT(lead.createdAt)}</b> • שיחה אחרונה: <b>${lead.lastContactAt ? fmtDT(lead.lastContactAt) : "—"}</b> • שיחות: <b>${Number(lead.contactCount||0)}</b>
+        </div>
+      </div>
+    `;
+
+    // COMM
+    const phoneIL = normalizeILPhone(lead.phone);
+    const mail = (lead.email||"").trim();
+    const wa = phoneIL ? `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}` : "";
+    const tel = (lead.phone||"").trim();
+    const mailtoBase = mail ? `mailto:${encodeURIComponent(mail)}` : "";
+
+    document.getElementById("tab_comm").innerHTML = `
+      <div class="miniCard">
+        <h3>תקשורת</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="procWA" ${wa? "":"disabled"}>💬 וואטסאפ</button>
+          <button class="btn" type="button" id="procCALL" ${tel? "":"disabled"}>📞 התקשר</button>
+          <button class="btn" type="button" id="procMAIL" ${mailtoBase? "":"disabled"}>✉️ מייל</button>
+          <button class="btn" type="button" id="procCopyPhone" ${tel? "":"disabled"}>📋 העתק טלפון</button>
+          <button class="btn" type="button" id="procCopyMail" ${mail? "":"disabled"}>📋 העתק מייל</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <label>הודעת וואטסאפ מוכנה</label>
+        <textarea id="procWAText">${escapeHTML(`היי ${lead.name||""}, מדבר/ת מ-LEADUP. אשמח לעדכן לגבי הביטוח — מתי נוח לדבר?`)}</textarea>
+        <button class="btn" type="button" id="procOpenWAMsg" style="margin-top:10px" ${wa? "":"disabled"}>🚀 פתח וואטסאפ עם הודעה</button>
+
+        <div class="sep"></div>
+
+        ${wa ? `
+          <div class="miniCard" style="margin:0">
+            <h3>WhatsApp Web בתוך המערכת</h3>
+            <div class="frame"><iframe id="procWAFrame" src="${escapeHTML(wa)}"></iframe></div>
+          </div>
+        ` : `<div class="help">כדי לפתוח וואטסאפ בתוך המערכת צריך מספר טלפון.</div>`}
+      </div>
+    `;
+
+    // TASKS
+    const leadTasks = appState.tasks
+      .filter(t=>t.leadId===lead.id && t.status!=="בוצעה")
+      .sort((a,b)=>{
+        const da = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
+        const db = b.dueAt ? new Date(b.dueAt).getTime() : Infinity;
+        return da-db;
+      });
+
+    document.getElementById("tab_tasks").innerHTML = `
+      <div class="miniCard">
+        <h3>משימות לליד</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn gold" type="button" id="procNewTask">⏰ צור משימה</button>
+          <button class="btn" type="button" id="procJumpTasks">📌 עבור למסך משימות</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="miniList">
+          ${leadTasks.length ? leadTasks.map(t=>`
+            <div class="event">
+              <div class="t">${t.dueAt ? fmtDT(t.dueAt) : "ללא תאריך"} • ${escapeHTML(t.priority||"")}</div>
+              <div class="d">${escapeHTML(t.title||"")}</div>
+              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap">
+                <button class="btn" type="button" data-proc="task_done" data-id="${escapeHTML(t.id)}">✓ סמן בוצעה</button>
+                <button class="btn" type="button" data-proc="task_edit" data-id="${escapeHTML(t.id)}">✎ ערוך</button>
+                <button class="btn danger" type="button" data-proc="task_del" data-id="${escapeHTML(t.id)}">🗑️ מחק</button>
+              </div>
+            </div>
+          `).join("") : `<div class="help">אין משימות פתוחות לליד הזה.</div>`}
+        </div>
+      </div>
+    `;
+
+    // HISTORY
+    const leadEvents = appState.events
+      .filter(ev=> (ev.meta && ev.meta.leadId===lead.id))
+      .slice(0, 200);
+
+    document.getElementById("tab_history").innerHTML = `
+      <div class="miniCard">
+        <h3>היסטוריה לליד</h3>
+        <div class="timeline" style="max-height:520px">
+          ${leadEvents.length ? leadEvents.map(ev=>`
+            <div class="event">
+              <div class="t">${fmtDT(ev.at)} • ${escapeHTML(ev.who||"משתמש")} • <span class="muted">${escapeHTML(ev.type||"")}</span></div>
+              <div class="d">${escapeHTML(ev.text||"")}</div>
+            </div>
+          `).join("") : `<div class="help">אין עדיין אירועים לליד הזה.</div>`}
+        </div>
+      </div>
+    `;
+
+    // SMART
+    const score = computeScore(lead);
+    const ht = heatTag(score);
+    const rec = getSmartRecommendation(lead, score);
+
+    document.getElementById("tab_smart").innerHTML = `
+      <div class="miniCard">
+        <h3>חכם</h3>
+        <div class="score">
+          <div class="tag ${ht.cls}">🔥 ${ht.label}</div>
+          <div style="font-weight:900; font-size:16px">${score}/100</div>
+          <div class="muted small">Lead Score</div>
+        </div>
+        <div class="bar" style="margin-top:10px"><i style="width:${score}%"></i></div>
+
+        <div class="sep"></div>
+
+        <div class="event">
+          <div class="t">המלצת פעולה</div>
+          <div class="d"><b>${escapeHTML(rec.title)}</b><div class="small muted" style="margin-top:6px">${escapeHTML(rec.note)}</div></div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div>
+            <label>תזכורת מומלצת</label>
+            <div class="small muted">${escapeHTML(rec.followText)}</div>
+          </div>
+          <div>
+            <label>ביצוע מהיר</label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <button class="btn gold" type="button" id="smartCreateTask">⏰ צור משימת פולואפ</button>
+              <button class="btn" type="button" id="smartContact">📲 פתח תקשורת</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Wiring
+    document.getElementById("procSaveStatus")?.addEventListener("click", ()=>{
+      const beforeStatus = lead.status;
+      const newStatus = document.getElementById("procStatus").value;
+      const newNext = fromLocalDT(document.getElementById("procNext").value);
+      const newNote = document.getElementById("procNote").value;
+
+      lead.status = newStatus;
+      lead.nextFollowUpAt = newNext;
+      lead.note = newNote;
+
+      if(beforeStatus !== newStatus){
+        addEvent("status_change", `סטטוס עודכן ל-“${newStatus}” עבור ${lead.name||"ליד"}`, {leadId: lead.id});
+      }else{
+        addEvent("lead_update", `עודכנו פרטים בתהליך עבור ${lead.name||"ליד"}`, {leadId: lead.id});
+      }
+
+      saveState();
+      toast("עודכן בתהליך ✅");
+      renderProcesses();
+    });
+
+    document.getElementById("procQuickQuote")?.addEventListener("click", ()=>{
+      document.getElementById("procStatus").value = "הצעת מחיר";
+      toast("הוחל סטטוס הצעת מחיר");
+    });
+    document.getElementById("procCloseWon")?.addEventListener("click", ()=>{
+      document.getElementById("procStatus").value = "נסגר";
+      toast("הוחל סטטוס נסגר");
+    });
+    document.getElementById("procCloseLost")?.addEventListener("click", ()=>{
+      document.getElementById("procStatus").value = "לא רלוונטי";
+      toast("הוחל סטטוס לא רלוונטי");
+    });
+
+    document.getElementById("procCopyPhone")?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(tel||""); toast("הטלפון הועתק 📋"); }catch{ toast("לא ניתן להעתיק"); }
+    });
+    document.getElementById("procCopyMail")?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(mail||""); toast("המייל הועתק 📋"); }catch{ toast("לא ניתן להעתיק"); }
+    });
+
+    document.getElementById("procWA")?.addEventListener("click", ()=>{
+      if(!wa) return;
+      const frame = document.getElementById("procWAFrame");
+      if(frame) frame.src = wa;
+      addEvent("contact_open", `נפתח וואטסאפ מתוך תהליך • ${lead.name||"—"}`, {leadId: lead.id});
+      saveState();
+    });
+
+    document.getElementById("procCALL")?.addEventListener("click", ()=>{
+      openContactPanel(lead, "call");
+    });
+
+    document.getElementById("procMAIL")?.addEventListener("click", ()=>{
+      openContactPanel(lead, "mail");
+    });
+
+    document.getElementById("procOpenWAMsg")?.addEventListener("click", ()=>{
+      if(!phoneIL) return;
+      const txt = document.getElementById("procWAText").value || "";
+      const url = `https://web.whatsapp.com/send?phone=${encodeURIComponent(phoneIL)}&text=${encodeURIComponent(txt)}`;
+      const frame = document.getElementById("procWAFrame");
+      if(frame) frame.src = url;
+      addEvent("wa_msg", `נפתח וואטסאפ עם הודעה מתוך תהליך • ${lead.name||"—"}`, {leadId: lead.id});
+      saveState();
+    });
+
+    document.getElementById("procNewTask")?.addEventListener("click", ()=>{
+      openTaskForm({ leadId: lead.id, leadName: lead.name||"", presetDate: lead.nextFollowUpAt || "" });
+    });
+    document.getElementById("procJumpTasks")?.addEventListener("click", ()=>{
+      closeModal();
+      setView("tasks");
+    });
+
+    document.querySelectorAll('[data-proc="task_done"]').forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id = b.getAttribute("data-id");
+        toggleTaskDone(id);
+        renderProcesses();
+      });
+    });
+    document.querySelectorAll('[data-proc="task_edit"]').forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id = b.getAttribute("data-id");
+        openTaskForm({ taskId:id });
+      });
+    });
+    document.querySelectorAll('[data-proc="task_del"]').forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id = b.getAttribute("data-id");
+        if(!confirm("למחוק משימה?")) return;
+        appState.tasks = appState.tasks.filter(t=>t.id!==id);
+        addEvent("task_delete", "נמחקה משימה", {taskId:id, leadId: lead.id});
+        saveState();
+        renderProcesses();
+      });
+    });
+
+    document.getElementById("smartCreateTask")?.addEventListener("click", ()=>{
+      openTaskForm({ leadId: lead.id, leadName: lead.name||"", presetDate: lead.nextFollowUpAt || "" });
+    });
+    document.getElementById("smartContact")?.addEventListener("click", ()=>{
+      document.querySelector('.tabBtn[data-tab="comm"]')?.click();
+    });
+  }
+
+  sel.addEventListener("change", renderProcesses);
+
+  btnOpenLead.addEventListener("click", ()=>{
+    const lead = currentLead();
+    if(!lead) return;
+    openLeadForm(lead.id);
+  });
+
+  btnAddTask.addEventListener("click", ()=>{
+    const lead = currentLead();
+    if(!lead) return;
+    openTaskForm({ leadId: lead.id, leadName: lead.name||"", presetDate: lead.nextFollowUpAt || "" });
+  });
+
+  btnMarkTalk.addEventListener("click", ()=>{
+    const lead = currentLead();
+    if(!lead) return;
+    lead.contactCount = Number(lead.contactCount||0) + 1;
+    lead.lastContactAt = nowISO();
+    addEvent("contact", `שיחה/מענה סומן מתוך תהליך • ${lead.name||"(ללא שם)"}`, {leadId: lead.id});
+    saveState();
+    toast("סומן שיחה ✅");
+    renderProcesses();
+  });
+
+  if(presetLeadId){
+    sel.value = presetLeadId;
+    renderProcesses();
+  }else if(appState.leads.length===1){
+    sel.value = appState.leads[0].id;
+    renderProcesses();
+  }else{
+    renderSearchResults(appState.leads.slice(0, 10));
+  }
+}
+
+/* =======================
+   Boot
+   ======================= */
+(function init(){
+  // אם אין נתונים — נציג “אין לידים”
+  renderAll();
+})();
+</script>
+
 */
 </script>
 </body>
