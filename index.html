@@ -1079,21 +1079,20 @@ function openLeadForm(leadId=null){
   const lead = leadId ? appState.leads.find(l=>l.id===leadId) : null;
   const isEdit = !!lead;
 
-  const data = lead || {
-    id: uid("lead"),
-    name:"",
-    phone:"",
-    email:"",
-    status:"חדש",
-    source:"אחר",
-    owner:"מנהל",
-    note:"",
-    createdAt: nowISO(),
-    lastContactAt:"",
-    nextFollowUpAt:"",
-    contactCount: 0
-  };
-
+const data = lead || {
+  id: uid("lead"),
+  name:"",
+  phone:"",
+  email:"",
+  status:"חדש",
+  source:"",        // ✅ ריק כדי שיופיע "בחירה"
+  owner:"",         // ✅ ריק (לא "מנהל")
+  note:"",
+  createdAt: nowISO(),
+  lastContactAt:"",
+  nextFollowUpAt:"",
+  contactCount: 0
+};
   openModal(isEdit ? "עריכת ליד" : "ליד חדש", `
     <div class="split">
       <div>
