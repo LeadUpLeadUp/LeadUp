@@ -1,6 +1,5 @@
 
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1096,6 +1095,34 @@ html[data-theme="dark"] .brand .sub{
   color: rgba(230,193,90,.88);
 }
 
+
+/* ===== Proposal Builder Modal ===== */
+.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9999}
+.modalOverlay.show{display:flex}
+.modalCard{width:min(1100px,92vw);height:min(78vh,760px);background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+.modalHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,0))}
+.modalHead .title{font-weight:800}
+.modalHead .sub{color:var(--muted);font-size:12px;margin-top:2px}
+.modalBody{display:flex;gap:14px;padding:14px 16px;flex:1;overflow:hidden}
+.modalLeft{width:340px;max-width:40%;min-width:260px;display:flex;flex-direction:column;gap:10px}
+.companyList{display:grid;grid-template-columns:1fr;gap:10px;overflow:auto;padding-right:2px}
+.companyBtn{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);cursor:pointer;transition:transform .12s ease, border-color .12s ease}
+.companyBtn:hover{transform:translateY(-1px);border-color:rgba(214,178,94,.45)}
+.companyBtn .name{font-weight:800}
+.companyBtn .hint{font-size:12px;color:var(--muted)}
+.modalRight{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel2)}
+.proposalTop{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.proposalTop .crumb{font-size:12px;color:var(--muted)}
+.proposalFrame{flex:1;min-height:0}
+.proposalFrame iframe{width:100%;height:100%;border:0;background:#fff}
+.modalFoot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.06))}
+.btnGhost{background:transparent;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer}
+.btnGold{background:linear-gradient(135deg, var(--gold), var(--gold2));color:#111;padding:10px 12px;border-radius:12px;border:0;cursor:pointer;font-weight:800}
+@media (max-width: 820px){
+  .modalBody{flex-direction:column}
+  .modalLeft{width:100%;max-width:100%}
+}
+
 </style>
 </head>
 
@@ -1125,7 +1152,7 @@ html[data-theme="dark"] .brand .sub{
         <span class="pill" id="navTasks">0</span>
       </button>
       <button data-view="timeline">
-        <span class="k">🧾 היסטוריה</span>
+        <span class="k">🧾 יצירת הצעה</span>
         <span class="pill" id="navEvents">0</span>
       </button>
       <button data-view="settings">
@@ -1326,7 +1353,7 @@ html[data-theme="dark"] .brand .sub{
 
               <div class="card mini" style="border:1px solid var(--line); border-radius:14px; padding:12px">
                 <div class="muted small" style="margin-bottom:6px">תהליך טיפול</div>
-                <div class="muted2 small" style="margin-bottom:10px">בחר שלב והמערכת תעדכן סטטוס/תיצור משימה/תוסיף אירוע להיסטוריה.</div>
+                <div class="muted2 small" style="margin-bottom:10px">בחר שלב והמערכת תעדכן סטטוס/תיצור משימה/תוסיף אירוע ליצירת הצעה.</div>
                 <div style="display:flex; flex-wrap:wrap; gap:8px">
                   <button class="btn ghost" data-flow-step="נוצר קשר">✅ נוצר קשר</button>
                   <button class="btn ghost" data-flow-step="מתעניין">🔥 מתעניין</button>
@@ -1570,7 +1597,7 @@ function setView(view){
     leads: ["לידים", "ניהול לידים, סטטוסים, פעולות ומעקב"],
     myflows: ["התהליכים שלי", "פעולות ותהליכי טיפול מהירים ללקוח הנבחר"],
     tasks: ["משימות", "תזכורות עם תאריך/שעה + עדיפות + שיוך לליד"],
-    timeline: ["היסטוריה", "Timeline של כל פעולה ושינוי במערכת"],
+    timeline: ["יצירת הצעה", "Timeline של כל פעולה ושינוי במערכת"],
     settings: ["הגדרות", "גיבוי/איפוס וחיבור ל-Google Sheets"]
   };
   el("viewTitle").textContent = titles[view][0];
@@ -2580,5 +2607,246 @@ document.addEventListener("click", (e)=>{
 ;
 
 </script>
+
+<!-- ===== Proposal Builder Modal ===== -->
+<div id="proposalModal" class="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="proposalModalTitle">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div id="proposalModalTitle" class="title">יצירת הצעה</div>
+        <div class="sub">בחר חברת ביטוח — ואז נטען את טופס ההצעה בתוך חלון פנימי</div>
+      </div>
+      <button class="btnGhost" id="proposalCloseBtn" aria-label="סגור">✕ סגור</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="modalLeft">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-weight:800">חברות ביטוח</div>
+          <button class="btnGhost" id="proposalBackBtn" style="display:none">↩ חזרה לרשימה</button>
+        </div>
+
+        <div class="companyList" id="companyList">
+          <!-- שנה כאן את השמות והקישורים לטפסים שלך -->
+          <button class="companyBtn" data-company="הראל" data-url="https://example.com/harel-form">
+            <div>
+              <div class="name">הראל</div>
+              <div class="hint">טופס הצעה</div>
+            </div>
+            <div>›</div>
+          </button>
+
+          <button class="companyBtn" data-company="מגדל" data-url="https://example.com/migdal-form">
+            <div>
+              <div class="name">מגדל</div>
+              <div class="hint">טופס הצעה</div>
+            </div>
+            <div>›</div>
+          </button>
+
+          <button class="companyBtn" data-company="כלל" data-url="https://example.com/clal-form">
+            <div>
+              <div class="name">כלל</div>
+              <div class="hint">טופס הצעה</div>
+            </div>
+            <div>›</div>
+          </button>
+
+          <button class="companyBtn" data-company="הפניקס" data-url="https://example.com/phoenix-form">
+            <div>
+              <div class="name">הפניקס</div>
+              <div class="hint">טופס הצעה</div>
+            </div>
+            <div>›</div>
+          </button>
+
+          <button class="companyBtn" data-company="מנורה מבטחים" data-url="https://example.com/menora-form">
+            <div>
+              <div class="name">מנורה מבטחים</div>
+              <div class="hint">טופס הצעה</div>
+            </div>
+            <div>›</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="modalRight">
+        <div class="proposalTop">
+          <div class="crumb" id="proposalCrumb">לא נבחרה חברה</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a id="proposalOpenExternal" href="#" target="_blank" rel="noopener" style="display:none;color:var(--gold2);font-weight:800;text-decoration:none">פתח בטאב חדש</a>
+          </div>
+        </div>
+
+        <div class="proposalFrame">
+          <iframe id="proposalFrame" title="טופס הצעה" src="about:blank"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="modalFoot">
+      <button class="btnGhost" id="proposalClearBtn">נקה</button>
+      <button class="btnGold" id="proposalDoneBtn">סגור</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ===== Proposal Builder Logic ===== */
+(function(){
+  const modal = document.getElementById('proposalModal');
+  if(!modal) return;
+
+  const frame = document.getElementById('proposalFrame');
+  const crumb = document.getElementById('proposalCrumb');
+  const openExternal = document.getElementById('proposalOpenExternal');
+  const closeBtn = document.getElementById('proposalCloseBtn');
+  const doneBtn = document.getElementById('proposalDoneBtn');
+  const clearBtn = document.getElementById('proposalClearBtn');
+  const backBtn = document.getElementById('proposalBackBtn');
+  const companyList = document.getElementById('companyList');
+
+  function showModal(){
+    modal.classList.add('show');
+    // focus close for accessibility
+    setTimeout(()=> closeBtn?.focus(), 0);
+  }
+  function hideModal(){
+    modal.classList.remove('show');
+  }
+  function clearFrame(){
+    frame.src = 'about:blank';
+    crumb.textContent = 'לא נבחרה חברה';
+    openExternal.style.display = 'none';
+    openExternal.href = '#';
+    backBtn.style.display = 'none';
+    companyList.scrollTop = 0;
+  }
+  function loadCompany(name, url){
+    crumb.textContent = 'נבחר: ' + name;
+    frame.src = url;
+    openExternal.href = url;
+    openExternal.style.display = 'inline';
+    backBtn.style.display = 'inline-flex';
+  }
+
+  // Close actions
+  closeBtn?.addEventListener('click', hideModal);
+  doneBtn?.addEventListener('click', hideModal);
+  clearBtn?.addEventListener('click', clearFrame);
+
+  // Back (go to list state)
+  backBtn?.addEventListener('click', clearFrame);
+
+  // Click outside card closes
+  modal.addEventListener('click', (e)=>{
+    if(e.target === modal) hideModal();
+  });
+
+  // Company selection
+  modal.querySelectorAll('.companyBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const name = btn.getAttribute('data-company') || 'חברה';
+      const url = btn.getAttribute('data-url') || 'about:blank';
+      loadCompany(name, url);
+    });
+  });
+
+  // Hook into navigation:
+  // If there is a nav button with data-view="proposal", open modal when user clicks it.
+  const navProposal = document.querySelector('[data-view="proposal"]');
+  navProposal?.addEventListener('click', (e)=>{
+    // allow the normal tab behavior to mark active etc., but open our modal
+    showModal();
+  });
+
+  // Also allow programmatic open if setView('proposal') is called somewhere.
+  const _setView = window.setView;
+  if(typeof _setView === 'function'){
+    window.setView = function(view){
+      const r = _setView.apply(this, arguments);
+      if(view === 'proposal') showModal();
+      return r;
+    }
+  }
+
+  // ESC closes
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('show')) hideModal();
+  });
+
+})();
+</script>
+
+
+<!-- ===== E-Sign Modal ===== -->
+<div id="esignModal" class="modalOverlay">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div class="title">שליחה לחתימת לקוח</div>
+        <div class="sub">שלח מסמך לחתימה דיגיטלית (DocuSign / PDF / קישור)</div>
+      </div>
+      <button class="btnGhost" id="esignClose">✕ סגור</button>
+    </div>
+
+    <div class="modalBody" style="flex-direction:column;gap:12px">
+      <label>
+        אימייל הלקוח:
+        <input id="esignEmail" type="email" placeholder="client@email.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line)">
+      </label>
+
+      <label>
+        קישור למסמך לחתימה:
+        <input id="esignLink" type="url" placeholder="https://..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line)">
+      </label>
+
+      <div style="color:var(--muted);font-size:13px">
+        בהמשך נוכל לחבר חתימה דיגיטלית אמיתית (DocuSign / PandaDoc / Google Drive).
+      </div>
+    </div>
+
+    <div class="modalFoot">
+      <button class="btnGhost" id="esignCancel">ביטול</button>
+      <button class="btnGold" id="esignSend">שלח לחתימה</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ===== E-Sign Logic ===== */
+(function(){
+  const modal = document.getElementById('esignModal');
+  if(!modal) return;
+
+  const openBtn = document.querySelector('[data-view="esign"]');
+  const closeBtn = document.getElementById('esignClose');
+  const cancelBtn = document.getElementById('esignCancel');
+  const sendBtn = document.getElementById('esignSend');
+
+  function openModal(){ modal.classList.add('show'); }
+  function closeModal(){ modal.classList.remove('show'); }
+
+  openBtn?.addEventListener('click', ()=> openModal());
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+
+  sendBtn?.addEventListener('click', ()=>{
+    const email = document.getElementById('esignEmail').value;
+    const link  = document.getElementById('esignLink').value;
+    alert('נשלח לחתימה (דמו)
+אימייל: ' + email + '
+קישור: ' + link);
+    closeModal();
+  });
+
+  modal.addEventListener('click', (e)=>{
+    if(e.target === modal) closeModal();
+  });
+})();
+</script>
+
 </body>
 </html>
