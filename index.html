@@ -672,31 +672,6 @@
   border-color: rgba(214,178,94,.30);
   box-shadow: 0 14px 30px rgba(214,178,94,.12);
 }
-/* ===== LEADUP: Greeting near logo ===== */
-.greet{
-  margin-top:8px;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(214,178,94,.22);
-  background: rgba(214,178,94,.08);
-  color: rgba(120,90,20,.92);
-  font-size:12px;
-  font-weight:750;
-  line-height:1;
-  white-space:nowrap;
-}
-
-.greet::before{
-  content:"";
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background: var(--gold2);
-  box-shadow: 0 0 0 4px rgba(242,210,124,.16);
-}
 
   </style>
 </head>
@@ -707,11 +682,10 @@
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div>
-  <h1>LEAD-UP</h1>
-  <div class="sub">CRM יוקרתי ללידים • ליד אפ</div>
-  <div class="greet" id="greetText"></div>
-</div>
-
+        <h1>LEAD-UP</h1>
+        <div class="sub">CRM יוקרתי ללידים • ליד אפ</div>
+      </div>
+    </div>
 
     <div class="nav" id="nav">
       <button class="active" data-view="leads">
@@ -2572,27 +2546,6 @@ function seedSample(){
       setTimeout(triggerGlow, 600);
     }
   });
-})();
-/* ===== LEADUP: Greeting by time ===== */
-(function greetByTime(){
-  const elGreet = document.getElementById("greetText");
-  if(!elGreet) return;
-
-  function getGreeting(){
-    const h = new Date().getHours();
-    if(h >= 5 && h < 12) return "בוקר טוב ☀️";
-    if(h >= 12 && h < 17) return "צהריים טובים 🌤️";
-    if(h >= 17 && h < 21) return "ערב טוב 🌙";
-    return "לילה טוב 🌙";
-  }
-
-  function render(){
-    elGreet.textContent = getGreeting();
-  }
-
-  render();
-  // מתעדכן כל דקה (כמעט לא מורגש בביצועים)
-  setInterval(render, 60 * 1000);
 })();
 
 </script>
