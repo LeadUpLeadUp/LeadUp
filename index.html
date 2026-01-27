@@ -2289,10 +2289,10 @@ function renderStats(){
 }
 
 function getFilteredSortedLeads(){
-  const q = (el("q").value||"").trim().toLowerCase();
-  const fStatus = el("fStatus").value;
-  const fSource = el("fSource").value;
-  const sortBy = el("sortBy").value;
+ const fStatus = el("fStatus") ? el("fStatus").value : "";
+const fSource = el("fSource") ? el("fSource").value : "";
+const sortBy  = el("sortBy")  ? el("sortBy").value  : "hot";
+
 
   let arr = [...appState.leads];
 
