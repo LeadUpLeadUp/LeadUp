@@ -2573,6 +2573,27 @@ function seedSample(){
     }
   });
 })();
+/* ===== LEADUP: Greeting by time ===== */
+(function greetByTime(){
+  const elGreet = document.getElementById("greetText");
+  if(!elGreet) return;
+
+  function getGreeting(){
+    const h = new Date().getHours();
+    if(h >= 5 && h < 12) return "בוקר טוב ☀️";
+    if(h >= 12 && h < 17) return "צהריים טובים 🌤️";
+    if(h >= 17 && h < 21) return "ערב טוב 🌙";
+    return "לילה טוב 🌙";
+  }
+
+  function render(){
+    elGreet.textContent = getGreeting();
+  }
+
+  render();
+  // מתעדכן כל דקה (כמעט לא מורגש בביצועים)
+  setInterval(render, 60 * 1000);
+})();
 
 </script>
 </body>
