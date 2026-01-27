@@ -1123,6 +1123,26 @@ html[data-theme="dark"] .brand .sub{
   .modalLeft{width:100%;max-width:100%}
 }
 
+
+/* ===== Top Bar Cream Background ===== */
+.topBar, header, .header, .appHeader {
+  background: #fff7e6 !important;
+}
+
+
+/* ===== Top Controls Cream Background ===== */
+.topControls, .top-actions, .toolbar, .headerBar, .controlsRow {
+  background: #fff4dd !important;
+}
+
+
+/* ===== Top Bar Gold Divider + Depth ===== */
+.topBar, header, .header, .appHeader,
+.topControls, .top-actions, .toolbar, .headerBar, .controlsRow {
+  border-bottom: 1.5px solid rgba(214,178,94,0.55) !important; /* gold line */
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;          /* subtle depth */
+}
+
 </style>
 </head>
 
@@ -1151,10 +1171,20 @@ html[data-theme="dark"] .brand .sub{
         <span class="k">⏰ משימות</span>
         <span class="pill" id="navTasks">0</span>
       </button>
-      <button data-view="timeline">
+      <button data-view="proposal">
         <span class="k">🧾 יצירת הצעה</span>
         <span class="pill" id="navEvents">0</span>
       </button>
+
+      <button type="button" id="navESign" data-view="esign">
+        <span class="k">✍️ שליחה לחתימת לקוח</span>
+      </button>
+
+      <button type="button" id="navMirror" data-view="mirror">
+        <span class="k">🪞 שיקוף ללקוח</span>
+      </button>
+
+
       <button data-view="settings">
         <span class="k">⚙️ הגדרות</span>
         <span class="pill">Local</span>
@@ -2845,6 +2875,98 @@ document.addEventListener("click", (e)=>{
   modal.addEventListener('click', (e)=>{
     if(e.target === modal) closeModal();
   });
+})();
+</script>
+
+
+<script>
+/* ===== Views Patch (proposal + esign) ===== */
+(function(){
+  try{
+    if(window.titles){
+      if(!window.titles.proposal) window.titles.proposal = ["יצירת הצעה","בחירת חברה וטופס הצעה"];
+      if(!window.titles.esign) window.titles.esign = ["שליחה לחתימת לקוח","שליחת מסמך לחתימה דיגיטלית"];
+    }
+  }catch(e){}
+})();
+</script>
+
+
+<script>
+/* ===== Mirror View Patch ===== */
+(function(){
+  try{
+    if(window.titles){
+      if(!window.titles.mirror){
+        window.titles.mirror = ["שיקוף ללקוח","תצוגת מידע ללקוח בזמן אמת"];
+      }
+    }
+  }catch(e){}
+})();
+</script>
+
+
+<!-- ===== Mirror Client Modal ===== -->
+<div id="mirrorModal" class="modalOverlay">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div class="title">שיקוף ללקוח</div>
+        <div class="sub">מסך הדמיה להצגת מידע ללקוח</div>
+      </div>
+      <button class="btnGhost" id="mirrorClose">✕ סגור</button>
+    </div>
+
+    <div class="modalBody" style="flex-direction:column;gap:14px">
+      <div style="font-weight:700">כאן בעתיד תוכל:</div>
+      <ul style="line-height:1.9">
+        <li>להציג הצעות בזמן אמת ללקוח</li>
+        <li>להקרין מסך לפגישה פרונטלית / זום</li>
+        <li>לאשר פרטים לפני חתימה</li>
+        <li>לשלוח קישור צפייה ללקוח</li>
+      </ul>
+      <div style="color:var(--muted)">
+        המסך מוכן לחיבור עתידי — כרגע זה דמו.
+      </div>
+    </div>
+
+    <div class="modalFoot">
+      <button class="btnGold" id="mirrorDone">סגור</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ===== Mirror Modal Logic ===== */
+(function(){
+  const modal = document.getElementById('mirrorModal');
+  if(!modal) return;
+
+  const openBtn = document.querySelector('[data-view="mirror"]');
+  const closeBtn = document.getElementById('mirrorClose');
+  const doneBtn  = document.getElementById('mirrorDone');
+
+  function openModal(){ modal.classList.add('show'); }
+  function closeModal(){ modal.classList.remove('show'); }
+
+  openBtn?.addEventListener('click', ()=> openModal());
+  closeBtn?.addEventListener('click', closeModal);
+  doneBtn?.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e)=>{
+    if(e.target === modal) closeModal();
+  });
+
+  // Hook into setView if exists
+  const _setView = window.setView;
+  if(typeof _setView === 'function'){
+    window.setView = function(view){
+      const r = _setView.apply(this, arguments);
+      if(view === 'mirror') openModal();
+      return r;
+    }
+  }
 })();
 </script>
 
