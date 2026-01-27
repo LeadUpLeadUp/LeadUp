@@ -1156,8 +1156,8 @@ function toast(msg){
 
 /* ===== Filters/Search/Sort ===== */
 el("q").addEventListener("input", renderLeads);
-el("fStatus").addEventListener("change", renderLeads);
-el("fSource").addEventListener("change", renderLeads);
+if(el("fStatus")) el("fStatus").addEventListener("change", renderLeads);
+if(el("fSource")) el("fSource").addEventListener("change", renderLeads);
 el("sortBy").addEventListener("change", renderLeads);
 
 /* ===== Buttons ===== */
