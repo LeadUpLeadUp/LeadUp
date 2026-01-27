@@ -672,61 +672,6 @@
   border-color: rgba(214,178,94,.30);
   box-shadow: 0 14px 30px rgba(214,178,94,.12);
 }
-/* ===== LEADUP: Control Center premium styling ===== */
-.controlCenterCard{
-  position: relative;
-  overflow: hidden;
-  border-color: rgba(214,178,94,.25);
-  background:
-    radial-gradient(820px 420px at 100% 0%, rgba(214,178,94,.12), transparent 60%),
-    radial-gradient(520px 300px at 0% 100%, rgba(242,210,124,.10), transparent 65%),
-    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88));
-  box-shadow:
-    0 18px 46px rgba(12,12,18,.10),
-    0 10px 24px rgba(214,178,94,.12);
-}
-
-/* פס זהב עליון */
-.controlCenterCard::before{
-  content:"";
-  position:absolute;
-  left:14px;
-  right:14px;
-  top:10px;
-  height:3px;
-  border-radius:999px;
-  background: linear-gradient(90deg,
-    rgba(214,178,94,0),
-    rgba(214,178,94,.85),
-    rgba(242,210,124,.75),
-    rgba(214,178,94,0)
-  );
-  opacity:.9;
-}
-
-/* כותרת */
-.controlCenterCard .head{
-  background: rgba(255,255,255,.75);
-}
-
-/* כפתור סטטיסטיקות */
-.controlCenterCard .btn.gold{
-  background: linear-gradient(180deg, rgba(214,178,94,.28), rgba(255,255,255,.96));
-  border-color: rgba(214,178,94,.55);
-}
-
-/* כרטיסי משנה */
-.controlCenterCard .miniCard{
-  border-color: rgba(214,178,94,.20);
-  background: rgba(255,255,255,.90);
-}
-
-/* Hover עדין */
-.controlCenterCard:hover{
-  box-shadow:
-    0 22px 60px rgba(214,178,94,.18),
-    0 12px 32px rgba(12,12,18,.12);
-}
 
   </style>
 </head>
@@ -737,8 +682,8 @@
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div>
-        <h1>ליד אפ</h1>
-        <div class="sub">CRM יוקרתי ללידים • ניהול לקוחות</div>
+        <h1>LEAD-UP</h1>
+        <div class="sub">CRM יוקרתי ללידים • ליד אפ</div>
       </div>
     </div>
 
@@ -829,7 +774,31 @@
           <div class="head">
             <h2>רשימת לידים</h2>
             <div style="display:flex; gap:8px; flex-wrap:wrap">
-              
+              <select id="fStatus" title="פילטר סטטוס" style="width:170px">
+                <option value="">כל הסטטוסים</option>
+                <option>חדש</option>
+                <option>נוצר קשר</option>
+                <option>מתעניין</option>
+                <option>הצעת מחיר</option>
+                <option>נסגר</option>
+                <option>לא רלוונטי</option>
+              </select>
+              <select id="fSource" title="פילטר מקור" style="width:170px">
+                <option value="">כל המקורות</option>
+                <option>פייסבוק</option>
+                <option>גוגל</option>
+                <option>הפניה</option>
+                <option>טלפון</option>
+                <option>אתר</option>
+                <option>אחר</option>
+              </select>
+              <select id="sortBy" title="מיון" style="width:170px">
+                <option value="hot">מיון: הכי חם</option>
+                <option value="next">מיון: תאריך מעקב הבא</option>
+                <option value="newest">מיון: הכי חדש</option>
+                <option value="oldest">מיון: הכי ישן</option>
+              </select>
+            </div>
           </div>
           <div class="body">
             <div class="tableWrap">
@@ -854,7 +823,7 @@
           </div>
         </section>
 
-       <aside class="card controlCenterCard" id="viewRight">
+        <aside class="card" id="viewRight">
           <div class="head">
             <h2>מרכז שליטה</h2>
             <div class="pill gold">LEADUP</div>
@@ -1156,10 +1125,9 @@ function toast(msg){
 
 /* ===== Filters/Search/Sort ===== */
 el("q").addEventListener("input", renderLeads);
-if(el("fStatus")) el("fStatus").addEventListener("change", renderLeads);
-if(el("fSource")) el("fSource").addEventListener("change", renderLeads);
-if(el("sortBy")) el("sortBy").addEventListener("change", renderLeads);
-
+el("fStatus").addEventListener("change", renderLeads);
+el("fSource").addEventListener("change", renderLeads);
+el("sortBy").addEventListener("change", renderLeads);
 
 /* ===== Buttons ===== */
 el("btnAddLead").addEventListener("click", ()=>openLeadForm());
@@ -2289,10 +2257,10 @@ function renderStats(){
 }
 
 function getFilteredSortedLeads(){
- const fStatus = el("fStatus") ? el("fStatus").value : "";
-const fSource = el("fSource") ? el("fSource").value : "";
-const sortBy  = el("sortBy")  ? el("sortBy").value  : "hot";
-
+  const q = (el("q").value||"").trim().toLowerCase();
+  const fStatus = el("fStatus").value;
+  const fSource = el("fSource").value;
+  const sortBy = el("sortBy").value;
 
   let arr = [...appState.leads];
 
