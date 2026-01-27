@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1115,7 +1116,7 @@ html[data-theme="dark"] .brand .sub{
         <span class="pill gold" id="navCount">0</span>
       </button>
 
-      <button type="button" id="navMyFlows" data-view="myflows">
+      <button type="button" id="navMyFlows">
         <span class="k">⚙️ התהליכים שלי</span>
         <span class="pill gold">PRO</span>
       </button>
@@ -1516,7 +1517,8 @@ nav.addEventListener("click", (e)=>{
   setView(btn.dataset.view);
 });
 function setView(view){
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
+  if(!["leads","tasks","timeline","settings"].includes(view)) view="leads";
+  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
 
   el("viewLeads").style.display = (view==="leads") ? "" : "none";
   el("viewRight").style.display = (view==="leads") ? "" : "none";
