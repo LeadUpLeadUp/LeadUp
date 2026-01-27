@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1141,6 +1142,61 @@ html[data-theme="dark"] .brand .sub{
 .topControls, .top-actions, .toolbar, .headerBar, .controlsRow {
   border-bottom: 1.5px solid rgba(214,178,94,0.55) !important; /* gold line */
   box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;          /* subtle depth */
+}
+
+
+/* ===== Mirror Client (Real View) ===== */
+.mirrorGrid{display:grid;grid-template-columns:360px 1fr;gap:14px;flex:1;min-height:0}
+.mirrorPanel{border:1px solid var(--line);background:var(--panel2);border-radius:16px;padding:12px;overflow:auto}
+.mirrorPanel h4{margin:0 0 10px;font-size:14px}
+.mirrorField{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.mirrorField label{font-size:12px;color:var(--muted)}
+.mirrorField input,.mirrorField select{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);outline:none}
+.mirrorCard{border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--panel)}
+.mirrorKV{display:grid;grid-template-columns:92px 1fr;gap:8px;font-size:13px}
+.mirrorKV div:nth-child(odd){color:var(--muted)}
+.mirrorKV div:nth-child(even){font-weight:700}
+.mirrorActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mirrorActions .btnGhost,.mirrorActions .btnGold{white-space:nowrap}
+.mirrorPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel2);display:flex;flex-direction:column;min-height:0}
+.mirrorPreviewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.mirrorPreviewHead .ttl{font-weight:900}
+.mirrorPreviewHead .meta{font-size:12px;color:var(--muted)}
+.mirrorPreviewBody{flex:1;min-height:0}
+.mirrorPreviewBody iframe{width:100%;height:100%;border:0;background:#fff}
+.mirrorNotice{font-size:12px;color:var(--muted);line-height:1.6}
+@media (max-width: 920px){
+  .mirrorGrid{grid-template-columns:1fr}
+}
+.mirrorOnly body{overflow:hidden}
+.mirrorStandalone{position:fixed;inset:0;background:#fff;z-index:100000;display:none}
+.mirrorStandalone.show{display:block}
+.mirrorStandaloneInner{position:absolute;inset:0;display:flex;flex-direction:column}
+.mirrorStandaloneTop{padding:12px 16px;border-bottom:1px solid rgba(214,178,94,0.55);box-shadow:0 4px 14px rgba(0,0,0,0.08)}
+.mirrorStandaloneTop .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.mirrorStandaloneTop .row .title{font-weight:1000}
+.mirrorStandaloneTop .row .sub{font-size:12px;color:#555}
+.mirrorStandaloneMain{flex:1;min-height:0;padding:14px 16px;background:#fff7e6}
+.mirrorStandaloneMain .wrap{height:100%;max-width:1200px;margin:0 auto}
+
+
+/* ===== Fix: Modal labels contrast on Light/Cream UI ===== */
+body[data-theme="light"] label{
+  color: rgba(12,12,18,.82) !important;
+}
+body[data-theme="light"] .modalBody label{
+  color: rgba(12,12,18,.90) !important;
+  font-weight: 800 !important;
+}
+body[data-theme="light"] .modalBody .muted,
+body[data-theme="light"] .modalBody .small,
+body[data-theme="light"] .modalBody .hint{
+  color: rgba(12,12,18,.62) !important;
+}
+body[data-theme="light"] .modalBody input::placeholder,
+body[data-theme="light"] .modalBody textarea::placeholder{
+  color: rgba(12,12,18,.45) !important;
+  opacity: 1 !important;
 }
 
 </style>
@@ -2674,10 +2730,10 @@ document.addEventListener("click", (e)=>{
             <div>›</div>
           </button>
 
-          <button class="companyBtn" data-company="כלל" data-url="https://example.com/clal-form">
+          <button class="companyBtn" data-company="כלל" data-url="clal_offer.pdf">
             <div>
               <div class="name">כלל</div>
-              <div class="hint">טופס הצעה</div>
+              <div class="hint">טופס הצעה (PDF)</div>
             </div>
             <div>›</div>
           </button>
@@ -2892,81 +2948,345 @@ document.addEventListener("click", (e)=>{
 </script>
 
 
-<script>
-/* ===== Mirror View Patch ===== */
-(function(){
-  try{
-    if(window.titles){
-      if(!window.titles.mirror){
-        window.titles.mirror = ["שיקוף ללקוח","תצוגת מידע ללקוח בזמן אמת"];
-      }
-    }
-  }catch(e){}
-})();
-</script>
 
-
-<!-- ===== Mirror Client Modal ===== -->
-<div id="mirrorModal" class="modalOverlay">
+<!-- ===== Mirror Client Modal (Real) ===== -->
+<div id="mirrorModal" class="modalOverlay" role="dialog" aria-modal="true">
   <div class="modalCard">
     <div class="modalHead">
       <div>
         <div class="title">שיקוף ללקוח</div>
-        <div class="sub">מסך הדמיה להצגת מידע ללקוח</div>
+        <div class="sub">מציג ללקוח נתוני ליד + הצעה/PDF בחלון נקי</div>
       </div>
       <button class="btnGhost" id="mirrorClose">✕ סגור</button>
     </div>
 
-    <div class="modalBody" style="flex-direction:column;gap:14px">
-      <div style="font-weight:700">כאן בעתיד תוכל:</div>
-      <ul style="line-height:1.9">
-        <li>להציג הצעות בזמן אמת ללקוח</li>
-        <li>להקרין מסך לפגישה פרונטלית / זום</li>
-        <li>לאשר פרטים לפני חתימה</li>
-        <li>לשלוח קישור צפייה ללקוח</li>
-      </ul>
-      <div style="color:var(--muted)">
-        המסך מוכן לחיבור עתידי — כרגע זה דמו.
+    <div class="modalBody" style="padding:14px 16px">
+      <div class="mirrorGrid">
+        <div class="mirrorPanel">
+          <h4>בחירת ליד</h4>
+          <div class="mirrorField">
+            <label>בחר ליד מהרשימה</label>
+            <select id="mirrorLeadSelect">
+              <option value="">— בחר ליד —</option>
+            </select>
+          </div>
+
+          <h4 style="margin-top:14px">מסמך להצגה</h4>
+          <div class="mirrorField">
+            <label>שם הצעה / מסמך</label>
+            <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
+          </div>
+          <div class="mirrorField">
+            <label>קישור ל‑PDF או דף הצעה</label>
+            <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
+          </div>
+
+          <div class="mirrorNotice">
+            טיפ: אם PDF חוסם טעינה בתוך חלון (iframe), עדיין תוכל לפתוח אותו בטאב חדש מתוך הכפתור למטה.
+          </div>
+
+          <div class="mirrorActions">
+            <button class="btnGold" id="mirrorApply">הצג</button>
+            <button class="btnGhost" id="mirrorCopyLink">העתק קישור צפייה</button>
+            <button class="btnGhost" id="mirrorOpenLink">פתח קישור צפייה</button>
+            <button class="btnGhost" id="mirrorFull">מסך מלא</button>
+          </div>
+
+          <h4 style="margin-top:14px">נתוני ליד</h4>
+          <div class="mirrorCard" id="mirrorLeadCard">
+            <div class="mirrorKV" id="mirrorKV">
+              <div>שם</div><div>—</div>
+              <div>טלפון</div><div>—</div>
+              <div>אימייל</div><div>—</div>
+              <div>סטטוס</div><div>—</div>
+              <div>מקור</div><div>—</div>
+              <div>בעלים</div><div>—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mirrorPreview">
+          <div class="mirrorPreviewHead">
+            <div>
+              <div class="ttl" id="mirrorPrevTitle">לא נבחר מסמך</div>
+              <div class="meta" id="mirrorPrevMeta">בחר ליד ומסמך</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <a id="mirrorOpenExternal" href="#" target="_blank" rel="noopener" style="display:none;color:var(--gold2);font-weight:900;text-decoration:none">פתח מסמך</a>
+            </div>
+          </div>
+          <div class="mirrorPreviewBody">
+            <iframe id="mirrorFrame" title="מסמך להצגה" src="about:blank"></iframe>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="modalFoot">
+      <button class="btnGhost" id="mirrorClear">נקה</button>
       <button class="btnGold" id="mirrorDone">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Mirror Standalone (Link View) ===== -->
+<div id="mirrorStandalone" class="mirrorStandalone">
+  <div class="mirrorStandaloneInner">
+    <div class="mirrorStandaloneTop">
+      <div class="row">
+        <div>
+          <div class="title" id="mirrorS_Title">שיקוף ללקוח</div>
+          <div class="sub" id="mirrorS_Sub">תצוגת לקוח</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btnGhost" id="mirrorS_Full">מסך מלא</button>
+          <a class="btnGold" id="mirrorS_Open" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:none">פתח מסמך</a>
+        </div>
+      </div>
+    </div>
+    <div class="mirrorStandaloneMain">
+      <div class="wrap" style="height:100%">
+        <div class="mirrorGrid" style="height:100%">
+          <div class="mirrorPanel">
+            <h4>פרטי לקוח</h4>
+            <div class="mirrorCard">
+              <div class="mirrorKV" id="mirrorS_KV"></div>
+            </div>
+          </div>
+          <div class="mirrorPreview" style="height:100%">
+            <div class="mirrorPreviewHead">
+              <div>
+                <div class="ttl" id="mirrorS_DocTitle">מסמך</div>
+                <div class="meta" id="mirrorS_DocMeta">—</div>
+              </div>
+            </div>
+            <div class="mirrorPreviewBody">
+              <iframe id="mirrorS_Frame" title="מסמך" src="about:blank"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 
 <script>
-/* ===== Mirror Modal Logic ===== */
+/* ===== Mirror Client (Real) Logic ===== */
 (function(){
   const modal = document.getElementById('mirrorModal');
-  if(!modal) return;
-
   const openBtn = document.querySelector('[data-view="mirror"]');
   const closeBtn = document.getElementById('mirrorClose');
   const doneBtn  = document.getElementById('mirrorDone');
+  const clearBtn = document.getElementById('mirrorClear');
 
-  function openModal(){ modal.classList.add('show'); }
-  function closeModal(){ modal.classList.remove('show'); }
+  const sel = document.getElementById('mirrorLeadSelect');
+  const offerName = document.getElementById('mirrorOfferName');
+  const pdfUrl = document.getElementById('mirrorPdfUrl');
 
-  openBtn?.addEventListener('click', ()=> openModal());
-  closeBtn?.addEventListener('click', closeModal);
-  doneBtn?.addEventListener('click', closeModal);
+  const kv = document.getElementById('mirrorKV');
+  const frame = document.getElementById('mirrorFrame');
+  const prevTitle = document.getElementById('mirrorPrevTitle');
+  const prevMeta = document.getElementById('mirrorPrevMeta');
+  const openExternal = document.getElementById('mirrorOpenExternal');
 
-  modal.addEventListener('click', (e)=>{
-    if(e.target === modal) closeModal();
+  const btnApply = document.getElementById('mirrorApply');
+  const btnCopy  = document.getElementById('mirrorCopyLink');
+  const btnOpen  = document.getElementById('mirrorOpenLink');
+  const btnFull  = document.getElementById('mirrorFull');
+
+  function show(){ modal.classList.add('show'); refreshLeadSelect(); }
+  function hide(){ modal.classList.remove('show'); }
+
+  function esc(v){ return (window.escapeHTML ? window.escapeHTML(v||'') : (v||'')); }
+
+  function refreshLeadSelect(){
+    if(!window.appState || !Array.isArray(window.appState.leads)) return;
+    const leads = window.appState.leads.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— בחר ליד —</option>' + leads.map(l=>{
+      const label = `${l.name||'—'} • ${l.phone||''}`.trim();
+      return `<option value="${esc(l.id)}">${esc(label)}</option>`;
+    }).join('');
+    if(current) sel.value = current;
+  }
+
+  function setKV(lead){
+    const pairs = [
+      ['שם', lead?.name || '—'],
+      ['טלפון', lead?.phone || '—'],
+      ['אימייל', lead?.email || '—'],
+      ['סטטוס', lead?.status || '—'],
+      ['מקור', lead?.source || '—'],
+      ['בעלים', lead?.owner || '—'],
+    ];
+    kv.innerHTML = pairs.map(([k,v])=> `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
+  }
+
+  function applyPreview(){
+    const leadId = sel.value;
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
+    setKV(lead);
+
+    const name = offerName.value.trim() || 'מסמך';
+    const url  = pdfUrl.value.trim();
+
+    prevTitle.textContent = name || 'מסמך';
+    prevMeta.textContent = lead?.name ? ('לקוח: ' + (lead.name||'')) : 'בחר ליד להצגה';
+
+    if(url){
+      frame.src = url;
+      openExternal.href = url;
+      openExternal.style.display = 'inline';
+    }else{
+      frame.src = 'about:blank';
+      openExternal.href = '#';
+      openExternal.style.display = 'none';
+    }
+  }
+
+  function encodePayload(obj){
+    const json = JSON.stringify(obj);
+    return btoa(unescape(encodeURIComponent(json)));
+  }
+  function decodePayload(str){
+    const json = decodeURIComponent(escape(atob(str)));
+    return JSON.parse(json);
+  }
+
+  function buildMirrorLink(){
+    const leadId = sel.value;
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId) || null;
+
+    const payload = {
+      v: 1,
+      lead: lead ? {
+        name: lead.name||'',
+        phone: lead.phone||'',
+        email: lead.email||'',
+        status: lead.status||'',
+        source: lead.source||'',
+        owner: lead.owner||''
+      } : null,
+      offerName: offerName.value.trim() || '',
+      pdfUrl: pdfUrl.value.trim() || ''
+    };
+
+    const data = encodePayload(payload);
+    const base = location.origin + location.pathname;
+    return base + '?mirror=1&data=' + encodeURIComponent(data);
+  }
+
+  async function copyText(txt){
+    try{
+      await navigator.clipboard.writeText(txt);
+      if(window.toast) toast('הועתק ✅');
+      else alert('הועתק ✅');
+    }catch(e){
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      if(window.toast) toast('הועתק ✅');
+      else alert('הועתק ✅');
+    }
+  }
+
+  function requestFull(el){
+    const target = el || document.documentElement;
+    const rfs = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
+    if(rfs) rfs.call(target);
+  }
+
+  // Wire events
+  openBtn?.addEventListener('click', ()=>{ show(); setTimeout(()=> sel.focus(), 0); });
+  closeBtn?.addEventListener('click', hide);
+  doneBtn?.addEventListener('click', hide);
+  clearBtn?.addEventListener('click', ()=>{
+    sel.value = '';
+    offerName.value = '';
+    pdfUrl.value = '';
+    setKV(null);
+    prevTitle.textContent = 'לא נבחר מסמך';
+    prevMeta.textContent = 'בחר ליד ומסמך';
+    frame.src = 'about:blank';
+    openExternal.style.display = 'none';
   });
+
+  modal?.addEventListener('click', (e)=>{ if(e.target===modal) hide(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal?.classList.contains('show')) hide(); });
+
+  sel?.addEventListener('change', ()=> applyPreview());
+  btnApply?.addEventListener('click', ()=> applyPreview());
+  btnCopy?.addEventListener('click', ()=> copyText(buildMirrorLink()));
+  btnOpen?.addEventListener('click', ()=> window.open(buildMirrorLink(), '_blank', 'noopener'));
+  btnFull?.addEventListener('click', ()=> requestFull(document.querySelector('#mirrorModal .modalCard')));
 
   // Hook into setView if exists
   const _setView = window.setView;
   if(typeof _setView === 'function'){
     window.setView = function(view){
       const r = _setView.apply(this, arguments);
-      if(view === 'mirror') openModal();
+      if(view === 'mirror') show();
       return r;
     }
   }
+
+  // ===== Standalone Mode (link view) =====
+  const params = new URLSearchParams(location.search);
+  const isMirror = params.get('mirror') === '1';
+  const dataParam = params.get('data');
+
+  const standalone = document.getElementById('mirrorStandalone');
+  if(isMirror && dataParam && standalone){
+    let payload = null;
+    try{ payload = decodePayload(decodeURIComponent(dataParam)); }catch(e){ payload = null; }
+
+    // hide app shell for clean view
+    try{
+      document.querySelector('.app')?.setAttribute('style','display:none');
+      document.body.style.background = '#fff7e6';
+    }catch(e){}
+
+    standalone.classList.add('show');
+
+    const kvEl = document.getElementById('mirrorS_KV');
+    const docTitle = document.getElementById('mirrorS_DocTitle');
+    const docMeta = document.getElementById('mirrorS_DocMeta');
+    const sFrame = document.getElementById('mirrorS_Frame');
+    const sOpen = document.getElementById('mirrorS_Open');
+    const sFull = document.getElementById('mirrorS_Full');
+
+    const lead = payload?.lead || null;
+    const pairs = [
+      ['שם', lead?.name || '—'],
+      ['טלפון', lead?.phone || '—'],
+      ['אימייל', lead?.email || '—'],
+      ['סטטוס', lead?.status || '—'],
+      ['מקור', lead?.source || '—'],
+      ['בעלים', lead?.owner || '—'],
+    ];
+    kvEl.innerHTML = pairs.map(([k,v])=> `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
+
+    docTitle.textContent = payload?.offerName || 'מסמך';
+    docMeta.textContent = lead?.name ? ('לקוח: ' + lead.name) : '—';
+
+    const url = payload?.pdfUrl || '';
+    if(url){
+      sFrame.src = url;
+      sOpen.href = url;
+      sOpen.style.display = 'inline-flex';
+    }else{
+      sFrame.src = 'about:blank';
+      sOpen.style.display = 'none';
+    }
+
+    sFull?.addEventListener('click', ()=> requestFull(standalone));
+  }
+
 })();
 </script>
 
