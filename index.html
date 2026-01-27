@@ -1116,9 +1116,8 @@ html[data-theme="dark"] .brand .sub{
         <span class="pill gold" id="navCount">0</span>
       </button>
 
-      <button type="button" id="navMyFlows">
+      <button type="button" id="navMyFlows" data-view="myflows">
         <span class="k">⚙️ התהליכים שלי</span>
-        <span class="pill gold">PRO</span>
       </button>
 
       <button data-view="tasks">
@@ -1305,7 +1304,47 @@ html[data-theme="dark"] .brand .sub{
             </div>
             <div class="help" id="emptyTasks" style="display:none">אין משימות פתוחות.</div>
           </div>
+        
+        <!-- My Flows view -->
+        <section class="card" id="viewMyFlows" style="display:none">
+          <div class="head">
+            <h2>התהליכים שלי</h2>
+            <div class="muted small">תבניות טיפול מהירות ללקוח: שיחה, הצעה, מסמכים ומעקב</div>
+          </div>
+          <div class="body">
+            <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px">
+              <div class="card mini" style="border:1px solid var(--line); border-radius:14px; padding:12px">
+                <div class="muted small" style="margin-bottom:6px">פעולות מהירות</div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px">
+                  <button class="btn" id="flowCall">📞 שיחה</button>
+                  <button class="btn" id="flowWhatsApp">💬 וואטסאפ</button>
+                  <button class="btn" id="flowEmail">✉️ מייל</button>
+                  <button class="btn" id="flowNote">📝 הערה</button>
+                </div>
+                <div class="muted2 small" style="margin-top:10px">הפעולות משתמשות בלקוח שנבחר כרגע (כמו שאר המערכת).</div>
+              </div>
+
+              <div class="card mini" style="border:1px solid var(--line); border-radius:14px; padding:12px">
+                <div class="muted small" style="margin-bottom:6px">תהליך טיפול</div>
+                <div class="muted2 small" style="margin-bottom:10px">בחר שלב והמערכת תעדכן סטטוס/תיצור משימה/תוסיף אירוע להיסטוריה.</div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px">
+                  <button class="btn ghost" data-flow-step="נוצר קשר">✅ נוצר קשר</button>
+                  <button class="btn ghost" data-flow-step="מתעניין">🔥 מתעניין</button>
+                  <button class="btn ghost" data-flow-step="הצעת מחיר">💰 הצעת מחיר</button>
+                  <button class="btn ghost" data-flow-step="נסגר">🏁 נסגר</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="hr" style="margin:14px 0"></div>
+
+            <div class="muted2 small">
+              טיפ: אם תרצה, אפשר לחבר כל כפתור כאן ליצירת משימה אוטומטית (SLA), פתיחת מודאל מייל פנימי, או “תזכורת עוד X ימים”.
+            </div>
+          </div>
         </section>
+
+</section>
 
         <!-- Timeline view -->
         <section class="card" id="viewTimeline" style="display:none">
@@ -1517,17 +1556,19 @@ nav.addEventListener("click", (e)=>{
   setView(btn.dataset.view);
 });
 function setView(view){
-  if(!["leads","tasks","timeline","settings"].includes(view)) view="leads";
+  if(!["leads","myflows","tasks","timeline","settings"].includes(view)) view="leads";
   document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
 
   el("viewLeads").style.display = (view==="leads") ? "" : "none";
   el("viewRight").style.display = (view==="leads") ? "" : "none";
+  el("viewMyFlows").style.display = (view==="myflows") ? "" : "none";
   el("viewTasks").style.display = (view==="tasks") ? "" : "none";
   el("viewTimeline").style.display = (view==="timeline") ? "" : "none";
   el("viewSettings").style.display = (view==="settings") ? "" : "none";
 
   const titles = {
     leads: ["לידים", "ניהול לידים, סטטוסים, פעולות ומעקב"],
+    myflows: ["התהליכים שלי", "פעולות ותהליכי טיפול מהירים ללקוח הנבחר"],
     tasks: ["משימות", "תזכורות עם תאריך/שעה + עדיפות + שיוך לליד"],
     timeline: ["היסטוריה", "Timeline של כל פעולה ושינוי במערכת"],
     settings: ["הגדרות", "גיבוי/איפוס וחיבור ל-Google Sheets"]
@@ -1536,12 +1577,13 @@ function setView(view){
   el("viewSub").textContent = titles[view][1];
 
   // active view highlight (cards currently visible)
-  ["viewLeads","viewRight","viewTasks","viewTimeline","viewSettings"].forEach(id=>{
+  ["viewLeads","viewRight","viewMyFlows","viewTasks","viewTimeline","viewSettings"].forEach(id=>{
     const node = el(id);
     if(!node) return;
     node.classList.remove("activeView");
   });
   if(view==="leads"){ el("viewLeads")?.classList.add("activeView"); el("viewRight")?.classList.add("activeView"); }
+  if(view==="myflows") el("viewMyFlows")?.classList.add("activeView");
   if(view==="tasks") el("viewTasks")?.classList.add("activeView");
   if(view==="timeline") el("viewTimeline")?.classList.add("activeView");
   if(view==="settings") el("viewSettings")?.classList.add("activeView");
@@ -1550,7 +1592,7 @@ function setView(view){
 
   showLoader(260);
   // add subtle entrance animation to visible panels
-  ["viewLeads","viewRight","viewTasks","viewTimeline","viewSettings"].forEach(id=>{
+  ["viewLeads","viewRight","viewMyFlows","viewTasks","viewTimeline","viewSettings"].forEach(id=>{
     const node = el(id);
     if(!node) return;
     node.classList.remove("viewPanel");
@@ -2534,39 +2576,8 @@ document.addEventListener("click", (e)=>{
 
 
 /* ===== Sidebar: My Flows (replaces Quick Task button) ===== */
-(function(){
-  const b = document.getElementById("navMyFlows");
-  if(!b) return;
 
-  b.addEventListener("click", ()=>{
-    // give it the same "active" feel as other nav buttons
-    document.querySelectorAll(".nav button").forEach(x=>{
-      if(x !== b) x.classList.remove("active");
-    });
-    b.classList.add("active");
-    // open the same modal as "quick task" (task form)
-    if(typeof openTaskForm === "function"){
-      openTaskForm();
-    }else{
-      const q = document.getElementById("btnQuickTask");
-      if(q) q.click();
-    }
-    // if user was on leads/tasks/etc, don't permanently change view;
-    // remove active highlight after a short moment to avoid confusion.
-    window.setTimeout(()=>{
-      b.classList.remove("active");
-      // restore active state based on current view title (best-effort)
-      const vt = document.getElementById("viewTitle")?.textContent || "";
-      const map = { "לידים":"leads", "משימות":"tasks", "היסטוריה":"timeline", "הגדרות":"settings" };
-      const cur = map[vt];
-      if(cur){
-        document.querySelectorAll(".nav button[data-view]").forEach(btn=>{
-          btn.classList.toggle("active", btn.dataset.view===cur);
-        });
-      }
-    }, 700);
-  });
-})();
+;
 
 </script>
 </body>
