@@ -1,5 +1,4 @@
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1306,37 +1305,6 @@ body[data-theme="light"] .modalBody textarea::placeholder{
   font-size:16px;
   line-height:1;
 }
-
-
-/* ==== Ensure leads table fits viewport without horizontal scroll ==== */
-#viewLeads{
-  overflow-x: hidden;
-}
-
-#viewLeads .tableWrap{
-  overflow-x: hidden;
-}
-
-#viewLeads table{
-  width:100%;
-  min-width:0; /* allow table to shrink to container */
-  table-layout: fixed;
-}
-
-#viewLeads th, 
-#viewLeads td{
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-/* rebalance column widths so everything fits */
-#viewLeads th:nth-child(1), #viewLeads td:nth-child(1){ width: 22%; } /* שם */
-#viewLeads th:nth-child(2), #viewLeads td:nth-child(2){ width: 18%; } /* טלפון */
-#viewLeads th:nth-child(3), #viewLeads td:nth-child(3){ width: 14%; } /* סטטוס */
-#viewLeads th:nth-child(4), #viewLeads td:nth-child(4){ width: 14%; } /* מקור */
-#viewLeads th:nth-child(5), #viewLeads td:nth-child(5){ width: 14%; } /* חום */
-#viewLeads th:nth-child(6), #viewLeads td:nth-child(6){ width: 18%; } /* פעולות */
 
 </style>
 </head>
