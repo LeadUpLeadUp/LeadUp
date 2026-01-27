@@ -672,6 +672,61 @@
   border-color: rgba(214,178,94,.30);
   box-shadow: 0 14px 30px rgba(214,178,94,.12);
 }
+/* ===== LEADUP: Control Center premium styling ===== */
+.controlCenterCard{
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(214,178,94,.25);
+  background:
+    radial-gradient(820px 420px at 100% 0%, rgba(214,178,94,.12), transparent 60%),
+    radial-gradient(520px 300px at 0% 100%, rgba(242,210,124,.10), transparent 65%),
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88));
+  box-shadow:
+    0 18px 46px rgba(12,12,18,.10),
+    0 10px 24px rgba(214,178,94,.12);
+}
+
+/* פס זהב עליון */
+.controlCenterCard::before{
+  content:"";
+  position:absolute;
+  left:14px;
+  right:14px;
+  top:10px;
+  height:3px;
+  border-radius:999px;
+  background: linear-gradient(90deg,
+    rgba(214,178,94,0),
+    rgba(214,178,94,.85),
+    rgba(242,210,124,.75),
+    rgba(214,178,94,0)
+  );
+  opacity:.9;
+}
+
+/* כותרת */
+.controlCenterCard .head{
+  background: rgba(255,255,255,.75);
+}
+
+/* כפתור סטטיסטיקות */
+.controlCenterCard .btn.gold{
+  background: linear-gradient(180deg, rgba(214,178,94,.28), rgba(255,255,255,.96));
+  border-color: rgba(214,178,94,.55);
+}
+
+/* כרטיסי משנה */
+.controlCenterCard .miniCard{
+  border-color: rgba(214,178,94,.20);
+  background: rgba(255,255,255,.90);
+}
+
+/* Hover עדין */
+.controlCenterCard:hover{
+  box-shadow:
+    0 22px 60px rgba(214,178,94,.18),
+    0 12px 32px rgba(12,12,18,.12);
+}
 
   </style>
 </head>
