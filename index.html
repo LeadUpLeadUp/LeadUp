@@ -1,6 +1,5 @@
 
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -2990,6 +2989,7 @@ document.addEventListener("click", (e)=>{
             <button class="btnGhost" id="mirrorCopyLink">העתק קישור צפייה</button>
             <button class="btnGhost" id="mirrorOpenLink">פתח קישור צפייה</button>
             <button class="btnGhost" id="mirrorFull">מסך מלא</button>
+            <button class="btnGold" id="mirrorScriptOpen">🗣️ שיקוף השיחה</button>
           </div>
 
           <h4 style="margin-top:14px">נתוני ליד</h4>
@@ -3027,6 +3027,42 @@ document.addEventListener("click", (e)=>{
       <button class="btnGold" id="mirrorDone">סגור</button>
     </div>
   </div>
+
+<!-- ===== Mirror Talk Script Modal ===== -->
+<div id="mirrorScriptModal" class="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modalCard wide">
+    <div class="modalHead">
+      <div>
+        <div class="title">שיקוף השיחה</div>
+        <div class="sub">מסך עבודה לנציג — טקסט להקראה/שיקוף ללקוח</div>
+      </div>
+      <button class="btnGhost" id="mirrorScriptClose">✕ סגור</button>
+    </div>
+
+    <div class="modalBody" style="padding:14px 16px; display:flex; flex-direction:column; gap:10px;">
+      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div class="badge" id="mirrorScriptLeadBadge">לקוח: —</div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btnGhost" id="mirrorScriptCopy">📋 העתק טקסט</button>
+          <button class="btnGhost" id="mirrorScriptClear">🧹 נקה</button>
+          <button class="btnGhost" id="mirrorScriptFull">⛶ מסך מלא</button>
+        </div>
+      </div>
+
+      <textarea id="mirrorScriptText" class="mirrorScriptArea"
+        placeholder="כאן הנציג יכתוב את שיקוף העסקה/הרכישה, ויקריא ללקוח..."></textarea>
+
+      <div class="help" style="margin-top:2px">
+        נשמר אוטומטית לפי הלקוח שנבחר (Local). אפשר להעתיק ולהדביק מחדש בכל שיחה.
+      </div>
+    </div>
+
+    <div class="modalFoot">
+      <button class="btnGold" id="mirrorScriptDone">סגור</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- ===== Mirror Standalone (Link View) ===== -->
@@ -3289,6 +3325,90 @@ document.addEventListener("click", (e)=>{
 
 })();
 </script>
+
+
+<script>
+/* ===== Mirror Talk Script Logic ===== */
+(function(){
+  const modal = document.getElementById('mirrorScriptModal');
+  if(!modal) return;
+
+  const openBtn = document.getElementById('mirrorScriptOpen');
+  const closeBtn = document.getElementById('mirrorScriptClose');
+  const doneBtn = document.getElementById('mirrorScriptDone');
+
+  const badge = document.getElementById('mirrorScriptLeadBadge');
+  const ta = document.getElementById('mirrorScriptText');
+
+  const btnCopy = document.getElementById('mirrorScriptCopy');
+  const btnClear = document.getElementById('mirrorScriptClear');
+  const btnFull = document.getElementById('mirrorScriptFull');
+
+  const mirrorLeadSelect = document.getElementById('mirrorLeadSelect');
+
+  function getLead(){
+    const leadId = mirrorLeadSelect?.value || "";
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId) || null;
+    return { leadId, lead };
+  }
+
+  function keyForLead(leadId){
+    return "LEADUP_MIRROR_SCRIPT_" + (leadId || "DEFAULT");
+  }
+
+  function show(){
+    const { leadId, lead } = getLead();
+    badge.textContent = "לקוח: " + (lead?.name || "—");
+    try{ ta.value = localStorage.getItem(keyForLead(leadId)) || ""; }catch(e){}
+    modal.classList.add('show');
+    setTimeout(()=> ta?.focus(), 0);
+  }
+
+  function hide(){
+    modal.classList.remove('show');
+  }
+
+  function saveDraft(){
+    const { leadId } = getLead();
+    try{ localStorage.setItem(keyForLead(leadId), ta.value || ""); }catch(e){}
+  }
+
+  openBtn?.addEventListener('click', show);
+  closeBtn?.addEventListener('click', hide);
+  doneBtn?.addEventListener('click', hide);
+
+  ta?.addEventListener('input', saveDraft);
+
+  btnCopy?.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(ta.value || "");
+      window.toast?.("הטקסט הועתק 📋");
+    }catch(e){
+      alert("לא ניתן להעתיק בדפדפן הזה. נסה Ctrl+C");
+    }
+  });
+
+  btnClear?.addEventListener('click', ()=>{
+    ta.value = "";
+    saveDraft();
+    window.toast?.("נוקה");
+  });
+
+  btnFull?.addEventListener('click', ()=>{
+    const card = modal.querySelector('.modalCard');
+    if(window.requestFull && card) window.requestFull(card);
+  });
+
+  modal.addEventListener('click', (e)=>{
+    if(e.target === modal) hide();
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('show')) hide();
+  });
+})();
+</script>
+
 
 </body>
 </html>
