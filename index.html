@@ -672,6 +672,31 @@
   border-color: rgba(214,178,94,.30);
   box-shadow: 0 14px 30px rgba(214,178,94,.12);
 }
+/* ===== LEADUP: Greeting near logo ===== */
+.greet{
+  margin-top:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(214,178,94,.22);
+  background: rgba(214,178,94,.08);
+  color: rgba(120,90,20,.92);
+  font-size:12px;
+  font-weight:750;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.greet::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background: var(--gold2);
+  box-shadow: 0 0 0 4px rgba(242,210,124,.16);
+}
 
   </style>
 </head>
