@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1216,6 +1217,45 @@ body[data-theme="light"] .modalBody textarea::placeholder{
 #modalBody #leadForm textarea::placeholder{
   color: rgba(20,20,25,.45) !important;
   opacity: 1 !important;
+}
+
+
+/* ==== Mirror Client: wider modal + steps template ==== */
+#mirrorModal .modalCard.wide{
+  width:min(1320px, 98vw);
+  height:min(88vh, 860px);
+  display:flex;
+  flex-direction:column;
+}
+#mirrorModal .modalBody{flex:1; min-height:0;}
+#mirrorModal .modalCard.wide .mirrorGrid{grid-template-columns:420px 1fr;}
+#mirrorModal .mirrorPanel{min-height:0;}
+#mirrorModal .mirrorPreview{min-height:520px;}
+#mirrorModal .mirrorPanel h4{margin:0 0 6px}
+
+.mirrorSteps{
+  margin-top:10px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background: rgba(214,178,94,.06);
+  padding:10px 10px;
+}
+.mirrorSteps > summary{
+  cursor:pointer;
+  font-weight:800;
+  color: var(--text);
+  list-style:none;
+}
+.mirrorSteps > summary::-webkit-details-marker{display:none;}
+.mirrorStepsBody{margin-top:8px; display:flex; flex-direction:column; gap:10px;}
+.mirrorStepsGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+@media (max-width: 880px){
+  #mirrorModal .modalCard.wide .mirrorGrid{grid-template-columns:1fr;}
+  .mirrorStepsGrid{grid-template-columns:1fr;}
 }
 
 </style>
@@ -2937,7 +2977,7 @@ document.addEventListener("click", (e)=>{
 
 <!-- ===== Mirror Client Modal (Real) ===== -->
 <div id="mirrorModal" class="modalOverlay" role="dialog" aria-modal="true">
-  <div class="modalCard">
+  <div class="modalCard wide">
     <div class="modalHead">
       <div>
         <div class="title">שיקוף ללקוח</div>
@@ -2949,16 +2989,15 @@ document.addEventListener("click", (e)=>{
     <div class="modalBody" style="padding:14px 16px">
       <div class="mirrorGrid">
         <div class="mirrorPanel">
-          <h4>בחירת ליד</h4>
+          <h4>מסמך להצגה</h4>
           <div class="mirrorField">
-            <label>בחר ליד מהרשימה</label>
+            <label>בחר לקוח להצגה</label>
             <select id="mirrorLeadSelect">
-              <option value="">— בחר ליד —</option>
+              <option value="">— בחר לקוח —</option>
             </select>
           </div>
 
-          <h4 style="margin-top:14px">מסמך להצגה</h4>
-          <div class="mirrorField">
+                    <div class="mirrorField">
             <label>שם הצעה / מסמך</label>
             <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
           </div>
@@ -2966,6 +3005,22 @@ document.addEventListener("click", (e)=>{
             <label>קישור ל‑PDF או דף הצעה</label>
             <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
           </div>
+
+          <details class="mirrorSteps" open>
+            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
+            <div class="mirrorStepsBody">
+              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
+              <div class="mirrorStepsGrid">
+                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
+                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
+                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
+                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
+              </div>
+            </div>
+          </details>
+
 
           <div class="mirrorNotice">
             טיפ: אם PDF חוסם טעינה בתוך חלון (iframe), עדיין תוכל לפתוח אותו בטאב חדש מתוך הכפתור למטה.
@@ -3127,7 +3182,7 @@ document.addEventListener("click", (e)=>{
     if(!window.appState || !Array.isArray(window.appState.leads)) return;
     const leads = window.appState.leads.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     const current = sel.value;
-    sel.innerHTML = '<option value="">— בחר ליד —</option>' + leads.map(l=>{
+    sel.innerHTML = '<option value="">— בחר לקוח —</option>' + leads.map(l=>{
       const label = `${l.name||'—'} • ${l.phone||''}`.trim();
       return `<option value="${esc(l.id)}">${esc(label)}</option>`;
     }).join('');
@@ -3396,6 +3451,59 @@ document.addEventListener("click", (e)=>{
 })();
 </script>
 
+
+
+<script>
+/* ===== Mirror Steps -> preload script templates ===== */
+(function(){
+  const wrap = document.getElementById('mirrorModal');
+  if(!wrap) return;
+
+  const openScriptBtn = document.getElementById('mirrorScriptOpen');
+  const scriptModal = document.getElementById('mirrorScriptModal');
+  const scriptText = document.getElementById('mirrorScriptText');
+
+  function leadName(){
+    const leadId = document.getElementById('mirrorLeadSelect')?.value || "";
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
+    return lead?.name || "הלקוח";
+  }
+
+  const templates = {
+    open: (n)=>`פתיחה והזדהות\n- שלום ${n}, מדבר/ת ___ מ-LEADUP.\n- אני מבצע/ת עכשיו שיקוף קצר כדי לוודא שהכל ברור לפני שמתקדמים.\n`,
+    needs:(n)=>`איסוף צרכים ואימות פרטים\n- רק מאשר/ת פרטים: שם, טלפון, אימייל.\n- הצורך שלך הוא: ___\n- יש דגשים/מצבים מיוחדים שחשוב לדעת? ___\n`,
+    offer:(n)=>`הצגת ההצעה ומה היא כוללת\n- ${n}, ההצעה שאנחנו מציגים כוללת: \n  1) ___\n  2) ___\n  3) ___\n- תקופת הכיסוי/תנאים עיקריים: ___\n`,
+    price:(n)=>`מחיר, תשלום והחרגות\n- המחיר הוא ___ (כולל/לא כולל ___).\n- אופן תשלום: ___ (תשלומים/חיוב חודשי/שנתי).\n- החרגות/הסתייגויות עיקריות: ___\n`,
+    confirm:(n)=>`אישור הלקוח והמשך תהליך\n- האם הכל ברור? יש שאלות?\n- אם מאשרים, השלב הבא הוא: ___\n- אני שולח/ת עכשיו סיכום במסמך/קישור.\n`,
+    close:(n)=>`סיכום, שאלות והודעת המשך\n- לסיכום: הצעה ___, מחיר ___, תוקף עד ___.\n- אשלח לך עכשיו את המסמך להצגה/הצעה, ואם תרצה נשלים את התהליך.\n- תודה ${n}!\n`
+  };
+
+  function showScriptWith(text){
+    // open modal
+    if(scriptModal) scriptModal.classList.add('show');
+    if(scriptText){
+      scriptText.value = text;
+      scriptText.dispatchEvent(new Event('input')); // trigger autosave
+      setTimeout(()=> scriptText.focus(), 0);
+    }
+  }
+
+  wrap.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.mirrorStepBtn');
+    if(!btn) return;
+    const step = btn.getAttribute('data-step');
+    const n = leadName();
+    const tmpl = templates[step] ? templates[step](n) : "";
+    // if user wants to append instead of replace:
+    if(scriptText && scriptText.value && scriptText.value.trim()){
+      const add = "\n\n" + tmpl;
+      showScriptWith(scriptText.value + add);
+    }else{
+      showScriptWith(tmpl);
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
