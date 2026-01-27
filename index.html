@@ -203,6 +203,9 @@
       gap:8px;
       font-weight:650;
     }
+    /* Fix: keep 'ליד חדש' button on one line */
+    #btnAddLead{white-space:nowrap; flex-shrink:0; min-width:120px; justify-content:center;}
+
     .btn:hover{transform:translateY(-1px); border-color:rgba(214,178,94,.25)}
     .btn:focus{outline:none; box-shadow:var(--focus)}
     .btn.gold{
@@ -1273,9 +1276,6 @@ body[data-theme="light"] .modalBody textarea::placeholder{
       <div class="right">
         <button class="btn goldSoft" id="btnAddLead">➕ ליד חדש</button>
         <button class="btn goldSoft hideTopQuick" id="btnQuickTask">⚙️ התהליכים שלי</button>
-        
-        
-        <button class="btn" id="btnTheme" type="button" title="מצב כהה/בהיר">🌙 מצב כהה</button>
       </div>
     </div>
 
@@ -2626,38 +2626,8 @@ function seedSample(){
 })();
 
 /* =======================
-   Theme + Transitions + Loader
+   Transitions + Loader
    ======================= */
-const THEME_KEY = "leadup_theme";
-
-function applyTheme(mode){
-  const m = (mode==="dark") ? "dark" : "light";
-  document.documentElement.dataset.theme = m;
-  localStorage.setItem(THEME_KEY, m);
-  const b = document.getElementById("btnTheme");
-  if(b){
-    b.textContent = (m==="dark") ? "☀️ מצב בהיר" : "🌙 מצב כהה";
-    b.classList.toggle("gold", m==="dark"); // tiny accent in dark
-  }
-}
-
-function showLoader(ms=420){
-  const l = document.getElementById("loader");
-  if(!l) return;
-  l.classList.add("show");
-  window.clearTimeout(showLoader._t);
-  showLoader._t = window.setTimeout(()=> l.classList.remove("show"), ms);
-}
-
-var __btnTheme = document.getElementById("btnTheme");
-if(__btnTheme) __btnTheme.addEventListener("click", ()=>{
-  const cur = document.documentElement.dataset.theme || "light";
-  showLoader(260);
-  applyTheme(cur==="dark" ? "light" : "dark");
-});
-
-// init theme
-applyTheme(localStorage.getItem(THEME_KEY) || "light");
 
 
 /* =======================
