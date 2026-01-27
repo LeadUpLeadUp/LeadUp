@@ -1,5 +1,4 @@
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1198,6 +1197,24 @@ body[data-theme="light"] .modalBody .hint{
 body[data-theme="light"] .modalBody input::placeholder,
 body[data-theme="light"] .modalBody textarea::placeholder{
   color: rgba(12,12,18,.45) !important;
+  opacity: 1 !important;
+}
+
+
+/* ==== FIX: Lead form labels visibility (ליד חדש / עריכת ליד) ==== */
+#modalBody #leadForm label{
+  color: rgba(20,20,25,.72) !important;
+  opacity: 1 !important;
+}
+#modalBody #leadForm .help,
+#modalBody #leadForm .hint,
+#modalBody #leadForm small{
+  color: rgba(20,20,25,.58) !important;
+  opacity: 1 !important;
+}
+#modalBody #leadForm input::placeholder,
+#modalBody #leadForm textarea::placeholder{
+  color: rgba(20,20,25,.45) !important;
   opacity: 1 !important;
 }
 
