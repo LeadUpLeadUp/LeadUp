@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1390,6 +1391,22 @@ body[data-theme="light"] .modalBody textarea::placeholder{
   #esignModal .mirrorGrid{grid-template-columns:1fr !important;}
   #esignModal .modalCard.wide{height:min(92vh, 900px);}
 }
+
+
+/* ==== E-Sign: channel selector chips ==== */
+#esignModal .chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background: var(--panel);
+  color: var(--text);
+  font-weight:700;
+  user-select:none;
+}
+#esignModal .chip input{ accent-color: #d6b25e; }
 
 </style>
 </head>
@@ -3068,7 +3085,24 @@ document.addEventListener("click", (e)=>{
             <input id="esignEmail" type="email" placeholder="client@email.com" style="width:100%">
           </label>
 
-          <label class="field">
+          
+          <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:-2px">
+            <div class="badge" style="cursor:default">ערוץ שליחה:</div>
+            <label class="chip" style="cursor:pointer">
+              <input type="radio" name="esignChannel" value="email" checked style="margin-left:8px">
+              אימייל ✉️
+            </label>
+            <label class="chip" style="cursor:pointer">
+              <input type="radio" name="esignChannel" value="whatsapp" style="margin-left:8px">
+              וואטסאפ 💬
+            </label>
+          </div>
+
+          <label class="field" id="esignPhoneWrap" style="display:none">
+            <span class="cap">טלפון וואטסאפ של הלקוח</span>
+            <input id="esignPhone" type="tel" placeholder="05X-XXXXXXX" style="width:100%">
+          </label>
+<label class="field">
             <span class="cap">קישור למסמך / PDF לחתימה</span>
             <input id="esignLink" type="url" placeholder="https://...pdf או https://..." style="width:100%">
           </label>
@@ -3105,9 +3139,12 @@ document.addEventListener("click", (e)=>{
 
   const docName = document.getElementById('esignDocName');
   const emailEl = document.getElementById('esignEmail');
+  const phoneEl = document.getElementById('esignPhone');
+  const phoneWrap = document.getElementById('esignPhoneWrap');
   const linkEl  = document.getElementById('esignLink');
   const msgEl   = document.getElementById('esignMsg');
   const optionBtns = Array.from(document.querySelectorAll('.esignOptionBtn'));
+  const channelRadios = Array.from(document.querySelectorAll('input[name="esignChannel"]'));
 
   const templates = {
     health: {
@@ -3128,12 +3165,33 @@ document.addEventListener("click", (e)=>{
     }
   };
 
+  function getChannel(){
+    return (channelRadios.find(r=>r.checked)?.value) || "email";
+  }
+
   function openModal(){
     modal.classList.add('show');
+    // default channel UI state
+    syncChannelUI();
   }
   function closeModal(){
     modal.classList.remove('show');
   }
+
+  function syncChannelUI(){
+    const ch = getChannel();
+    if(phoneWrap){
+      phoneWrap.style.display = (ch === "whatsapp") ? "" : "none";
+    }
+    // small UX: focus proper field
+    if(ch === "whatsapp"){
+      phoneEl?.focus();
+    }else{
+      emailEl?.focus();
+    }
+  }
+
+  channelRadios.forEach(r=> r.addEventListener('change', syncChannelUI));
 
   // Open from sidebar button, without changing other nav behavior
   openBtn?.addEventListener('click', (e)=>{
@@ -3172,32 +3230,64 @@ document.addEventListener("click", (e)=>{
     });
   });
 
+  function normalizeILPhone(p){
+    const digits = (p||"").replace(/[^\d]/g, "");
+    if(!digits) return "";
+    // 05xxxxxxxx -> 9725xxxxxxxx
+    if(digits.startsWith("0")) return "972" + digits.slice(1);
+    // already starts with 972
+    if(digits.startsWith("972")) return digits;
+    // fallback: return digits as-is
+    return digits;
+  }
+
+  function buildMessage(name, link, msg){
+    const parts = [];
+    if(name) parts.push(`מסמך לחתימה: ${name}`);
+    if(msg) parts.push(msg);
+    if(link) parts.push(`קישור לחתימה: ${link}`);
+    return parts.join("\n\n").trim();
+  }
+
   sendBtn?.addEventListener('click', ()=>{
+    const ch = getChannel();
+
     const email = (emailEl?.value || "").trim();
+    const phone = (phoneEl?.value || "").trim();
     const link  = (linkEl?.value || "").trim();
     const name  = (docName?.value || "").trim();
     const msg   = (msgEl?.value || "").trim();
 
-    if(!email){
-      alert("נא להזין אימייל לקוח");
-      emailEl?.focus();
-      return;
-    }
     if(!link){
       alert("נא להוסיף קישור למסמך / PDF לחתימה");
       linkEl?.focus();
       return;
     }
 
-    // Demo send
-    alert(
-      "נשלח לחתימה (דמו)\n" +
-      "מסמך: " + (name || "—") + "\n" +
-      "אימייל: " + email + "\n" +
-      "קישור: " + link + "\n\n" +
-      (msg ? ("הודעה:\n" + msg) : "")
-    );
+    const fullMsg = buildMessage(name, link, msg);
+    const subject = name ? `LEADUP • ${name} לחתימה` : "LEADUP • מסמך לחתימה";
 
+    if(ch === "email"){
+      if(!email){
+        alert("נא להזין אימייל לקוח");
+        emailEl?.focus();
+        return;
+      }
+      const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullMsg)}`;
+      window.open(mailto, "_blank", "noopener,noreferrer");
+      closeModal();
+      return;
+    }
+
+    // whatsapp
+    const norm = normalizeILPhone(phone);
+    if(!norm){
+      alert("נא להזין טלפון וואטסאפ של הלקוח");
+      phoneEl?.focus();
+      return;
+    }
+    const wa = `https://wa.me/${encodeURIComponent(norm)}?text=${encodeURIComponent(fullMsg)}`;
+    window.open(wa, "_blank", "noopener,noreferrer");
     closeModal();
   });
 
