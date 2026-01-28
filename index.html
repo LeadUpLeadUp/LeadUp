@@ -1795,6 +1795,182 @@ html[data-theme="light"] .modalBody textarea::placeholder{
   overflow:hidden;
   padding:0 !important;
 }
+
+/* ===== Mirror Find (Search) ===== */
+.mirrorSearchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.mirrorSearchRow input{flex:1; min-width:180px}
+.seg{display:inline-flex; background:var(--panel2); border:1px solid var(--line); border-radius:12px; overflow:hidden}
+.segBtn{border:0; background:transparent; color:var(--text); padding:10px 12px; cursor:pointer; font-weight:800}
+.segBtn.active{background:linear-gradient(180deg, rgba(214,178,94,.22), rgba(214,178,94,.10)); color:var(--gold)}
+
+
+/* ===== Mirror Checklist ===== */
+.mirrorChecklist{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
+.mirrorChecklistTop{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.mirrorProgress{display:flex; align-items:center; gap:10px}
+.mirrorProgress .bar{width:220px; height:10px; background:var(--panel2); border:1px solid var(--line); border-radius:999px; overflow:hidden}
+.mirrorProgress .fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--gold2))}
+.mirrorProgress .pct{min-width:48px; text-align:left; color:var(--muted); font-weight:800}
+.mirrorStepCard{margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg, rgba(214,178,94,.08), rgba(255,255,255,0))}
+.mirrorStepHead{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
+.mirrorStepHead .num{width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:rgba(214,178,94,.18); border:1px solid rgba(214,178,94,.35); font-weight:900}
+.mirrorStepHead .ttl{flex:1; font-weight:900}
+.chk{display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:800}
+.mirrorScript{width:100%; margin-top:10px; border-radius:14px; border:1px solid var(--line); background:var(--panel); color:var(--text); padding:12px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+.mirrorStepNav{display:flex; gap:10px; justify-content:space-between; margin-top:10px}
+
+
+/* ===== Mirror layout ordering ===== */
+.mirrorContainer{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.mirrorSearch{order:1;}
+.mirrorDocSelect{order:2;}
+.mirrorChecklist{order:3;}
+.mirrorCard{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+}
+.mirrorCard h3{
+  margin:0 0 10px;
+  font-size:15px;
+  color:var(--gold);
+}
+
+
+/* ============================
+   MIRROR (Agent) FULLSCREEN + WIZARD
+   ============================ */
+body.mirrorFS .side{display:none !important;}
+body.mirrorFS .app{grid-template-columns:1fr !important;}
+body.mirrorFS .topbar{display:none !important;}
+body.mirrorFS .content{display:none !important;} /* remove distractions */
+
+#mirrorModal{
+  position:absolute !important;
+  inset:0 !important;
+  padding:0 !important;
+  z-index:30;
+  display:none;
+}
+#mirrorModal.show{display:flex !important;}
+#mirrorModal .modalCard{
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  border-radius:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  box-shadow:none !important;
+  background:#fff7e6; /* clean cream */
+  display:flex;
+  flex-direction:column;
+}
+#mirrorModal .modalHead{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#fff7e6;
+  border-bottom:1.5px solid rgba(214,178,94,0.55);
+  box-shadow:0 4px 14px rgba(0,0,0,0.08);
+}
+#mirrorModal .modalBody{flex:1;min-height:0;overflow:hidden;padding:0 !important;}
+
+#mirrorModal .mirrorGrid{
+  height:100%;
+  grid-template-columns: 480px 1fr;
+  gap:14px;
+  padding:14px 16px;
+}
+
+#mirrorModal .mirrorPanel{
+  background:rgba(255,255,255,.70);
+  border-radius:18px;
+  padding:14px;
+}
+
+.mwStepper{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.mwStepPill{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid rgba(214,178,94,0.45);
+  border-radius:999px;
+  background:rgba(214,178,94,.10);
+  font-weight:900;
+}
+.mwStepPill .n{
+  width:28px;height:28px;border-radius:12px;
+  display:grid;place-items:center;
+  background:rgba(214,178,94,.22);
+  border:1px solid rgba(214,178,94,.45);
+}
+.mwStepPill.active{background:linear-gradient(180deg, rgba(214,178,94,.25), rgba(214,178,94,.10));}
+.mwStepPill.done{opacity:.9;}
+.mwBar{
+  flex:1;
+  min-width:160px;
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid rgba(214,178,94,.35);
+  background:rgba(255,255,255,.65);
+}
+.mwBar .fill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg, var(--gold), var(--gold2));
+}
+
+.mwStep{
+  display:none;
+}
+.mwStep.show{display:block;}
+
+.mwNav{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid rgba(214,178,94,0.35);
+}
+
+.mwHint{
+  font-size:12px;
+  color:rgba(12,12,18,.62);
+  line-height:1.6;
+  margin-top:8px;
+}
+
+#mirrorModal.readingMode .mirrorPanel{background:rgba(255,255,255,.78);}
+#mirrorModal.readingMode .mirrorField label{font-size:14px !important;font-weight:1000 !important;}
+#mirrorModal.readingMode .mirrorField input,
+#mirrorModal.readingMode .mirrorField select{padding:14px !important;font-size:16px !important;font-weight:900;}
+#mirrorModal.readingMode .mirrorStepCard{font-size:16px;line-height:1.85;}
+#mirrorModal.readingMode .mirrorScript{font-size:16px;line-height:1.9;}
+#mirrorModal.readingMode .btnGhost,#mirrorModal.readingMode .btnGold,#mirrorModal.readingMode .btn{
+  padding:12px 14px !important;
+  border-radius:14px !important;
+  font-weight:1000 !important;
+}
+
+@media (max-width: 980px){
+  #mirrorModal .mirrorGrid{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 
@@ -3723,19 +3899,68 @@ document.addEventListener("click", (e)=>{
         <div class="title">שיקוף ללקוח</div>
         <div class="sub">מציג ללקוח נתוני ליד + הצעה/PDF בחלון נקי</div>
       </div>
-      <button class="btnGhost" id="mirrorClose">✕ סגור</button>
+      <button class="btnGhost" id="mirrorClose">✕ יציאה</button>
     </div>
 
     <div class="modalBody" style="padding:14px 16px">
       <div class="mirrorGrid">
         <div class="mirrorPanel">
-          <h4>מסמך להצגה</h4>
-          <div class="mirrorField">
+
+<h4 style="margin:0 0 10px">🪞 שיקוף לנציג (מסך הקראה)</h4>
+
+<div class="mwStepper" aria-label="שלבי שיקוף לנציג">
+  <div class="mwStepPill active" id="mwPill1"><span class="n">1</span> שליפת לקוח</div>
+  <div class="mwStepPill" id="mwPill2"><span class="n">2</span> בחירת מסמך</div>
+  <div class="mwStepPill" id="mwPill3"><span class="n">3</span> צ׳ק ליסט הקראה</div>
+  <div class="mwBar" aria-hidden="true"><div class="fill" id="mwBarFill"></div></div>
+</div>
+
+<div class="mwStep show" id="mwStep1">
+  <div class="mirrorField">
             <label>בחר מסמך להצגה</label>
             <select id="mirrorLeadSelect">
               <option value="">— לחץ לבחירה —</option>
             </select>
           </div>
+
+          <div class="mirrorField">
+            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
+            <div class="mirrorSearchRow">
+              <div class="seg" id="mirrorFindType">
+                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
+                <button type="button" class="segBtn" data-type="name">שם</button>
+                <button type="button" class="segBtn" data-type="phone">טלפון</button>
+              </div>
+              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
+              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
+            </div>
+            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
+          </div>
+  <div class="mwHint">השלב הבא נפתח רק אחרי שנבחר לקוח.</div>
+</div>
+
+<div class="mwStep" id="mwStep2">
+  <div class="mirrorField">
+            <label>בחר מסמך להצגה</label>
+            <select id="mirrorLeadSelect">
+              <option value="">— לחץ לבחירה —</option>
+            </select>
+          </div>
+
+          <div class="mirrorField">
+            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
+            <div class="mirrorSearchRow">
+              <div class="seg" id="mirrorFindType">
+                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
+                <button type="button" class="segBtn" data-type="name">שם</button>
+                <button type="button" class="segBtn" data-type="phone">טלפון</button>
+              </div>
+              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
+              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
+            </div>
+            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
+          </div>
+
 
                     <div class="mirrorField">
             <label>שם הצעה / מסמך</label>
@@ -3759,33 +3984,124 @@ document.addEventListener("click", (e)=>{
                 <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
               </div>
             </div>
-          </details>
+  <div class="mirrorField">
+            <label>בחר מסמך להצגה</label>
+            <select id="mirrorLeadSelect">
+              <option value="">— לחץ לבחירה —</option>
+            </select>
+          </div>
+
+          <div class="mirrorField">
+            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
+            <div class="mirrorSearchRow">
+              <div class="seg" id="mirrorFindType">
+                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
+                <button type="button" class="segBtn" data-type="name">שם</button>
+                <button type="button" class="segBtn" data-type="phone">טלפון</button>
+              </div>
+              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
+              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
+            </div>
+            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
+          </div>
 
 
-          <div class="mirrorNotice">
+                    <div class="mirrorField">
+            <label>שם הצעה / מסמך</label>
+            <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
+          </div>
+          <div class="mirrorField">
+            <label>קישור ל‑PDF או דף הצעה</label>
+            <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
+          </div>
+
+          <details class="mirrorSteps" open>
+            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
+            <div class="mirrorStepsBody">
+              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
+              <div class="mirrorStepsGrid">
+                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
+                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
+                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
+                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
+              </div>
+            </div>
+  <div class="mwHint">השלב הבא נפתח רק אחרי שהוזן קישור PDF/מסמך.</div>
+</div>
+
+<div class="mwStep" id="mwStep3">
+  <details class="mirrorSteps" open>
+            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
+            <div class="mirrorStepsBody">
+              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
+              <div class="mirrorStepsGrid">
+                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
+                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
+                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
+                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
+                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
+              </div>
+            </div>
+
+              <div class="mirrorChecklist" id="mirrorChecklist">
+                <div class="mirrorChecklistTop">
+                  <div>
+                    <b>צ׳ק ליסט שיקוף לנציג</b>
+                    <div class="hint">סמן “בוצע” בכל שלב. נשמר אוטומטית לפי הלקוח.</div>
+                  </div>
+                  <div class="mirrorProgress">
+                    <div class="bar"><div class="fill" id="mirrorProgFill" style="width:0%"></div></div>
+                    <div class="pct" id="mirrorProgPct">0%</div>
+                  </div>
+                </div>
+
+                <div class="mirrorStepCard">
+                  <div class="mirrorStepHead">
+                    <div class="num" id="mirrorStepNum">1</div>
+                    <div class="ttl" id="mirrorStepTitle">פתיחה והזדהות</div>
+                    <label class="chk"><input type="checkbox" id="mirrorStepDone"/> בוצע</label>
+                  </div>
+                  <textarea id="mirrorStepScript" class="mirrorScript" rows="7" spellcheck="false"></textarea>
+
+                  <div class="mirrorStepNav">
+                    <button class="btnGhost" id="mirrorPrevStep" type="button">◀ הקודם</button>
+                    <button class="btnGhost" id="mirrorNextStep" type="button">הבא ▶</button>
+                  </div>
+                </div>
+              </div>
+
+</details>
+</div>
+
+<div class="mwNav">
+  <button class="btnGhost" id="mwBack" type="button">◀ הקודם</button>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btnGhost" id="mwReadMode" type="button">🗣️ מצב הקראה</button>
+    <button class="btnGold" id="mwNext" type="button">הבא ▶</button>
+  </div>
+</div>
+
+<hr style="margin:12px 0;border:0;border-top:1px solid rgba(214,178,94,0.35)"/>
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+  <div style="font-weight:1000">פעולות</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+    <button class="btnGold" id="mirrorApply">הצג</button>
+    <button class="btnGhost" id="mirrorCopyLink">העתק קישור צפייה</button>
+    <button class="btnGhost" id="mirrorOpenLink">פתח קישור צפייה</button>
+    <button class="btnGhost" id="mirrorFull">מסך מלא</button>
+    <button class="btnGold" id="mirrorScriptOpen">🗣️ שיקוף השיחה</button>
+  </div>
+</div>
+
+<div class="mirrorNotice">
             טיפ: אם PDF חוסם טעינה בתוך חלון (iframe), עדיין תוכל לפתוח אותו בטאב חדש מתוך הכפתור למטה.
           </div>
 
-          <div class="mirrorActions">
-            <button class="btnGold" id="mirrorApply">הצג</button>
-            <button class="btnGhost" id="mirrorCopyLink">העתק קישור צפייה</button>
-            <button class="btnGhost" id="mirrorOpenLink">פתח קישור צפייה</button>
-            <button class="btnGhost" id="mirrorFull">מסך מלא</button>
-            <button class="btnGold" id="mirrorScriptOpen">🗣️ שיקוף השיחה</button>
-          </div>
-
-          <h4 style="margin-top:14px">נתוני ליד</h4>
-          <div class="mirrorCard" id="mirrorLeadCard">
-            <div class="mirrorKV" id="mirrorKV">
-              <div>שם</div><div>—</div>
-              <div>טלפון</div><div>—</div>
-              <div>אימייל</div><div>—</div>
-              <div>סטטוס</div><div>—</div>
-              <div>מקור</div><div>—</div>
-              <div>בעלים</div><div>—</div>
-            </div>
-          </div>
-        </div>
+</div>
 
         <div class="mirrorPreview">
           <div class="mirrorPreviewHead">
@@ -3913,8 +4229,82 @@ document.addEventListener("click", (e)=>{
   const btnOpen  = document.getElementById('mirrorOpenLink');
   const btnFull  = document.getElementById('mirrorFull');
 
-  function show(){ modal.classList.add('show'); refreshLeadSelect(); }
-  function hide(){ modal.classList.remove('show'); }
+  function show(){ document.body.classList.add("mirrorFS");  modal.classList.add('show'); refreshLeadSelect();  mwSet(1); }
+  function hide(){ document.body.classList.remove("mirrorFS");  modal.classList.remove('show');  modal.classList.remove("readingMode"); }
+
+  /* --- Agent Mirror Wizard (1/2/3) + Reading Mode --- */
+  let mwStep = 1;
+  const mwP1 = document.getElementById("mwPill1");
+  const mwP2 = document.getElementById("mwPill2");
+  const mwP3 = document.getElementById("mwPill3");
+  const mwS1 = document.getElementById("mwStep1");
+  const mwS2 = document.getElementById("mwStep2");
+  const mwS3 = document.getElementById("mwStep3");
+  const mwBack = document.getElementById("mwBack");
+  const mwNext = document.getElementById("mwNext");
+  const mwFill = document.getElementById("mwBarFill");
+  const mwRead = document.getElementById("mwReadMode");
+
+  function mwValid(step){
+    if(step === 1){
+      return !!(currentLeadObj && (currentLeadObj.id || currentLeadObj.phone || currentLeadObj.name));
+    }
+    if(step === 2){
+      const url = (pdfUrl?.value || "").trim();
+      return url.length > 6;
+    }
+    return true;
+  }
+
+  function mwSet(n){
+    mwStep = Math.max(1, Math.min(3, n));
+    mwS1?.classList.toggle("show", mwStep === 1);
+    mwS2?.classList.toggle("show", mwStep === 2);
+    mwS3?.classList.toggle("show", mwStep === 3);
+
+    mwP1?.classList.toggle("active", mwStep === 1);
+    mwP2?.classList.toggle("active", mwStep === 2);
+    mwP3?.classList.toggle("active", mwStep === 3);
+
+    mwP1?.classList.toggle("done", mwStep > 1);
+    mwP2?.classList.toggle("done", mwStep > 2);
+
+    if(mwFill) mwFill.style.width = ((mwStep-1)/2*100) + "%";
+
+    if(mwBack) mwBack.disabled = mwStep === 1;
+    if(mwNext){
+      mwNext.textContent = (mwStep === 3) ? "סיום ✔" : "הבא ▶";
+      mwNext.disabled = !mwValid(mwStep);
+    }
+  }
+
+  function mwToast(msg){
+    // reuse global toast if exists, else alert
+    if(window.toast){ window.toast(msg); }
+    else { alert(msg); }
+  }
+
+  if(mwBack) mwBack.addEventListener("click", ()=> mwSet(mwStep-1));
+  if(mwNext) mwNext.addEventListener("click", ()=>{
+    if(!mwValid(mwStep)){
+      mwToast(mwStep===1 ? "צריך קודם לשלוף/לבחור לקוח." : "צריך לבחור מסמך (להדביק קישור PDF/מסמך).");
+      return;
+    }
+    if(mwStep < 3) mwSet(mwStep+1);
+    else hide();
+  });
+
+  if(mwRead) mwRead.addEventListener("click", ()=>{
+    modal.classList.toggle("readingMode");
+    mwRead.textContent = modal.classList.contains("readingMode") ? "🔎 מצב רגיל" : "🗣️ מצב הקראה";
+  });
+
+  // re-validate step 2 when URL changes
+  if(pdfUrl){
+    pdfUrl.addEventListener("input", ()=>{ if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2); });
+  }
+
+
 
   function esc(v){ return (window.escapeHTML ? window.escapeHTML(v||'') : (v||'')); }
 
@@ -3929,9 +4319,211 @@ document.addEventListener("click", (e)=>{
     if(current) sel.value = current;
   }
 
+
+  /* --- Mirror Find Lead (TZ/Name/Phone) --- */
+  let mirrorFindType = "tz";
+  const findTypeWrap = document.getElementById("mirrorFindType");
+  const findQ = document.getElementById("mirrorFindQ");
+  const findBtn = document.getElementById("mirrorFindBtn");
+
+  function norm(s){ return String(s||"").trim().toLowerCase(); }
+  function digits(s){ return String(s||"").replace(/\D/g,""); }
+
+  function getLeadByQuery(q, type){
+    if(!window.appState || !Array.isArray(window.appState.leads)) return null;
+    const leads = window.appState.leads;
+    const qq = norm(q);
+    const qd = digits(q);
+
+    if(!qq) return null;
+
+    // Try exact-first, then contains
+    const score = (l)=>{
+      if(type==="tz"){
+        const v = digits(l.tz || l.idNumber || l.id || "");
+        if(!qd) return 0;
+        if(v === qd) return 100;
+        if(v.endsWith(qd) || v.includes(qd)) return 70;
+        return 0;
+      }
+      if(type==="phone"){
+        const v = digits(l.phone || "");
+        if(!qd) return 0;
+        if(v === qd) return 100;
+        if(v.endsWith(qd) || v.includes(qd)) return 70;
+        return 0;
+      }
+      // name
+      const v = norm(l.name || "");
+      if(v === qq) return 100;
+      if(v.startsWith(qq)) return 80;
+      if(v.includes(qq)) return 60;
+      return 0;
+    };
+
+    let best=null, bestScore=0;
+    for(const l of leads){
+      const s = score(l);
+      if(s>bestScore){ bestScore=s; best=l; }
+    }
+    return (bestScore>0) ? best : null;
+  }
+
+  function applyLeadSelection(lead){
+    if(!lead) return;
+    // set select value if exists
+    if(sel){
+      sel.value = lead.id || lead._id || sel.value;
+      // if we didn't find by id, try to match by name/phone in options
+      if(!sel.value){
+        const opt = [...sel.options].find(o => (o.textContent||"").includes(lead.phone||"") && (o.textContent||"").includes(lead.name||""));
+        if(opt) sel.value = opt.value;
+      }
+    }
+    setKV(lead);
+    // auto-fill defaults if empty
+    if(offerName && !offerName.value) offerName.value = `הצעה ללקוח: ${lead.name||""}`.trim();
+    // load checklist for lead
+    loadChecklistForLead(lead);
+  }
+
+  if(findTypeWrap){
+    findTypeWrap.addEventListener("click", (e)=>{
+      const b = e.target.closest(".segBtn");
+      if(!b) return;
+      [...findTypeWrap.querySelectorAll(".segBtn")].forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      mirrorFindType = b.dataset.type || "tz";
+      if(findQ){
+        findQ.placeholder = mirrorFindType==="tz" ? "הקלד ת.ז…" : (mirrorFindType==="phone" ? "הקלד טלפון…" : "הקלד שם…");
+        findQ.focus();
+      }
+    });
+  }
+
+  function doFind(){
+    const q = findQ ? findQ.value : "";
+    const lead = getLeadByQuery(q, mirrorFindType);
+    if(!lead){
+      toast && toast("לא נמצא לקוח מתאים. נסה שוב.", "warn");
+      return;
+    }
+    applyLeadSelection(lead);
+    toast && toast(`נטען לקוח: ${lead.name||"—"}`, "ok");
+  }
+
+  if(findBtn) findBtn.addEventListener("click", doFind);
+  if(findQ) findQ.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); doFind(); } });
+
+  /* --- Mirror Checklist (rep script) --- */
+  const STEPS = [
+    {key:"open",   title:"פתיחה והזדהות", script:(l)=>`שלום ${l?.name||""}, מדבר/ת __ מהסוכנות.\nאני רוצה לעשות שיקוף קצר כדי לוודא שהבנתי נכון את הפרטים לפני שממשיכים.\nזה בסדר?`},
+    {key:"verify", title:"אימות פרטים", script:(l)=>`רק אימות קצר:\n• שם: ${l?.name||"—"}\n• טלפון: ${l?.phone||"—"}\n• ת.ז: ${l?.tz||l?.idNumber||"—"}\nיש עוד פרט שתרצה/י לעדכן?`},
+    {key:"needs",  title:"צרכים ודגשים", script:()=>`מה הכי חשוב לך בכיסוי/בפוליסה?\nיש משהו שחשוב להחריג או להדגיש?`},
+    {key:"offer",  title:"הצגת ההצעה", script:()=>`אני מציג/ה עכשיו את ההצעה.\nאעבור איתך על הסעיפים המרכזיים ומה כלול ומה לא כלול.`},
+    {key:"price",  title:"מחיר ותשלום", script:()=>`המחיר הוא __ לחודש/לשנה.\nאמצעי תשלום: __\nיש דמי טיפול/השתתפות עצמית/חריגים שכדאי לדעת: __`},
+    {key:"confirm",title:"אישור והמשך תהליך", script:()=>`רק לוודא—הכל ברור ומאושר להמשיך?\nהשלב הבא: חתימה/שליחת מסמכים.\nאני שולח/ת לך עכשיו קישור/מסמך.`},
+    {key:"close",  title:"סיכום", script:()=>`סיכום קצר: __\nאם עולה שאלה—אפשר לפנות אליי בוואטסאפ/טלפון.\nתודה רבה ושיהיה יום מצוין!`}
+  ];
+
+  const ckWrap = document.getElementById("mirrorChecklist");
+  const stepNumEl = document.getElementById("mirrorStepNum");
+  const stepTitleEl = document.getElementById("mirrorStepTitle");
+  const stepScriptEl = document.getElementById("mirrorStepScript");
+  const stepDoneEl = document.getElementById("mirrorStepDone");
+  const prevStepBtn = document.getElementById("mirrorPrevStep");
+  const nextStepBtn = document.getElementById("mirrorNextStep");
+  const progFill = document.getElementById("mirrorProgFill");
+  const progPct  = document.getElementById("mirrorProgPct");
+
+  let currentLeadId = null;
+  let currentLeadObj = null;
+  let currentStep = 0;
+  let checklistState = {done:{}, scripts:{}};
+
+  function ckKey(){
+    return currentLeadId ? ("mirror_checklist_" + currentLeadId) : "mirror_checklist__none";
+  }
+
+  function saveChecklist(){
+    try{
+      localStorage.setItem(ckKey(), JSON.stringify({step:currentStep, state:checklistState}));
+    }catch(e){}
+  }
+
+  function loadChecklistForLead(lead){
+    currentLeadObj = lead || null;
+    currentLeadId = lead?.id || lead?._id || lead?.phone || "lead";
+    checklistState = {done:{}, scripts:{}};
+    currentStep = 0;
+
+    try{
+      const raw = localStorage.getItem(ckKey());
+      if(raw){
+        const obj = JSON.parse(raw);
+        if(obj && obj.state) checklistState = obj.state;
+        if(typeof obj.step === "number") currentStep = Math.max(0, Math.min(STEPS.length-1, obj.step));
+      }
+    }catch(e){}
+
+    // if no script stored for a step, set default template
+    STEPS.forEach((s,i)=>{
+      if(typeof checklistState.scripts[s.key] !== "string"){
+        checklistState.scripts[s.key] = (s.script(currentLeadObj) || "").trim();
+      }
+      if(typeof checklistState.done[s.key] !== "boolean") checklistState.done[s.key] = false;
+    });
+
+    renderStep();
+    renderProgress();
+    saveChecklist();
+  }
+
+  function renderProgress(){
+    const total = STEPS.length;
+    const doneCount = STEPS.filter(s => checklistState.done[s.key]).length;
+    const pct = total ? Math.round((doneCount/total)*100) : 0;
+    if(progFill) progFill.style.width = pct + "%";
+    if(progPct) progPct.textContent = pct + "%";
+  }
+
+  function renderStep(){
+    const s = STEPS[currentStep];
+    if(!s) return;
+    if(stepNumEl) stepNumEl.textContent = String(currentStep+1);
+    if(stepTitleEl) stepTitleEl.textContent = s.title;
+    if(stepDoneEl) stepDoneEl.checked = !!checklistState.done[s.key];
+    if(stepScriptEl) stepScriptEl.value = checklistState.scripts[s.key] || "";
+    if(prevStepBtn) prevStepBtn.disabled = currentStep===0;
+    if(nextStepBtn) nextStepBtn.disabled = currentStep===STEPS.length-1;
+  }
+
+  if(stepDoneEl){
+    stepDoneEl.addEventListener("change", ()=>{
+      const s = STEPS[currentStep];
+      checklistState.done[s.key] = !!stepDoneEl.checked;
+      renderProgress();
+      saveChecklist();
+    });
+  }
+
+  if(stepScriptEl){
+    stepScriptEl.addEventListener("input", ()=>{
+      const s = STEPS[currentStep];
+      checklistState.scripts[s.key] = stepScriptEl.value;
+      saveChecklist();
+    });
+  }
+
+  if(prevStepBtn) prevStepBtn.addEventListener("click", ()=>{ if(currentStep>0){ currentStep--; renderStep(); saveChecklist(); }});
+  if(nextStepBtn) nextStepBtn.addEventListener("click", ()=>{ const s = STEPS[currentStep]; if(!checklistState.done[s.key]){ if(window.toast){window.toast('צריך לסמן "בוצע" לפני מעבר לשלב הבא.');} else {alert('צריך לסמן "בוצע" לפני מעבר לשלב הבא.');} return; } if(currentStep<STEPS.length-1){ currentStep++; renderStep(); saveChecklist(); }});
+
+
+
   function setKV(lead){
     const pairs = [
       ['שם', lead?.name || '—'],
+      ['ת.ז', lead?.tz || lead?.idNumber || '—'],
       ['טלפון', lead?.phone || '—'],
       ['אימייל', lead?.email || '—'],
       ['סטטוס', lead?.status || '—'],
@@ -4081,6 +4673,7 @@ document.addEventListener("click", (e)=>{
     const lead = payload?.lead || null;
     const pairs = [
       ['שם', lead?.name || '—'],
+      ['ת.ז', lead?.tz || lead?.idNumber || '—'],
       ['טלפון', lead?.phone || '—'],
       ['אימייל', lead?.email || '—'],
       ['סטטוס', lead?.status || '—'],
