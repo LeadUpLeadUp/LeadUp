@@ -1,4 +1,6 @@
 
+
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1971,6 +1973,325 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   #mirrorModal .mirrorGrid{grid-template-columns:1fr;}
 }
 
+
+/* ============================
+   MIRROR (Agent) PRO UI polish
+   ============================ */
+#mirrorModal .modalHead .title{font-size:18px;font-weight:1000;letter-spacing:.2px}
+#mirrorModal .modalHead .sub{font-size:12.5px;color:rgba(12,12,18,.62);font-weight:800}
+
+#mirrorModal .mirrorPanel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  overflow:auto;
+  height:100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+#mirrorModal .mirrorPanel h4{
+  margin:0;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(214,178,94,.10);
+  border:1px solid rgba(214,178,94,.20);
+  color:#1a1a1f;
+  font-weight:1000;
+}
+
+#mirrorModal .mwStepper{
+  background:rgba(255,255,255,.70);
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:18px;
+  padding:10px 12px;
+}
+#mirrorModal .mwStepPill{
+  padding:9px 10px;
+  border-radius:999px;
+  border:1px solid rgba(214,178,94,.28);
+  background:rgba(214,178,94,.08);
+  color:#1a1a1f;
+}
+#mirrorModal .mwStepPill.active{
+  border-color: rgba(214,178,94,.55);
+  background: linear-gradient(180deg, rgba(214,178,94,.20), rgba(214,178,94,.08));
+}
+#mirrorModal .mwStepPill.done{opacity:1; filter:saturate(.9)}
+#mirrorModal .mwStepPill .n{
+  background:rgba(214,178,94,.20);
+  border-color:rgba(214,178,94,.35);
+  color:#1a1a1f;
+}
+
+#mirrorModal .mirrorField{
+  margin-bottom:0;
+  padding:10px 10px;
+  border:1px solid rgba(214,178,94,.16);
+  background:rgba(255,255,255,.68);
+  border-radius:16px;
+}
+#mirrorModal .mirrorField label{
+  color:rgba(12,12,18,.78) !important;
+  font-weight:900 !important;
+}
+#mirrorModal .mirrorSearchRow{gap:10px}
+#mirrorModal .seg{background:rgba(255,255,255,.7)}
+#mirrorModal .segBtn{color:#1a1a1f}
+#mirrorModal .segBtn.active{color:#1a1a1f;background:rgba(214,178,94,.18)}
+
+#mirrorModal .mwHint{
+  background:rgba(255,255,255,.55);
+  border:1px dashed rgba(214,178,94,.35);
+  border-radius:14px;
+  padding:10px 10px;
+}
+
+#mirrorModal .mwNav{
+  position:sticky;
+  bottom:0;
+  background:rgba(255,247,230,.92);
+  backdrop-filter: blur(6px);
+  border-top:1px solid rgba(214,178,94,.35);
+  padding:12px 12px;
+  border-radius:16px;
+  box-shadow: 0 -10px 24px rgba(0,0,0,0.06);
+}
+#mirrorModal .mwNav .mwNavRight{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+#mirrorModal .mwNav .mwNavLeft{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+#mirrorModal .mwActionsBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:12px 12px;
+  border-radius:16px;
+  border:1px solid rgba(214,178,94,.18);
+  background:rgba(255,255,255,.68);
+}
+#mirrorModal .mwActionsBar .ttl{
+  font-weight:1000;
+  color:#1a1a1f;
+}
+#mirrorModal .mwActionsBar .btnRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+#mirrorModal .mwActionsBar .btnRow .btnGhost,
+#mirrorModal .mwActionsBar .btnRow .btnGold{
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:1000;
+}
+
+#mirrorModal .mirrorNotice{
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:16px;
+  padding:10px 10px;
+  color:rgba(12,12,18,.62);
+}
+
+#mirrorModal .mirrorStepCard{
+  border-radius:18px;
+  background:rgba(255,255,255,.68);
+  border:1px solid rgba(214,178,94,.18);
+}
+
+#mirrorModal .mirrorProgress .bar{width:260px}
+@media (max-width: 980px){
+  #mirrorModal .mirrorGrid{padding:12px}
+  #mirrorModal .mirrorProgress .bar{width:200px}
+}
+
+
+/* ============================
+   MIRROR PRO (Rebuild) — CRM layout
+   ============================ */
+#mirrorModal .modalCard.mirrorPro{background:#fff7e6}
+#mirrorModal .mirrorProBody{padding:0 !important; overflow:hidden}
+#mirrorModal .mirrorProGrid{
+  height:100%;
+  display:grid;
+  grid-template-columns: 520px 1fr;
+  gap:14px;
+  padding:14px 16px;
+  min-height:0;
+}
+#mirrorModal .mirrorProLeft, #mirrorModal .mirrorProRight{min-height:0}
+#mirrorModal .mirrorProLeft{display:flex; flex-direction:column; gap:12px; min-height:0}
+#mirrorModal .mirrorProRight{min-height:0}
+
+#mirrorModal .mirrorProHead{
+  background:#fff7e6;
+  border-bottom:1.5px solid rgba(214,178,94,0.55);
+  box-shadow:0 4px 14px rgba(0,0,0,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+#mirrorModal .mirrorProHead .mhRight{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+#mirrorModal .mirrorProHead .chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(214,178,94,.28);
+  background:rgba(255,255,255,.7);
+  color:#1a1a1f;
+  font-weight:900;
+}
+
+.stepperCard{
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+  padding:12px;
+}
+.stepperTop{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+.stepperTitle{font-weight:1000; color:#1a1a1f}
+.stepperBar{flex:1; height:10px; border-radius:999px; overflow:hidden; border:1px solid rgba(214,178,94,.25); background:rgba(214,178,94,.06)}
+.stepperBar .fill{height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--gold2))}
+.stepperList{display:flex; flex-direction:column; gap:10px}
+.stepItem{
+  width:100%;
+  text-align:right;
+  display:grid;
+  grid-template-columns: 34px 1fr;
+  grid-template-rows: auto auto;
+  column-gap:10px;
+  row-gap:2px;
+  padding:12px 12px;
+  border-radius:16px;
+  border:1px solid rgba(214,178,94,.18);
+  background:rgba(214,178,94,.06);
+  cursor:pointer;
+}
+.stepItem .n{
+  grid-row:1 / span 2;
+  width:34px;height:34px;border-radius:12px;
+  display:grid;place-items:center;
+  background:rgba(214,178,94,.20);
+  border:1px solid rgba(214,178,94,.35);
+  font-weight:1000;
+  color:#1a1a1f;
+}
+.stepItem .t{font-weight:1000;color:#1a1a1f}
+.stepItem .s{font-size:12px;color:rgba(12,12,18,.62);font-weight:800}
+.stepItem.active{background:linear-gradient(180deg, rgba(214,178,94,.20), rgba(214,178,94,.08)); border-color:rgba(214,178,94,.45)}
+.stepItem.done{opacity:1; filter:saturate(.9)}
+
+.workCard{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.cardTitle{font-weight:1000;color:#1a1a1f;margin:0 0 4px}
+.mwStep{display:none}
+.mwStep.show{display:block}
+
+.rowBtns{display:flex; gap:10px; flex-wrap:wrap}
+.rowBtns .btnGold, .rowBtns .btnGhost{border-radius:14px; font-weight:1000}
+.softHint{margin-top:10px; font-size:12px; color:rgba(12,12,18,.62); font-weight:800}
+
+.checkTop{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.miniTitle{font-size:12px; font-weight:1000; color:rgba(12,12,18,.70); margin-bottom:6px}
+#mirrorModal .mirrorProgress .bar{width:260px}
+
+.navBar{
+  margin-top:auto;
+  position:sticky;
+  bottom:0;
+  background:rgba(255,247,230,.92);
+  backdrop-filter: blur(6px);
+  border-top:1px solid rgba(214,178,94,.35);
+  padding:12px;
+  border-radius:16px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+
+.previewCard{
+  height:100%;
+  min-height:0;
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.previewHead{
+  padding:12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid rgba(214,178,94,.18);
+  background:rgba(214,178,94,.06);
+}
+.previewHead .ttl{font-weight:1000;color:#1a1a1f}
+.previewHead .meta{font-size:12px;color:rgba(12,12,18,.62);font-weight:800}
+.previewHead .rightBtns{display:flex; gap:10px; flex-wrap:wrap}
+
+.previewSplit{
+  flex:1;
+  min-height:0;
+  display:grid;
+  grid-template-rows: 170px 1fr;
+  gap:12px;
+  padding:12px;
+}
+.clientCard,.docCard{
+  border:1px solid rgba(214,178,94,.18);
+  border-radius:16px;
+  background:rgba(255,255,255,.75);
+  padding:10px;
+  min-height:0;
+}
+.frameWrap{
+  height:100%;
+  min-height:0;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid rgba(214,178,94,.18);
+}
+#mirrorFrame{width:100%;height:100%;border:0;background:#fff}
+
+#mirrorModal.readingMode .workCard{background:rgba(255,255,255,.82)}
+#mirrorModal.readingMode .mirrorField label{font-size:14px !important;font-weight:1000 !important;}
+#mirrorModal.readingMode .mirrorField input{padding:14px !important;font-size:16px !important;font-weight:900;}
+#mirrorModal.readingMode .btnGold,#mirrorModal.readingMode .btnGhost{padding:12px 14px !important;font-weight:1000 !important;}
+
+@media (max-width: 1100px){
+  #mirrorModal .mirrorProGrid{grid-template-columns:1fr; }
+  .previewSplit{grid-template-rows: 190px 1fr}
+}
+
 </style>
 </head>
 
@@ -3892,233 +4213,184 @@ document.addEventListener("click", (e)=>{
 
 
 <!-- ===== Mirror Client Modal (Real) ===== -->
+
 <div id="mirrorModal" class="modalOverlay" role="dialog" aria-modal="true">
-  <div class="modalCard wide">
-    <div class="modalHead">
-      <div>
-        <div class="title">שיקוף ללקוח</div>
-        <div class="sub">מציג ללקוח נתוני ליד + הצעה/PDF בחלון נקי</div>
+  <div class="modalCard wide mirrorPro">
+    <div class="modalHead mirrorProHead">
+      <div class="mhLeft">
+        <div class="title">🪞 שיקוף לנציג</div>
+        <div class="sub">מסך הקראה מובנה • שלבים נעולים • תצוגת מסמך ללקוח</div>
       </div>
-      <button class="btnGhost" id="mirrorClose">✕ יציאה</button>
+      <div class="mhRight">
+        <div class="chip" id="mirrorClientChip" title="לקוח שנבחר">לקוח: <b id="mirrorClientName">—</b></div>
+        <button class="btnGhost" id="mirrorClose" type="button">✕ יציאה</button>
+      </div>
     </div>
 
-    <div class="modalBody" style="padding:14px 16px">
-      <div class="mirrorGrid">
-        <div class="mirrorPanel">
+    <div class="modalBody mirrorProBody">
+      <div class="mirrorProGrid">
 
-<h4 style="margin:0 0 10px">🪞 שיקוף לנציג (מסך הקראה)</h4>
-
-<div class="mwStepper" aria-label="שלבי שיקוף לנציג">
-  <div class="mwStepPill active" id="mwPill1"><span class="n">1</span> שליפת לקוח</div>
-  <div class="mwStepPill" id="mwPill2"><span class="n">2</span> בחירת מסמך</div>
-  <div class="mwStepPill" id="mwPill3"><span class="n">3</span> צ׳ק ליסט הקראה</div>
-  <div class="mwBar" aria-hidden="true"><div class="fill" id="mwBarFill"></div></div>
-</div>
-
-<div class="mwStep show" id="mwStep1">
-  <div class="mirrorField">
-            <label>בחר מסמך להצגה</label>
-            <select id="mirrorLeadSelect">
-              <option value="">— לחץ לבחירה —</option>
-            </select>
-          </div>
-
-          <div class="mirrorField">
-            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
-            <div class="mirrorSearchRow">
-              <div class="seg" id="mirrorFindType">
-                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
-                <button type="button" class="segBtn" data-type="name">שם</button>
-                <button type="button" class="segBtn" data-type="phone">טלפון</button>
-              </div>
-              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
-              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
+        <!-- Left: Agent workflow -->
+        <aside class="mirrorProLeft">
+          <div class="stepperCard">
+            <div class="stepperTop">
+              <div class="stepperTitle">תהליך שיקוף</div>
+              <div class="stepperBar"><div class="fill" id="mwBarFill"></div></div>
             </div>
-            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
-          </div>
-  <div class="mwHint">השלב הבא נפתח רק אחרי שנבחר לקוח.</div>
-</div>
-
-<div class="mwStep" id="mwStep2">
-  <div class="mirrorField">
-            <label>בחר מסמך להצגה</label>
-            <select id="mirrorLeadSelect">
-              <option value="">— לחץ לבחירה —</option>
-            </select>
-          </div>
-
-          <div class="mirrorField">
-            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
-            <div class="mirrorSearchRow">
-              <div class="seg" id="mirrorFindType">
-                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
-                <button type="button" class="segBtn" data-type="name">שם</button>
-                <button type="button" class="segBtn" data-type="phone">טלפון</button>
-              </div>
-              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
-              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
+            <div class="stepperList" role="list">
+              <button class="stepItem active" id="mwPill1" type="button">
+                <span class="n">1</span>
+                <span class="t">שליפת לקוח</span>
+                <span class="s">ת.ז / שם / טלפון</span>
+              </button>
+              <button class="stepItem" id="mwPill2" type="button">
+                <span class="n">2</span>
+                <span class="t">בחירת מסמך</span>
+                <span class="s">קישור PDF/דף</span>
+              </button>
+              <button class="stepItem" id="mwPill3" type="button">
+                <span class="n">3</span>
+                <span class="t">צ׳ק ליסט הקראה</span>
+                <span class="s">נעילה לפי “בוצע”</span>
+              </button>
             </div>
-            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
           </div>
 
+          <div class="workCard">
+            <!-- STEP 1 -->
+            <div class="mwStep show" id="mwStep1">
+              <div class="cardTitle">שלב 1 — שליפת לקוח</div>
 
-                    <div class="mirrorField">
-            <label>שם הצעה / מסמך</label>
-            <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
-          </div>
-          <div class="mirrorField">
-            <label>קישור ל‑PDF או דף הצעה</label>
-            <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
-          </div>
-
-          <details class="mirrorSteps" open>
-            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
-            <div class="mirrorStepsBody">
-              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
-              <div class="mirrorStepsGrid">
-                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
-                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
-                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
-                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
-              </div>
-            </div>
-  <div class="mirrorField">
-            <label>בחר מסמך להצגה</label>
-            <select id="mirrorLeadSelect">
-              <option value="">— לחץ לבחירה —</option>
-            </select>
-          </div>
-
-          <div class="mirrorField">
-            <label>שליפת לקוח לשיקוף (ת.ז / שם / טלפון)</label>
-            <div class="mirrorSearchRow">
-              <div class="seg" id="mirrorFindType">
-                <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
-                <button type="button" class="segBtn" data-type="name">שם</button>
-                <button type="button" class="segBtn" data-type="phone">טלפון</button>
-              </div>
-              <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
-              <button class="btn goldSoft" id="mirrorFindBtn" type="button">שלוף</button>
-            </div>
-            <div class="hint">המערכת תנסה להתאים לקוח ולהטעין את הפרטים לשיקוף.</div>
-          </div>
-
-
-                    <div class="mirrorField">
-            <label>שם הצעה / מסמך</label>
-            <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
-          </div>
-          <div class="mirrorField">
-            <label>קישור ל‑PDF או דף הצעה</label>
-            <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
-          </div>
-
-          <details class="mirrorSteps" open>
-            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
-            <div class="mirrorStepsBody">
-              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
-              <div class="mirrorStepsGrid">
-                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
-                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
-                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
-                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
-              </div>
-            </div>
-  <div class="mwHint">השלב הבא נפתח רק אחרי שהוזן קישור PDF/מסמך.</div>
-</div>
-
-<div class="mwStep" id="mwStep3">
-  <details class="mirrorSteps" open>
-            <summary>שלבי שיקוף השיחה (תבנית מוכנה)</summary>
-            <div class="mirrorStepsBody">
-              <div class="help">לחץ על שלב כדי לפתוח את “שיקוף השיחה” עם תבנית מוכנה. אפשר גם להעתיק/לערוך.</div>
-              <div class="mirrorStepsGrid">
-                <button class="btnGhost mirrorStepBtn" data-step="open">1) פתיחה והזדהות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="needs">2) איסוף צרכים ואימות פרטים</button>
-                <button class="btnGhost mirrorStepBtn" data-step="offer">3) הצגת ההצעה ומה היא כוללת</button>
-                <button class="btnGhost mirrorStepBtn" data-step="price">4) מחיר, תשלום והחרגות</button>
-                <button class="btnGhost mirrorStepBtn" data-step="confirm">5) אישור הלקוח והמשך תהליך</button>
-                <button class="btnGhost mirrorStepBtn" data-step="close">6) סיכום, שאלות והודעת המשך</button>
-              </div>
-            </div>
-
-              <div class="mirrorChecklist" id="mirrorChecklist">
-                <div class="mirrorChecklistTop">
-                  <div>
-                    <b>צ׳ק ליסט שיקוף לנציג</b>
-                    <div class="hint">סמן “בוצע” בכל שלב. נשמר אוטומטית לפי הלקוח.</div>
+              <div class="mirrorField">
+                <label>חפש לקוח</label>
+                <div class="mirrorSearchRow">
+                  <div class="seg" id="mirrorFindType">
+                    <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
+                    <button type="button" class="segBtn" data-type="name">שם</button>
+                    <button type="button" class="segBtn" data-type="phone">טלפון</button>
                   </div>
-                  <div class="mirrorProgress">
-                    <div class="bar"><div class="fill" id="mirrorProgFill" style="width:0%"></div></div>
-                    <div class="pct" id="mirrorProgPct">0%</div>
-                  </div>
+                  <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
+                  <button class="btnGold" id="mirrorFindBtn" type="button">שלוף</button>
                 </div>
+                <div class="hint">המערכת תטען את הלקוח למסך השיקוף ותפתח את שלב 2.</div>
+              </div>
 
-                <div class="mirrorStepCard">
-                  <div class="mirrorStepHead">
-                    <div class="num" id="mirrorStepNum">1</div>
-                    <div class="ttl" id="mirrorStepTitle">פתיחה והזדהות</div>
-                    <label class="chk"><input type="checkbox" id="mirrorStepDone"/> בוצע</label>
-                  </div>
-                  <textarea id="mirrorStepScript" class="mirrorScript" rows="7" spellcheck="false"></textarea>
+              <!-- hidden select for compatibility with existing logic -->
+              <select id="mirrorLeadSelect" style="display:none">
+                <option value="">—</option>
+              </select>
 
-                  <div class="mirrorStepNav">
-                    <button class="btnGhost" id="mirrorPrevStep" type="button">◀ הקודם</button>
-                    <button class="btnGhost" id="mirrorNextStep" type="button">הבא ▶</button>
-                  </div>
+              <div class="softHint">טיפ: אם יש כמה התאמות, כתוב יותר מדויק (למשל 3 ספרות אחרונות בטלפון).</div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="mwStep" id="mwStep2">
+              <div class="cardTitle">שלב 2 — בחירת מסמך</div>
+
+              <div class="mirrorField">
+                <label>שם מסמך להצגה</label>
+                <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
+              </div>
+
+              <div class="mirrorField">
+                <label>קישור ל‑PDF / דף הצעה</label>
+                <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
+              </div>
+
+              <div class="rowBtns">
+                <button class="btnGold" id="mirrorApply" type="button">הצג מסמך</button>
+                <button class="btnGhost" id="mirrorCopyLink" type="button">העתק קישור</button>
+                <button class="btnGhost" id="mirrorOpenLink" type="button">פתח קישור</button>
+              </div>
+
+              <div class="mirrorNotice">
+                אם PDF חוסם טעינה בתוך חלון (iframe) — עדיין אפשר לפתוח אותו בטאב חדש.
+                <a class="btnGold" id="mirrorOpenExternal" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;margin-top:10px;align-self:flex-start">פתח מסמך בטאב</a>
+              </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="mwStep" id="mwStep3">
+              <div class="cardTitle">שלב 3 — צ׳ק ליסט הקראה לנציג</div>
+
+              <div class="checkTop">
+                <div>
+                  <div class="miniTitle">התקדמות</div>
+                  <div class="hint">אחוזים לפי “בוצע” (נשמר לפי הלקוח)</div>
+                </div>
+                <div class="mirrorProgress">
+                  <div class="bar"><div class="fill" id="mirrorProgFill" style="width:0%"></div></div>
+                  <div class="pct" id="mirrorProgPct">0%</div>
                 </div>
               </div>
 
-</details>
-</div>
+              <div class="mirrorStepCard">
+                <div class="mirrorStepHead">
+                  <div class="num" id="mirrorStepNum">1</div>
+                  <div class="ttl" id="mirrorStepTitle">—</div>
+                  <label class="chk"><input type="checkbox" id="mirrorStepDone"/> בוצע</label>
+                </div>
 
-<div class="mwNav">
-  <button class="btnGhost" id="mwBack" type="button">◀ הקודם</button>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <button class="btnGhost" id="mwReadMode" type="button">🗣️ מצב הקראה</button>
-    <button class="btnGold" id="mwNext" type="button">הבא ▶</button>
-  </div>
-</div>
+                <textarea id="mirrorStepScript" class="mirrorScript" rows="7" spellcheck="false"></textarea>
 
-<hr style="margin:12px 0;border:0;border-top:1px solid rgba(214,178,94,0.35)"/>
+                <div class="mirrorStepNav">
+                  <button class="btnGhost" id="mirrorPrevStep" type="button">◀ הקודם</button>
+                  <button class="btnGhost" id="mirrorNextStep" type="button">הבא ▶</button>
+                </div>
+              </div>
 
-<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-  <div style="font-weight:1000">פעולות</div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
-    <button class="btnGold" id="mirrorApply">הצג</button>
-    <button class="btnGhost" id="mirrorCopyLink">העתק קישור צפייה</button>
-    <button class="btnGhost" id="mirrorOpenLink">פתח קישור צפייה</button>
-    <button class="btnGhost" id="mirrorFull">מסך מלא</button>
-    <button class="btnGold" id="mirrorScriptOpen">🗣️ שיקוף השיחה</button>
-  </div>
-</div>
-
-<div class="mirrorNotice">
-            טיפ: אם PDF חוסם טעינה בתוך חלון (iframe), עדיין תוכל לפתוח אותו בטאב חדש מתוך הכפתור למטה.
-          </div>
-
-</div>
-
-        <div class="mirrorPreview">
-          <div class="mirrorPreviewHead">
-            <div>
-              <div class="ttl" id="mirrorPrevTitle">לא נבחר מסמך</div>
-              <div class="meta" id="mirrorPrevMeta">בחר ליד ומסמך</div>
+              <div class="rowBtns">
+                <button class="btnGhost" id="mirrorFull" type="button">מסך מלא</button>
+                <button class="btnGold" id="mirrorScriptOpen" type="button">🗣️ טקסט הקראה</button>
+              </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <a id="mirrorOpenExternal" href="#" target="_blank" rel="noopener" style="display:none;color:var(--gold2);font-weight:900;text-decoration:none">פתח מסמך</a>
+
+            <div class="navBar">
+              <button class="btnGhost" id="mwBack" type="button">◀ הקודם</button>
+              <button class="btnGhost" id="mwReadMode" type="button">🗣️ מצב הקראה</button>
+              <button class="btnGold" id="mwNext" type="button">הבא ▶</button>
             </div>
           </div>
-          <div class="mirrorPreviewBody">
-            <iframe id="mirrorFrame" title="מסמך להצגה" src="about:blank"></iframe>
+        </aside>
+
+        <!-- Right: Preview -->
+        <section class="mirrorProRight">
+          <div class="previewCard">
+            <div class="previewHead">
+              <div>
+                <div class="ttl" id="mirrorPrevTitle">מסמך</div>
+                <div class="meta" id="mirrorPrevMeta">בחר לקוח + מסמך</div>
+              </div>
+              <div class="rightBtns">
+                <button class="btnGhost" id="mirrorDone" type="button">סיום ✔</button>
+                <button class="btnGhost" id="mirrorClear" type="button">נקה</button>
+              </div>
+            </div>
+
+            <div class="previewSplit">
+              <div class="clientCard">
+                <div class="miniTitle">פרטי לקוח</div>
+                <div class="mirrorCard">
+                  <div class="mirrorKV" id="mirrorKV"></div>
+                </div>
+              </div>
+
+              <div class="docCard">
+                <div class="miniTitle">תצוגת מסמך</div>
+                <div class="frameWrap">
+                  <iframe id="mirrorFrame" title="מסמך" src="about:blank"></iframe>
+                </div>
+              </div>
+            </div>
+
           </div>
-        </div>
+        </section>
+
       </div>
     </div>
+  </div>
+</div>
+
 
     <div class="modalFoot">
       <button class="btnGhost" id="mirrorClear">נקה</button>
@@ -4532,6 +4804,8 @@ document.addEventListener("click", (e)=>{
     ];
     kv.innerHTML = pairs.map(([k,v])=> `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
   }
+  try{ const nm = document.getElementById("mirrorClientName"); if(nm) nm.textContent = (lead?.name || "—"); }catch(e){}
+
 
   function applyPreview(){
     const leadId = sel.value;
