@@ -2839,6 +2839,27 @@ h3,.h3{ font-size: 17px !important; }
 .loginSub{ font-size: 14.5px !important; }
 .loginBrandName{ font-size: 18px !important; }
 
+
+/* ===== Text Sharpness Boost ===== */
+html, body{
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+*{
+  text-shadow: none !important;
+}
+
+/* Slight contrast boost for clarity */
+body{
+  color: #101015;
+}
+
+/* Inputs and buttons sharper */
+input, select, textarea, button{
+  -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
 </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
