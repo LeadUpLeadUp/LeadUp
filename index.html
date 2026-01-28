@@ -1,6 +1,4 @@
 
-
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -2688,8 +2686,11 @@ function loadState(){
   }
 }
 const appState = loadState();
+// Expose state for modules that rely on it (mirror/esign etc.)
+window.appState = appState;
 
 function saveState(){
+  window.appState = appState;
   localStorage.setItem(LS_KEY, JSON.stringify(appState));
   showLoader(220);
   renderAll();
