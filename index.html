@@ -2405,15 +2405,12 @@ html.authPending .loginGate{ display:flex !important; }
 .loginGate{
   position:fixed !important;
   inset:0 !important;
-  display:flex !important;
   align-items:center !important;
   justify-content:center !important;
   text-align:center;
 }
-.loginCard{
-  margin:0 auto !important;
-}
-
+/* NOTE: do NOT force display with !important so JS can hide it */
+.loginCard{ margin:0 auto !important; }
 </style>
 </head>
 
