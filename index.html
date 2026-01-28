@@ -1,6 +1,5 @@
 
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -1669,6 +1668,119 @@ body[data-theme="light"] .modalBody textarea::placeholder{
   padding-left: 14px !important;
   padding-right: 14px !important;
 }
+
+
+/* =====================================
+   CLIENT DOSSIER (internal fullscreen)
+   ===================================== */
+
+/* Make row actions handle a full button nicely */
+.actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.openClientBtn{
+  padding:10px 14px;
+  border-radius:14px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+/* Dossier tabs */
+.clientTabs{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,0));
+  overflow:auto;
+}
+.clientTabs .tabBtn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.55);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:800;
+  white-space:nowrap;
+  transition:.18s ease;
+}
+.clientTabs .tabBtn:hover{ transform:translateY(-1px); border-color:rgba(214,178,94,.35); }
+.clientTabs .tabBtn.active{
+  border-color:rgba(214,178,94,.55);
+  background:linear-gradient(180deg, rgba(214,178,94,.22), rgba(255,255,255,.55));
+}
+
+/* Sections */
+.clientSection{
+  display:none;
+  padding:14px;
+  overflow:auto;
+}
+.clientSection.show{ display:block; }
+
+.clientGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:12px;
+}
+.clientField{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.55);
+  border-radius:16px;
+  padding:12px 12px;
+}
+.clientField .lbl{ font-size:12px; color:var(--muted2); font-weight:800; }
+.clientField .val{ margin-top:6px; font-size:14px; font-weight:900; }
+
+/* Timeline list inside dossier */
+.clientList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.clientItem{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.55);
+  border-radius:16px;
+  padding:12px 12px;
+}
+.clientItem .top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.clientItem .t{ font-weight:900; }
+.clientItem .m{ margin-top:6px; color:var(--muted); }
+
+/* Internal fullscreen for dossier modal (no overlay) */
+#clientDossierModal{
+  position:absolute !important;
+  inset:0 !important;
+  padding:0 !important;
+  z-index:21;
+  display:none;
+}
+#clientDossierModal.show{ display:flex !important; }
+#clientDossierModal .modalCard{
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  border-radius:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  box-shadow:none !important;
+  background:var(--panel);
+  display:flex;
+  flex-direction:column;
+}
+#clientDossierModal .modalBody{
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+  padding:0 !important;
+}
 </style>
 </head>
 
@@ -1707,7 +1819,7 @@ body[data-theme="light"] .modalBody textarea::placeholder{
       </button>
 
       <button type="button" id="navMirror" data-view="mirror">
-        <span class="k">🪞 שיקוף ללקוח</span>
+        <span class="k">🪞 צ'ק ליסט שיקוף עסקה</span>
       </button>
 
 
@@ -2897,6 +3009,7 @@ function renderLeads(){
         <td>${l.nextFollowUpAt ? fmtDT(l.nextFollowUpAt) : "—"}</td>
         <td>
           <div class="actions">
+            <button class="btn goldSoft openClientBtn" title="פתח תיק לקוח" data-tip="פתח תיק לקוח" data-act="open" data-id="${escapeHTML(l.id)}">📂 פתח תיק לקוח</button>
             <button class="iconBtn gold" title="ערוך" data-tip="ערוך" data-act="edit" data-id="${escapeHTML(l.id)}">✎</button>
             <button class="iconBtn" title="משימה" data-tip="צור משימה" data-act="task" data-id="${escapeHTML(l.id)}">⏰</button>
             <button class="iconBtn" title="קשר" data-tip="פעולות קשר" data-act="contact" data-id="${escapeHTML(l.id)}">📲</button>
@@ -2910,6 +3023,7 @@ function renderLeads(){
     btn.addEventListener("click", ()=>{
       const id = btn.getAttribute("data-id");
       const act = btn.getAttribute("data-act");
+      if(act==="open") openClientDossier(id);
       if(act==="edit") openLeadForm(id);
       if(act==="task"){
         const lead = appState.leads.find(l=>l.id===id);
@@ -4115,6 +4229,38 @@ document.addEventListener("click", (e)=>{
   });
 })();
 </script>
+
+<!-- ===== Client Dossier (Internal Fullscreen) ===== -->
+<div id="clientDossierModal" class="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="clientDossierTitle">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div id="clientDossierTitle" class="title">תיק לקוח</div>
+        <div id="clientDossierSub" class="sub">פרטי לקוח, משימות, היסטוריה, מסמכים וחתימות</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn" id="clientDossierBackBtn">⬅️ חזרה ללידים</button>
+        <button class="btnGhost" id="clientDossierCloseBtn" aria-label="סגור">✕ סגור</button>
+      </div>
+    </div>
+
+    <div class="clientTabs" id="clientTabs">
+      <button class="tabBtn active" data-tab="details">פרטים</button>
+      <button class="tabBtn" data-tab="tasks">משימות</button>
+      <button class="tabBtn" data-tab="history">היסטוריה</button>
+      <button class="tabBtn" data-tab="docs">מסמכים</button>
+      <button class="tabBtn" data-tab="sign">חתימות</button>
+    </div>
+
+    <div class="modalBody">
+      <div id="clientTab_details" class="clientSection show"></div>
+      <div id="clientTab_tasks" class="clientSection"></div>
+      <div id="clientTab_history" class="clientSection"></div>
+      <div id="clientTab_docs" class="clientSection"></div>
+      <div id="clientTab_sign" class="clientSection"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
