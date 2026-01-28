@@ -1,12 +1,26 @@
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  
+  <script>
+  // Theme bootstrap: default to LIGHT so the UI won't "flip to black" unexpectedly.
+  (function(){
+    try{
+      const key = "leadup_theme";
+      const saved = localStorage.getItem(key);
+      const theme = (saved === "dark" || saved === "light") ? saved : "light";
+      document.documentElement.setAttribute("data-theme", theme);
+      if(saved !== theme) localStorage.setItem(key, theme);
+    }catch(e){
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  })();
+  </script>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>LEADUP • מערכת ניהול לידים</title>
-  <meta name="theme-color" content="#0b0b0f"/>
+  <meta name="theme-color" content="#ffffff"/>
   <style>
     :root{
       --bg:#07070a;
@@ -1183,20 +1197,20 @@ html[data-theme="dark"] .brand .sub{
 
 
 /* ===== Fix: Modal labels contrast on Light/Cream UI ===== */
-body[data-theme="light"] label{
+html[data-theme="light"] label{
   color: rgba(12,12,18,.82) !important;
 }
-body[data-theme="light"] .modalBody label{
+html[data-theme="light"] .modalBody label{
   color: rgba(12,12,18,.90) !important;
   font-weight: 800 !important;
 }
-body[data-theme="light"] .modalBody .muted,
-body[data-theme="light"] .modalBody .small,
-body[data-theme="light"] .modalBody .hint{
+html[data-theme="light"] .modalBody .muted,
+html[data-theme="light"] .modalBody .small,
+html[data-theme="light"] .modalBody .hint{
   color: rgba(12,12,18,.62) !important;
 }
-body[data-theme="light"] .modalBody input::placeholder,
-body[data-theme="light"] .modalBody textarea::placeholder{
+html[data-theme="light"] .modalBody input::placeholder,
+html[data-theme="light"] .modalBody textarea::placeholder{
   color: rgba(12,12,18,.45) !important;
   opacity: 1 !important;
 }
@@ -1856,6 +1870,7 @@ body[data-theme="light"] .modalBody textarea::placeholder{
       <div class="right">
         <button class="btn goldSoft" id="btnAddLead">➕ ליד חדש</button>
         <button class="btn goldSoft hideTopQuick" id="btnQuickTask">⚙️ התהליכים שלי</button>
+        <button class="btn" id="btnTheme" type="button" title="החלף מצב תצוגה">🌓 מצב תצוגה</button>
       </div>
     </div>
 
@@ -4261,6 +4276,36 @@ document.addEventListener("click", (e)=>{
     </div>
   </div>
 </div>
+
+
+<script>
+(function(){
+  const btn = document.getElementById("btnTheme");
+  if(!btn) return;
+
+  function applyTheme(theme){
+    try{
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("leadup_theme", theme);
+    }catch(e){
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    // nice micro-feedback
+    btn.classList.toggle("goldSoft", theme === "light");
+    btn.classList.toggle("gold", theme === "dark");
+    btn.textContent = (theme === "dark") ? "🌙 מצב כהה" : "☀️ מצב בהיר";
+  }
+
+  // set initial button label based on current attribute
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  applyTheme(current);
+
+  btn.addEventListener("click", ()=>{
+    const now = document.documentElement.getAttribute("data-theme") || "light";
+    applyTheme(now === "dark" ? "light" : "dark");
+  });
+})();
+</script>
 
 </body>
 </html>
