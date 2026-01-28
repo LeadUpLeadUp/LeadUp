@@ -2745,7 +2745,7 @@ html.authPending .loginGate{ display:flex !important; }
 
 /* ===== CRM Typography Pack (Hebrew) ===== */
 :root{
-  --font-crm: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-crm: "Noto Sans Hebrew", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --text-strong: #131318;
   --text-soft: rgba(12,12,18,.72);
 }
@@ -2758,45 +2758,91 @@ html, body{
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1,.h1{ font-size: 22px; font-weight: 900; color: var(--text-strong); letter-spacing: .2px; }
-h2,.h2{ font-size: 18px; font-weight: 900; color: var(--text-strong); }
-h3,.h3{ font-size: 15px; font-weight: 900; color: var(--text-strong); }
+h1,.h1{ font-size: 22px; font-weight: 800; color: var(--text-strong); letter-spacing: .2px; }
+h2,.h2{ font-size: 18px; font-weight: 800; color: var(--text-strong); }
+h3,.h3{ font-size: 15px; font-weight: 800; color: var(--text-strong); }
 
-p, .text{ font-size: 14px; font-weight: 600; color: var(--text-soft); line-height: 1.45; }
-small, .muted{ font-size: 12px; font-weight: 700; color: rgba(12,12,18,.58); }
+p, .text{ font-size: 14px; font-weight: 400; color: rgba(12,12,18,.68); line-height: 1.55; }
+small, .muted{ font-size: 12px; font-weight: 500; color: rgba(12,12,18,.52); }
 
 label, .cap, .miniTitle, .kvLbl{
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .15px;
+  font-weight: 600;
+  letter-spacing: .12px;
 }
 
 .kvVal{
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--text-strong);
 }
 
 button, .btnGold, .btnGhost, .segBtn{
   font-family: var(--font-crm);
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: .15px;
 }
 
 input, select, textarea{
   font-family: var(--font-crm);
-  font-weight: 800;
-  letter-spacing: .1px;
+  font-weight: 600;
+  letter-spacing: .08px;
 }
 
-.loginTitle{ font-size: 19px; font-weight: 1000; letter-spacing: .3px; }
+.loginTitle{ font-size: 19px; font-weight: 800; letter-spacing: .3px; }
 .loginSub{ font-weight: 800; }
-.loginBrandName{ font-weight: 1000; letter-spacing: 1.2px; }
+.loginBrandName{ font-weight: 800; letter-spacing: 1.2px; }
+
+
+/* ===== Global Readability Upgrade ===== */
+
+/* Base text */
+p, .text{
+  font-size: 15.5px !important;
+  line-height: 1.65 !important;
+}
+
+/* Small text */
+small, .muted{
+  font-size: 13.5px !important;
+}
+
+/* Labels / captions */
+label, .cap, .miniTitle, .kvLbl{
+  font-size: 13.5px !important;
+}
+
+/* Values / important text */
+.kvVal{
+  font-size: 16px !important;
+}
+
+/* Buttons */
+button, .btnGold, .btnGhost, .segBtn{
+  font-size: 15px !important;
+}
+
+/* Inputs */
+input, select, textarea{
+  font-size: 15.5px !important;
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+/* Headings */
+h1,.h1{ font-size: 24px !important; }
+h2,.h2{ font-size: 20px !important; }
+h3,.h3{ font-size: 17px !important; }
+
+/* Login emphasis */
+.loginTitle{ font-size: 22px !important; }
+.loginSub{ font-size: 14.5px !important; }
+.loginBrandName{ font-size: 18px !important; }
 
 </style>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 </head>
 
