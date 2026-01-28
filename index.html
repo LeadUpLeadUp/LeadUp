@@ -1306,6 +1306,91 @@ body[data-theme="light"] .modalBody textarea::placeholder{
   line-height:1;
 }
 
+
+/* ==== Ensure leads table fits viewport without horizontal scroll ==== */
+#viewLeads{
+  overflow-x: hidden;
+}
+
+#viewLeads .tableWrap{
+  overflow-x: hidden;
+}
+
+#viewLeads table{
+  width:100%;
+  min-width:0; /* allow table to shrink to container */
+  table-layout: fixed;
+}
+
+#viewLeads th, 
+#viewLeads td{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* rebalance column widths so everything fits */
+#viewLeads th:nth-child(1), #viewLeads td:nth-child(1){ width: 22%; } /* שם */
+#viewLeads th:nth-child(2), #viewLeads td:nth-child(2){ width: 18%; } /* טלפון */
+#viewLeads th:nth-child(3), #viewLeads td:nth-child(3){ width: 14%; } /* סטטוס */
+#viewLeads th:nth-child(4), #viewLeads td:nth-child(4){ width: 14%; } /* מקור */
+#viewLeads th:nth-child(5), #viewLeads td:nth-child(5){ width: 14%; } /* חום */
+#viewLeads th:nth-child(6), #viewLeads td:nth-child(6){ width: 18%; } /* פעולות */
+
+
+/* ==== E-Sign: wide clean modal + options ==== */
+#esignModal .modalCard.wide{
+  width:min(1320px, 98vw);
+  height:min(88vh, 860px);
+  display:flex;
+  flex-direction:column;
+}
+#esignModal .modalBody{flex:1;min-height:0;}
+#esignModal .mirrorGrid{gap:14px;}
+#esignModal .mirrorPanel, #esignModal .mirrorPreview{min-height:0;}
+#esignModal .mirrorPreview{border:1px solid var(--line);border-radius:18px;background:rgba(214,178,94,.06);}
+#esignModal .field .cap{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+#esignModal input, #esignModal textarea{
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  outline:none;
+}
+#esignModal input:focus, #esignModal textarea:focus{
+  border-color: rgba(214,178,94,.55);
+  box-shadow: 0 0 0 3px rgba(214,178,94,.18);
+}
+.esignOptions{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+.esignOptionBtn{
+  text-align:right;
+  padding:12px 14px;
+  border-radius:16px;
+}
+.esignOptionBtn.active{
+  border-color: rgba(214,178,94,.75) !important;
+  box-shadow: 0 0 0 3px rgba(214,178,94,.18);
+  background: rgba(214,178,94,.10);
+}
+.esignMsg{
+  width:100%;
+  height:100%;
+  min-height:180px;
+  resize:none;
+  line-height:1.65;
+  font-size:14px;
+}
+@media (max-width: 920px){
+  #esignModal .mirrorGrid{grid-template-columns:1fr !important;}
+  #esignModal .modalCard.wide{height:min(92vh, 900px);}
+}
+
 </style>
 </head>
 
@@ -2940,30 +3025,63 @@ document.addEventListener("click", (e)=>{
 </script>
 
 
+
 <!-- ===== E-Sign Modal ===== -->
-<div id="esignModal" class="modalOverlay">
-  <div class="modalCard">
+<div id="esignModal" class="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modalCard wide">
     <div class="modalHead">
       <div>
         <div class="title">שליחה לחתימת לקוח</div>
-        <div class="sub">שלח מסמך לחתימה דיגיטלית (DocuSign / PDF / קישור)</div>
+        <div class="sub">בחר סוג מסמך, הוסף פרטים ושלח ללקוח לחתימה (דמו)</div>
       </div>
       <button class="btnGhost" id="esignClose">✕ סגור</button>
     </div>
 
-    <div class="modalBody" style="flex-direction:column;gap:12px">
-      <label>
-        אימייל הלקוח:
-        <input id="esignEmail" type="email" placeholder="client@email.com" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line)">
-      </label>
+    <div class="modalBody" style="gap:14px">
+      <div class="mirrorGrid" style="grid-template-columns:420px 1fr">
+        <div class="mirrorPanel">
+          <h4>סוג מסמך</h4>
+          <div class="help">בחר תבנית מוכנה (אפשר לערוך טקסט לפני שליחה).</div>
 
-      <label>
-        קישור למסמך לחתימה:
-        <input id="esignLink" type="url" placeholder="https://..." style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line)">
-      </label>
+          <div class="esignOptions">
+            <button class="btnGhost esignOptionBtn" data-doc="health">🩺 חתימה על הצהרת בריאות</button>
+            <button class="btnGhost esignOptionBtn" data-doc="cancel">🧾 חתימה לבקשה לביטול פוליסה</button>
+            <button class="btnGhost esignOptionBtn" data-doc="terms">✅ חתימה לאישור תנאים</button>
+            <button class="btnGhost esignOptionBtn" data-doc="agent">🧑‍💼 חתימה למינוי סוכן בפוליסה</button>
+          </div>
 
-      <div style="color:var(--muted);font-size:13px">
-        בהמשך נוכל לחבר חתימה דיגיטלית אמיתית (DocuSign / PandaDoc / Google Drive).
+          <div class="help" style="margin-top:10px">
+            טיפ: אחרי בחירה – ייטען טקסט התבנית בצד שמאל/הודעה, ותוכל להדביק קישור למסמך או PDF.
+          </div>
+        </div>
+
+        <div class="mirrorPreview" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+          <h4 style="margin:0">פרטי שליחה</h4>
+
+          <label class="field">
+            <span class="cap">שם המסמך להצגה</span>
+            <input id="esignDocName" type="text" placeholder="לדוגמה: הצהרת בריאות / אישור תנאים" style="width:100%">
+          </label>
+
+          <label class="field">
+            <span class="cap">אימייל הלקוח</span>
+            <input id="esignEmail" type="email" placeholder="client@email.com" style="width:100%">
+          </label>
+
+          <label class="field">
+            <span class="cap">קישור למסמך / PDF לחתימה</span>
+            <input id="esignLink" type="url" placeholder="https://...pdf או https://..." style="width:100%">
+          </label>
+
+          <label class="field" style="flex:1;min-height:0">
+            <span class="cap">הודעה ללקוח (להדבקה/שליחה)</span>
+            <textarea id="esignMsg" class="esignMsg" placeholder="טקסט שיקוף/הנחיה ללקוח…" ></textarea>
+          </label>
+
+          <div style="color:var(--muted);font-size:13px">
+            בהמשך נוכל לחבר חתימה דיגיטלית אמיתית (DocuSign / PandaDoc / Google Drive / טופס חתימה).
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2974,36 +3092,121 @@ document.addEventListener("click", (e)=>{
   </div>
 </div>
 
-
 <script>
 /* ===== E-Sign Logic ===== */
 (function(){
   const modal = document.getElementById('esignModal');
   if(!modal) return;
 
-  const openBtn = document.querySelector('[data-view="esign"]');
+  const openBtn = document.getElementById('navESign') || document.querySelector('[data-view="esign"]');
   const closeBtn = document.getElementById('esignClose');
   const cancelBtn = document.getElementById('esignCancel');
   const sendBtn = document.getElementById('esignSend');
 
-  function openModal(){ modal.classList.add('show'); }
-  function closeModal(){ modal.classList.remove('show'); }
+  const docName = document.getElementById('esignDocName');
+  const emailEl = document.getElementById('esignEmail');
+  const linkEl  = document.getElementById('esignLink');
+  const msgEl   = document.getElementById('esignMsg');
+  const optionBtns = Array.from(document.querySelectorAll('.esignOptionBtn'));
 
-  openBtn?.addEventListener('click', ()=> openModal());
+  const templates = {
+    health: {
+      name: "הצהרת בריאות",
+      msg: (client="הלקוח") => `שלום ${client},\nמצורפת הצהרת בריאות לחתימה.\nאנא קרא/י ואשר/י שהפרטים נכונים.\nלאחר החתימה נחזור אליך להמשך תהליך.\nתודה!`
+    },
+    cancel: {
+      name: "בקשה לביטול פוליסה",
+      msg: (client="הלקוח") => `שלום ${client},\nמצורף מסמך לבקשה לביטול פוליסה לחתימה.\nלאחר החתימה נעדכן אותך בסטטוס ובאישור הביטול.\nתודה!`
+    },
+    terms: {
+      name: "אישור תנאים",
+      msg: (client="הלקוח") => `שלום ${client},\nמצורף מסמך אישור תנאים לחתימה.\nאנא אשר/י שקראת והבנת את התנאים.\nתודה!`
+    },
+    agent: {
+      name: "מינוי סוכן בפוליסה",
+      msg: (client="הלקוח") => `שלום ${client},\nמצורף מסמך מינוי סוכן בפוליסה לחתימה.\nלאחר החתימה נמשיך לעדכון מול החברה.\nתודה!`
+    }
+  };
+
+  function openModal(){
+    modal.classList.add('show');
+  }
+  function closeModal(){
+    modal.classList.remove('show');
+  }
+
+  // Open from sidebar button, without changing other nav behavior
+  openBtn?.addEventListener('click', (e)=>{
+    e.preventDefault?.();
+    e.stopPropagation?.();
+    openModal();
+  });
+
   closeBtn?.addEventListener('click', closeModal);
   cancelBtn?.addEventListener('click', closeModal);
 
+  function setActive(btn){
+    optionBtns.forEach(b=>b.classList.toggle('active', b===btn));
+  }
+
+  function currentClientName(){
+    // try mirror lead select first if exists; otherwise default
+    const sel = document.getElementById('mirrorLeadSelect');
+    const leadId = sel?.value || "";
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
+    return lead?.name || "הלקוח";
+  }
+
+  optionBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.getAttribute('data-doc');
+      const t = templates[key];
+      setActive(btn);
+      if(t){
+        if(docName && !docName.value.trim()) docName.value = t.name;
+        const client = currentClientName();
+        if(msgEl && (!msgEl.value.trim() || msgEl.value.includes("מצורף"))){
+          msgEl.value = t.msg(client);
+        }
+      }
+    });
+  });
+
   sendBtn?.addEventListener('click', ()=>{
-    const email = document.getElementById('esignEmail').value;
-    const link  = document.getElementById('esignLink').value;
-    alert('נשלח לחתימה (דמו)
-אימייל: ' + email + '
-קישור: ' + link);
+    const email = (emailEl?.value || "").trim();
+    const link  = (linkEl?.value || "").trim();
+    const name  = (docName?.value || "").trim();
+    const msg   = (msgEl?.value || "").trim();
+
+    if(!email){
+      alert("נא להזין אימייל לקוח");
+      emailEl?.focus();
+      return;
+    }
+    if(!link){
+      alert("נא להוסיף קישור למסמך / PDF לחתימה");
+      linkEl?.focus();
+      return;
+    }
+
+    // Demo send
+    alert(
+      "נשלח לחתימה (דמו)\n" +
+      "מסמך: " + (name || "—") + "\n" +
+      "אימייל: " + email + "\n" +
+      "קישור: " + link + "\n\n" +
+      (msg ? ("הודעה:\n" + msg) : "")
+    );
+
     closeModal();
   });
 
   modal.addEventListener('click', (e)=>{
     if(e.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('show')) closeModal();
   });
 })();
 </script>
