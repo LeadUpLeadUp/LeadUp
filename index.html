@@ -1408,6 +1408,98 @@ body[data-theme="light"] .modalBody textarea::placeholder{
 }
 #esignModal .chip input{ accent-color: #d6b25e; }
 
+
+/* ==== E-Sign: PRO layout fix (wider + clearer + no overlaps) ==== */
+#esignModal .modalCard.wide{
+  width:min(1500px, 99vw);
+  height:min(92vh, 920px);
+}
+
+#esignModal .modalBody{
+  padding: 14px 16px 18px;
+}
+
+#esignModal .esignGrid{
+  display:grid;
+  grid-template-columns: 1fr 460px; /* left details / right templates (RTL feels natural) */
+  gap:14px;
+  height:100%;
+  min-height:0;
+}
+
+#esignModal .mirrorPanel{
+  background: rgba(214,178,94,.06);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  overflow:auto;
+}
+
+#esignModal .esignPreview{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-height:0;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background: rgba(214,178,94,.06);
+}
+
+#esignModal .field{display:block}
+#esignModal .field .cap{font-size:12px;color:var(--muted);margin:0 0 6px;display:block}
+#esignModal input, #esignModal textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+
+#esignModal .row{align-items:center}
+
+#esignModal .esignChip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background: var(--panel);
+  color: var(--text);
+  font-weight:800;
+  user-select:none;
+}
+#esignModal .esignChip input{ accent-color: #d6b25e; margin:0 0 0 6px; }
+
+/* Buttons in templates column */
+#esignModal .esignOptions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+#esignModal .esignOptionBtn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 14px;
+  border-radius:16px;
+}
+#esignModal .esignOptionBtn.active{
+  border-color: rgba(214,178,94,.75) !important;
+  box-shadow: 0 0 0 3px rgba(214,178,94,.18);
+  background: rgba(214,178,94,.10);
+}
+
+/* Textarea always visible */
+#esignModal .esignMsg{
+  min-height:200px;
+  height:240px;
+  resize:vertical;
+}
+
+/* Mobile */
+@media (max-width: 980px){
+  #esignModal .modalCard.wide{height:min(94vh, 980px)}
+  #esignModal .esignGrid{grid-template-columns:1fr}
+  #esignModal .mirrorPanel, #esignModal .esignPreview{max-height:none}
+}
+
 </style>
 </head>
 
@@ -3055,7 +3147,7 @@ document.addEventListener("click", (e)=>{
     </div>
 
     <div class="modalBody" style="gap:14px">
-      <div class="mirrorGrid" style="grid-template-columns:420px 1fr">
+      <div class="mirrorGrid esignGrid">
         <div class="mirrorPanel">
           <h4>סוג מסמך</h4>
           <div class="help">בחר תבנית מוכנה (אפשר לערוך טקסט לפני שליחה).</div>
@@ -3072,7 +3164,7 @@ document.addEventListener("click", (e)=>{
           </div>
         </div>
 
-        <div class="mirrorPreview" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div class="mirrorPreview esignPreview">
           <h4 style="margin:0">פרטי שליחה</h4>
 
           <label class="field">
@@ -3088,11 +3180,11 @@ document.addEventListener("click", (e)=>{
           
           <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:-2px">
             <div class="badge" style="cursor:default">ערוץ שליחה:</div>
-            <label class="chip" style="cursor:pointer">
+            <label class="esignChip" style="cursor:pointer">
               <input type="radio" name="esignChannel" value="email" checked style="margin-left:8px">
               אימייל ✉️
             </label>
-            <label class="chip" style="cursor:pointer">
+            <label class="esignChip" style="cursor:pointer">
               <input type="radio" name="esignChannel" value="whatsapp" style="margin-left:8px">
               וואטסאפ 💬
             </label>
@@ -3169,11 +3261,30 @@ document.addEventListener("click", (e)=>{
     return (channelRadios.find(r=>r.checked)?.value) || "email";
   }
 
+  function getSelectedLead(){
+    const sel = document.getElementById('mirrorLeadSelect') || document.getElementById('leadSelect');
+    const leadId = sel?.value || "";
+    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
+    return lead || null;
+  }
+
+  function autofillFromLead(){
+    const lead = getSelectedLead();
+    if(!lead) return;
+    if(emailEl && lead.email && !emailEl.value){
+      emailEl.value = lead.email;
+    }
+    if(phoneEl && lead.phone && !phoneEl.value){
+      phoneEl.value = lead.phone;
+    }
+  }
+
   function openModal(){
     modal.classList.add('show');
-    // default channel UI state
     syncChannelUI();
+    autofillFromLead(); // <<< AUTO FILL HERE
   }
+
   function closeModal(){
     modal.classList.remove('show');
   }
@@ -3183,7 +3294,6 @@ document.addEventListener("click", (e)=>{
     if(phoneWrap){
       phoneWrap.style.display = (ch === "whatsapp") ? "" : "none";
     }
-    // small UX: focus proper field
     if(ch === "whatsapp"){
       phoneEl?.focus();
     }else{
@@ -3208,10 +3318,7 @@ document.addEventListener("click", (e)=>{
   }
 
   function currentClientName(){
-    // try mirror lead select first if exists; otherwise default
-    const sel = document.getElementById('mirrorLeadSelect');
-    const leadId = sel?.value || "";
-    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
+    const lead = getSelectedLead();
     return lead?.name || "הלקוח";
   }
 
@@ -3233,11 +3340,8 @@ document.addEventListener("click", (e)=>{
   function normalizeILPhone(p){
     const digits = (p||"").replace(/[^\d]/g, "");
     if(!digits) return "";
-    // 05xxxxxxxx -> 9725xxxxxxxx
     if(digits.startsWith("0")) return "972" + digits.slice(1);
-    // already starts with 972
     if(digits.startsWith("972")) return digits;
-    // fallback: return digits as-is
     return digits;
   }
 
@@ -3279,7 +3383,6 @@ document.addEventListener("click", (e)=>{
       return;
     }
 
-    // whatsapp
     const norm = normalizeILPhone(phone);
     if(!norm){
       alert("נא להזין טלפון וואטסאפ של הלקוח");
