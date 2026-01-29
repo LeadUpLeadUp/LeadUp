@@ -1,5 +1,4 @@
 
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -3373,6 +3372,32 @@ function heatTag(score){
   return { cls:"cold", label:"קר" };
 }
 
+
+function openMirrorModal(){
+  const mm = document.getElementById("mirrorModal");
+  if(!mm) { alert("מסך שיקוף לא נטען"); return; }
+  mm.classList.add("show");
+  // mark nav active
+  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view==="mirror"));
+  // keep title consistent
+  try{
+    if(window.el && el("viewTitle")) el("viewTitle").textContent = "צ'ק ליסט שיקוף עסקה";
+    if(window.el && el("viewSub")) el("viewSub").textContent = "בחירת לקוח • בחירת חברת ביטוח • שלבים נעולים";
+  }catch(e){}
+}
+function closeMirrorModal(){
+  const mm = document.getElementById("mirrorModal");
+  if(mm) mm.classList.remove("show");
+  // return nav to leads
+  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view==="leads"));
+  try{ setView("leads"); }catch(e){}
+}
+document.addEventListener("click",(e)=>{
+  const mm = document.getElementById("mirrorModal");
+  if(!mm) return;
+  if(e.target && e.target.id === "mirrorClose") closeMirrorModal();
+  if(e.target === mm) closeMirrorModal(); // click outside card
+});
 /* ===== Views ===== */
 const nav = el("nav");
 nav.addEventListener("click", (e)=>{
@@ -3381,6 +3406,10 @@ nav.addEventListener("click", (e)=>{
   setView(btn.dataset.view);
 });
 function setView(view){
+  // "mirror" / "esign" / "proposal" are modal flows (not full pages)
+  if(view === "mirror") { openMirrorModal(); return; }
+  if(view === "esign")  { openESignModal && openESignModal(); return; }
+  if(view === "proposal"){ openProposalModal && openProposalModal(); return; }
   if(!["leads","myflows","tasks","timeline","settings"].includes(view)) view="leads";
   document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
 
@@ -5009,7 +5038,7 @@ function getSelectedLead(){
               </button>
               <button class="stepItem" id="mwPill2" type="button">
                 <span class="n">2</span>
-                <span class="t">בחירת מסמך</span>
+                <span class="t">בחירת חברת ביטוח</span>
                 <span class="s">קישור PDF/דף</span>
               </button>
               <button class="stepItem" id="mwPill3" type="button">
@@ -5049,19 +5078,38 @@ function getSelectedLead(){
 
             <!-- STEP 2 -->
             <div class="mwStep" id="mwStep2">
-              <div class="cardTitle">שלב 2 — בחירת מסמך</div>
+              <div class="cardTitle">שלב 2 — בחירת חברת ביטוח</div>
 
               <div class="mirrorField">
-                <label>שם מסמך להצגה</label>
-                <input id="mirrorOfferName" placeholder="לדוגמה: הצעת ביטוח רכב — הראל"/>
+                <label>בחירת חברת ביטוח (מסמך)</label>
+                <select id="mirrorCompanySelect">
+                  <option value="">— בחר חברה / מסמך —</option>
+                  <option value="כיסויים מנורה - יוני 2024">כיסויים מנורה - יוני 2024</option>
+                  <option value="כיסויים מגדל - יוני 2024">כיסויים מגדל - יוני 2024</option>
+                  <option value="כיסויים הראל - יוני 2024">כיסויים הראל - יוני 2024</option>
+                  <option value="כיסויים חברת איילון - אוקטובר 2023">כיסויים חברת איילון - אוקטובר 2023</option>
+                  <option value="כיסויים הפניקס - יוני 2024">כיסויים הפניקס - יוני 2024</option>
+                </select>
+                <div class="softHint">ברגע שבוחרים — המסמך נטען בצד ימין אוטומטית (אם הוגדר קישור או הועלה PDF).</div>
               </div>
 
               <div class="mirrorField">
-                <label>קישור ל‑PDF / דף הצעה</label>
+                <label>העלאת קבצי PDF (פעם אחת) — נשמר מקומית בדפדפן</label>
+                <input id="mirrorPdfUpload" type="file" accept="application/pdf" multiple />
+                <div class="softHint">הקבצים נשמרים מקומית (LocalStorage). אם PDF גדול מדי — מומלץ להעלות לריפו (GitHub) ולשים URL במקום.</div>
+              </div>
+
+              <div class="mirrorField">
+                <label>שם מסמך להצגה (אוטומטי / ניתן לעריכה)</label>
+                <input id="mirrorOfferName" placeholder="לדוגמה: כיסויים מנורה - יוני 2024"/>
+              </div>
+
+              <div class="mirrorField">
+                <label>קישור ל‑PDF / דף הצעה (אוטומטי / ניתן לעריכה)</label>
                 <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
+                <div class="softHint">אם העלית PDF — השדה יתמלא לבד. אפשר גם לשים כאן URL של PDF מהריפו.</div>
               </div>
-
-              <div class="rowBtns">
+<div class="rowBtns">
                 <button class="btnGold" id="mirrorApply" type="button">הצג מסמך</button>
                 <button class="btnGhost" id="mirrorCopyLink" type="button">העתק קישור</button>
                 <button class="btnGhost" id="mirrorOpenLink" type="button">פתח קישור</button>
@@ -5254,6 +5302,49 @@ function getSelectedLead(){
   const offerName = document.getElementById('mirrorOfferName');
   const pdfUrl = document.getElementById('mirrorPdfUrl');
 
+  const companySel = document.getElementById('mirrorCompanySelect');
+  const pdfUpload  = document.getElementById('mirrorPdfUpload');
+
+  // PDF library (stored locally in the browser)
+  const PDF_LIB_KEY = "leadup_pdf_library_v1";
+  function loadPdfLib(){
+    try{ return JSON.parse(localStorage.getItem(PDF_LIB_KEY) || "{}") || {}; }
+    catch(e){ return {}; }
+  }
+  function savePdfLib(lib){
+    try{ localStorage.setItem(PDF_LIB_KEY, JSON.stringify(lib)); }catch(e){}
+  }
+  let pdfLib = loadPdfLib();
+
+  function normalizeName(s){
+    return (s||"").toString().trim()
+      .replace(/\.(pdf)$/i,"")
+      .replace(/[\s_]+/g," ")
+      .replace(/[–—]/g,"-")
+      .trim();
+  }
+  function matchOptionKey(baseName){
+    const base = normalizeName(baseName);
+    if(!companySel) return "";
+    const opts = Array.from(companySel.options).map(o=>o.value).filter(Boolean);
+    // try contains match in both directions
+    for(const v of opts){
+      const nv = normalizeName(v);
+      if(!nv) continue;
+      if(base.includes(nv) || nv.includes(base)) return v;
+    }
+    return "";
+  }
+  function setLibEntry(key, dataUrl){
+    if(!key) return;
+    pdfLib[key] = dataUrl;
+    savePdfLib(pdfLib);
+  }
+  function getLibEntry(key){
+    return (key && pdfLib && pdfLib[key]) ? pdfLib[key] : "";
+  }
+
+
   const kv = document.getElementById('mirrorKV');
   const frame = document.getElementById('mirrorFrame');
   const prevTitle = document.getElementById('mirrorPrevTitle');
@@ -5286,7 +5377,7 @@ function getSelectedLead(){
       return !!(currentLeadObj && (currentLeadObj.id || currentLeadObj.phone || currentLeadObj.name));
     }
     if(step === 2){
-      const url = ((window.pdfUrl && typeof pdfUrl.value === "string") ? pdfUrl.value : "").trim();
+      const url = (pdfUrl?.value || "").trim();
       return url.length > 6;
     }
     return true;
@@ -5345,7 +5436,63 @@ function getSelectedLead(){
   function esc(v){ return (window.escapeHTML ? window.escapeHTML(v||'') : (v||'')); }
 
   function refreshLeadSelect(){
-    if(!window.appState || !Array.isArray(window.appState.leads)) return;
+    if(
+  // company/document selection -> auto fill + auto preview
+  if(companySel){
+    companySel.addEventListener("change", ()=>{
+      const key = companySel.value;
+      if(key){
+        if(offerName) offerName.value = key;
+        const fromLib = getLibEntry(key);
+        if(fromLib){
+          pdfUrl.value = fromLib;
+        }else{
+          // keep existing URL if user already pasted one, otherwise empty
+          if(!pdfUrl.value.trim()) pdfUrl.value = "";
+        }
+      }
+      applyPreview();
+      if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2);
+    });
+  }
+
+  // upload PDFs and bind them to the selected option (or auto-match by filename)
+  if(pdfUpload){
+    pdfUpload.addEventListener("change", ()=>{
+      const files = Array.from(pdfUpload.files || []);
+      if(!files.length) return;
+
+      files.forEach(file=>{
+        const maxBytes = 4 * 1024 * 1024; // localStorage-friendly limit
+        if(file.size > maxBytes){
+          mwToast(`הקובץ "${file.name}" גדול מדי לשמירה מקומית. מומלץ להעלות לריפו ולהדביק URL במקום.`);
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          const base = normalizeName(file.name);
+          const matched = matchOptionKey(base);
+          const key = matched || companySel?.value || base;
+          setLibEntry(key, reader.result);
+          mwToast(`ה‑PDF נשמר: ${key} ✅`);
+          // if user is currently viewing that key – refresh preview
+          if(companySel && (companySel.value === key || (!companySel.value && matched))){
+            if(!companySel.value && matched) companySel.value = matched;
+            if(offerName) offerName.value = companySel.value || key;
+            if(pdfUrl) pdfUrl.value = reader.result;
+            applyPreview();
+            if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2);
+          }
+        };
+        reader.onerror = ()=> mwToast(`לא הצלחתי לקרוא את "${file.name}". נסה שוב.`);
+        reader.readAsDataURL(file);
+      });
+
+      // allow re-upload same file again
+      pdfUpload.value = "";
+    });
+  }
+!window.appState || !Array.isArray(window.appState.leads)) return;
     const leads = window.appState.leads.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
     const current = sel.value;
     sel.innerHTML = '<option value="">— לחץ לבחירה —</option>' + leads.map(l=>{
