@@ -2972,7 +2972,7 @@ input, select, textarea, button{
 
       <div class="search">
         <span class="icon">⌕</span>
-        <input id="q" placeholder="חיפוש לפי שם/טלפון/אימייל/הערה…" autocomplete="off"/>
+        <input id="q" placeholder="חיפוש לקוח לפי שם / טלפון / אימייל / הערה…" autocomplete="off"/>
       </div>
 
       <div class="right">
@@ -5253,7 +5253,7 @@ function getSelectedLead(){
       return !!(currentLeadObj && (currentLeadObj.id || currentLeadObj.phone || currentLeadObj.name));
     }
     if(step === 2){
-      const url = (pdfUrl?.value || "").trim();
+      const url = ((window.pdfUrl && typeof pdfUrl.value === "string") ? pdfUrl.value : "").trim();
       return url.length > 6;
     }
     return true;
