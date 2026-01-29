@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -2897,6 +2899,10 @@ input, select, textarea, button{
   height: 100% !important;
 }
 </style>
+
+<style>
+#mirrorApply{pointer-events:auto !important; opacity:1 !important;}
+</style>
 </head>
 
 <body>
@@ -5133,7 +5139,6 @@ function getSelectedLead(){
               </div>
 
               <div class="mirrorField">
-                <label>קישור ל‑PDF / דף הצעה (אוטומטי / ניתן לעריכה)</label>
                 <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
                 <div class="softHint">אם העלית PDF — השדה יתמלא לבד. אפשר גם לשים כאן URL של PDF מהריפו.</div>
               </div>
@@ -6685,6 +6690,56 @@ function setKV(lead){
       frame.style.width = "100%";
       frame.style.height = "100%";
     }catch(e){}
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Mirror Apply Button (Capture Hotfix) =====
+   Ensures "הצג מסמך" always responds even if other handlers interfere.
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  function toast(msg, type){
+    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
+    try{ alert(msg); }catch(e){}
+  }
+  onReady(function(){
+    const btn = document.getElementById("mirrorApply");
+    const pdfUrl = document.getElementById("mirrorPdfUrl");
+    const frame = document.getElementById("mirrorFrame");
+    const openExtA = document.getElementById("mirrorOpenExternal");
+    if(btn){
+      btn.style.cursor = "pointer";
+      btn.style.pointerEvents = "auto";
+    }
+    function doApply(){
+      const url = (pdfUrl?.value || "").trim();
+      if(!url){
+        toast("אין קישור/מסמך להצגה. בחר מסמך או העלה PDF.", "warn");
+        return;
+      }
+      if(frame) frame.src = url;
+      if(openExtA){
+        openExtA.href = url;
+        openExtA.style.display = "inline-flex";
+      }
+      toast("המסמך נטען ✅", "ok");
+    }
+
+    // Capture-phase global click handler to bypass interference
+    document.addEventListener("click", function(e){
+      const t = e.target && (e.target.closest ? e.target.closest("#mirrorApply") : null);
+      if(!t) return;
+      e.preventDefault();
+      e.stopPropagation();
+      doApply();
+    }, true);
   });
 })();
 </script>
