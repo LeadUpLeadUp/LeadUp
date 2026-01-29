@@ -1,4 +1,5 @@
 
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -3706,8 +3707,8 @@ function openLeadForm(leadId=null){
       addEvent("lead_create", `נוצר ליד חדש: ${updated.name}`, {leadId: updated.id});
       toast("ליד נוסף ✅");
     }
-    saveState();
-    renderAll();
+    try{ saveState(); }catch(err){ console.error("saveState failed", err); }
+    try{ renderAll(); }catch(err){ console.error("renderAll failed", err); }
     toast("ליד נשמר בהצלחה ✅", "success");
     setTimeout(()=>{
       try{ closeModal(); }catch(e){}
