@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -2869,7 +2868,7 @@ input, select, textarea, button{
       </button>
 
       <button type="button" id="navMyFlows" data-view="myflows">
-        <span class="k">⚙️ טיםול בלקוחות</span>
+        <span class="k">👥 הלקוחות שלי</span>
       </button>
 
       <button data-view="tasks">
@@ -2894,7 +2893,7 @@ input, select, textarea, button{
     <div class="sideFooter">
       <div><b>טיפ:</b> כל פעולה נפתחת בתוך חלון במערכת (מודאל) — לא נפתח חלון חיצוני.</div>
       <div class="hint">
-        בקרוב נחבר ל-Google Sheets דרך Apps Script (רק תתן לי את כתובת ה-URL ומזהה הפריסה).
+        
       </div>
     </div>
   </aside>
@@ -2912,12 +2911,12 @@ input, select, textarea, button{
 
       <div class="search">
         <span class="icon">⌕</span>
-        <input id="q" placeholder="חיפוש לקוח לפי שם / טלפון / אימייל / הערה…" autocomplete="off"/>
+        <input id="q" placeholder="חיפוש לקוח מהיר" autocomplete="off"/>
       </div>
 
       <div class="right">
         <button class="btn goldSoft" id="btnAddLead">➕ ליד חדש</button>
-        <button class="btn goldSoft hideTopQuick" id="btnQuickTask">⚙️ התהליכים שלי</button>
+        <button class="btn goldSoft hideTopQuick" id="btnQuickTask">👥 הלקוחות שלי</button>
         
       </div>
     </div>
@@ -3063,7 +3062,7 @@ input, select, textarea, button{
         <!-- My Flows view -->
         <section class="card" id="viewMyFlows" style="display:none">
           <div class="head">
-            <h2>התהליכים שלי</h2>
+            <h2>הלקוחות שלי</h2>
             <div class="muted small">תבניות טיפול מהירות ללקוח: שיחה, הצעה, מסמכים ומעקב</div>
           </div>
           <div class="body">
@@ -3331,7 +3330,7 @@ function setView(view){
 
   const titles = {
     leads: ["לידים", "ניהול לידים, סטטוסים, פעולות ומעקב"],
-    myflows: ["התהליכים שלי", "פעולות ותהליכי טיפול מהירים ללקוח הנבחר"],
+    myflows: ["הלקוחות שלי", "ניהול וצפייה בלקוחות, פעולות ומעקב"],
     tasks: ["משימות", "תזכורות עם תאריך/שעה + עדיפות + שיוך לליד"],
     timeline: ["יצירת הצעה", "Timeline של כל פעולה ושינוי במערכת"],
     settings: ["הגדרות", "גיבוי/איפוס וחיבור ל-Google Sheets"]
