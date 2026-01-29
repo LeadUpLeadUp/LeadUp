@@ -438,7 +438,13 @@
       justify-content:center;
       padding:18px;
       z-index:50;
+    
+      opacity:0;
+      transition: opacity .18s ease;
     }
+    .modalBack.show{ opacity:1; }
+    .modalBack.closing{ opacity:0; }
+
     .modal{
       width:min(980px, 100%);
   max-height:min(86vh, 900px);
@@ -3428,11 +3434,21 @@ function setView(view){
 function openModal(title, html){
   el("modalTitle").textContent = title;
   el("modalBody").innerHTML = html;
-  el("modalBack").style.display = "flex";
+  const back = el("modalBack");
+  back.classList.remove("closing");
+  back.style.display = "flex";
+  requestAnimationFrame(()=> back.classList.add("show"));
 }
 function closeModal(){
-  el("modalBack").style.display = "none";
-  el("modalBody").innerHTML = "";
+  const back = el("modalBack");
+  // Smooth close
+  back.classList.add("closing");
+  back.classList.remove("show");
+  setTimeout(()=>{
+    back.style.display = "none";
+    back.classList.remove("closing");
+    el("modalBody").innerHTML = "";
+  }, 180);
 }
 el("modalClose").addEventListener("click", closeModal);
 el("modalBack").addEventListener("click", (e)=>{
@@ -3524,7 +3540,10 @@ function importJSON(){
         appState.events = Array.isArray(parsed.events) ? parsed.events : appState.events;
         addEvent("import", "ייבוא נתונים בוצע");
         saveState();
-        toast("ייבוא הצליח ✅");
+    renderAll();
+    toast("ליד נשמר בהצלחה ✅", "success");
+    setTimeout(()=>closeModal(), 450);
+toast("ייבוא הצליח ✅");
       }catch(e){
         alert("קובץ לא תקין");
       }
@@ -3685,7 +3704,8 @@ function openLeadForm(leadId=null){
     }
     saveState();
     renderAll();
-    closeModal();
+    toast("ליד נשמר בהצלחה ✅", "success");
+    setTimeout(()=>closeModal(), 450);
   });
 
   document.getElementById("btnTouch").addEventListener("click", ()=>{
