@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -3708,7 +3709,14 @@ function openLeadForm(leadId=null){
     saveState();
     renderAll();
     toast("ליד נשמר בהצלחה ✅", "success");
-    setTimeout(()=>closeModal(), 450);
+    setTimeout(()=>{
+      try{ closeModal(); }catch(e){}
+      // Hard fallback (in case another script reopened/blocked)
+      const mb = document.getElementById("modalBack");
+      if(mb){ mb.classList.remove("show","closing"); mb.style.display="none"; }
+      const body = document.getElementById("modalBody");
+      if(body) body.innerHTML="";
+    }, 550);
   });
 
   document.getElementById("btnTouch").addEventListener("click", ()=>{
