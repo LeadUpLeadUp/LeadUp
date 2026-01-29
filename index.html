@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -6457,6 +6456,208 @@ function setKV(lead){
       const obs = new MutationObserver(()=>setPlaceholder());
       obs.observe(wrap, {attributes:true, attributeFilter:["class"]});
     }
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Mirror Step 2: Document Preview Fix =====
+   - Fixes frozen "הצג מסמך" by binding listeners in a clean standalone script.
+   - Loads the selected company's associated PDF (from local browser library or URL field)
+   - Renders the PDF fully inside the left/right preview iframe (#mirrorFrame) within the system.
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+
+  const PDF_LIB_KEY = "leadup_pdf_library_v1";
+
+  function loadLib(){
+    try{ return JSON.parse(localStorage.getItem(PDF_LIB_KEY) || "{}") || {}; }
+    catch(e){ return {}; }
+  }
+  function saveLib(lib){
+    try{ localStorage.setItem(PDF_LIB_KEY, JSON.stringify(lib)); }catch(e){}
+  }
+  function toast(msg, type){
+    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
+    try{ alert(msg); }catch(e){}
+  }
+  function normName(s){
+    return (s||"").toString().trim()
+      .replace(/\.(pdf)$/i,"")
+      .replace(/[\s_]+/g," ")
+      .replace(/[–—]/g,"-")
+      .trim();
+  }
+  function matchOptionKey(companySel, baseName){
+    const base = normName(baseName);
+    const opts = Array.from(companySel.options).map(o=>o.value).filter(Boolean);
+    for(const v of opts){
+      const nv = normName(v);
+      if(!nv) continue;
+      if(base.includes(nv) || nv.includes(base)) return v;
+    }
+    return "";
+  }
+
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    if(!modal) return;
+
+    const companySel = document.getElementById("mirrorCompanySelect");
+    const pdfUpload  = document.getElementById("mirrorPdfUpload");
+    const offerName  = document.getElementById("mirrorOfferName");
+    const pdfUrl     = document.getElementById("mirrorPdfUrl");
+
+    const btnApply   = document.getElementById("mirrorApply");
+    const btnCopy    = document.getElementById("mirrorCopyLink");
+    const btnOpen    = document.getElementById("mirrorOpenLink");
+    const openExtA   = document.getElementById("mirrorOpenExternal");
+
+    const frame      = document.getElementById("mirrorFrame");
+    const prevTitle  = document.getElementById("mirrorPrevTitle");
+    const prevMeta   = document.getElementById("mirrorPrevMeta");
+
+    if(!companySel || !pdfUrl || !btnApply || !frame) return;
+
+    let lib = loadLib();
+
+    function setFrame(url){
+      const clean = (url||"").trim();
+      if(!clean){
+        frame.src = "about:blank";
+        if(prevMeta) prevMeta.textContent = "בחר מסמך להצגה";
+        if(openExtA){ openExtA.style.display = "none"; openExtA.href = "#"; }
+        return;
+      }
+
+      // Prefer embedding as-is; if browser blocks, user can open externally.
+      frame.src = clean;
+
+      if(openExtA){
+        openExtA.href = clean;
+        openExtA.style.display = "inline-flex";
+      }
+    }
+
+    function applyFromUI(){
+      const key = (companySel.value || "").trim();
+      const name = (offerName?.value || key || "מסמך").trim();
+      const url = (pdfUrl.value || "").trim();
+
+      if(prevTitle) prevTitle.textContent = name || "מסמך";
+      if(prevMeta)  prevMeta.textContent  = key ? ("חברה/מסמך: " + key) : "מסמך";
+
+      if(!url || url.length < 7){
+        toast("צריך להדביק קישור PDF/מסמך או לבחור מסמך שיש לו שיוך.", "warn");
+        return;
+      }
+
+      setFrame(url);
+      toast("המסמך נטען בתצוגה ✅", "ok");
+    }
+
+    // Bind: show document
+    btnApply.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      applyFromUI();
+    });
+
+    // Bind: copy/open
+    if(btnCopy){
+      btnCopy.addEventListener("click", async function(e){
+        e.preventDefault();
+        const url = (pdfUrl.value || "").trim();
+        if(!url){ toast("אין קישור להעתקה", "warn"); return; }
+        try{
+          await navigator.clipboard.writeText(url);
+          toast("הקישור הועתק 📋", "ok");
+        }catch(err){
+          try{ prompt("העתק קישור:", url); }catch(e2){}
+        }
+      });
+    }
+    if(btnOpen){
+      btnOpen.addEventListener("click", function(e){
+        e.preventDefault();
+        const url = (pdfUrl.value || "").trim();
+        if(!url){ toast("אין קישור לפתיחה", "warn"); return; }
+        window.open(url, "_blank", "noopener");
+      });
+    }
+
+    // Auto-fill from library on company change
+    companySel.addEventListener("change", function(){
+      const key = (companySel.value || "").trim();
+      if(!key) return;
+
+      if(offerName) offerName.value = key;
+
+      lib = loadLib();
+      const libUrl = lib[key] || "";
+      if(libUrl){
+        pdfUrl.value = libUrl;
+      }
+      // Auto-preview immediately to match your request
+      if((pdfUrl.value || "").trim()){
+        applyFromUI();
+      }else{
+        // still update title/meta
+        if(prevTitle) prevTitle.textContent = key;
+        if(prevMeta)  prevMeta.textContent  = "חברה/מסמך: " + key;
+      }
+    });
+
+    // Upload PDFs and bind to selected option (or match by filename)
+    if(pdfUpload){
+      pdfUpload.addEventListener("change", function(){
+        const files = Array.from(pdfUpload.files || []);
+        if(!files.length) return;
+
+        files.forEach(function(file){
+          const maxBytes = 8 * 1024 * 1024; // safer limit (still may fail in some browsers)
+          if(file.size > maxBytes){
+            toast('הקובץ "'+file.name+'" גדול מדי לשמירה מקומית. מומלץ להעלות לריפו ולהדביק URL במקום.', "warn");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function(){
+            lib = loadLib();
+            const base = normName(file.name);
+            const matched = matchOptionKey(companySel, base);
+            const key = matched || (companySel.value || base) || base;
+            lib[key] = reader.result;
+            saveLib(lib);
+
+            toast("ה‑PDF נשמר ושויך ל: " + key + " ✅", "ok");
+
+            // If currently selected, load it now
+            if((companySel.value || "").trim() === key){
+              if(offerName) offerName.value = key;
+              pdfUrl.value = reader.result;
+              applyFromUI();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    }
+
+    // Make sure iframe shows full page
+    try{
+      const wrap = frame.closest(".frameWrap");
+      if(wrap){
+        wrap.style.height = "calc(100vh - 260px)";
+      }
+      frame.style.width = "100%";
+      frame.style.height = "100%";
+    }catch(e){}
   });
 })();
 </script>
