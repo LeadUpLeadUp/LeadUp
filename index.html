@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -6191,6 +6190,42 @@ function setKV(lead){
   window.lockSystem = lock;
 })();
 </script>
+
+<script>
+/* ===== Auto Lock (Idle Timeout) =====
+   Locks the system after X minutes of inactivity.
+   Uses window.lockSystem() that already exists in your code.
+*/
+(function(){
+  const IDLE_MINUTES = 1440; // ⬅️ שנה כאן את הזמן (בדקות)
+  const IDLE_MS = IDLE_MINUTES * 60 * 1000;
+
+  let t = null;
+
+  function resetTimer(){
+    if(t) clearTimeout(t);
+    t = setTimeout(()=>{
+      try{
+        if(sessionStorage.getItem("leadup_authed_session") === "1"){
+          window.lockSystem && window.lockSystem();
+          window.toast && window.toast("המערכת ננעלה עקב חוסר פעילות", "warn");
+        }
+      }catch(e){}
+    }, IDLE_MS);
+  }
+
+  ["mousemove","mousedown","keydown","touchstart","scroll"].forEach(ev=>{
+    document.addEventListener(ev, resetTimer, {passive:true});
+  });
+
+  document.addEventListener("visibilitychange", ()=>{
+    if(!document.hidden) resetTimer();
+  });
+
+  resetTimer();
+})();
+</script>
+
 
 </body>
 </html>
