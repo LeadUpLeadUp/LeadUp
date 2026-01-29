@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -3539,10 +3538,14 @@ function importJSON(){
         appState.tasks = Array.isArray(parsed.tasks) ? parsed.tasks : appState.tasks;
         appState.events = Array.isArray(parsed.events) ? parsed.events : appState.events;
         addEvent("import", "ייבוא נתונים בוצע");
-        saveState();
-    renderAll();
+        try{
+      saveState();
+    }catch(err){
+      console.error("saveState failed", err);
+    }
     toast("ליד נשמר בהצלחה ✅", "success");
-    setTimeout(()=>closeModal(), 450);
+    // close even if render has minor errors
+    setTimeout(()=>{ try{ closeModal(); }catch(e){} }, 520);
 toast("ייבוא הצליח ✅");
       }catch(e){
         alert("קובץ לא תקין");
