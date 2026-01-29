@@ -3621,7 +3621,9 @@ function openLeadForm(leadId=null){
             <div>
               <label>טלפון</label>
               <input name="phone" value="${escapeHTML(data.phone)}" placeholder="05X-XXXXXXX" inputmode="tel"/>
-            </div>
+            
+              <input name="tz" value="${escapeHTML(data.tz||data.idNumber||"")}" placeholder="תעודת זהות" inputmode="numeric"/>
+</div>
           </div>
 
           <div class="row" style="margin-top:10px">
@@ -5533,19 +5535,48 @@ function getSelectedLead(){
     // Try exact-first, then contains
     const score = (l)=>{
       if(type==="tz"){
-        const v = digits(l.tz || l.idNumber || l.id || "");
-        if(!qd) return 0;
-        if(v === qd) return 100;
-        if(v.endsWith(qd) || v.includes(qd)) return 70;
-        return 0;
-      }
+  const v = digits(l.tz || l.idNumber || l.tzNumber || l.idnum || l.idNum || "");
+  if(!qd) return 0;
+  if(v === qd) return 100;
+  if(v.endsWith(qd) || v.includes(qd)) return 70;
+  return 0;
+}
       if(type==="phone"){
-        const v = digits(l.phone || "");
-        if(!qd) return 0;
-        if(v === qd) return 100;
-        if(v.endsWith(qd) || v.includes(qd)) return 70;
-        return 0;
-      }
+  // Normalize Israeli numbers: allow matching 05X... against +9725X... and vice versa
+  const vRaw = digits(l.phone || l.phoneNumber || l.mobile || l.tel || "");
+  if(!qd) return 0;
+
+  const variants = new Set([qd]);
+
+  if(qd.startsWith("0") && qd.length >= 9){
+    variants.add(qd.slice(1));
+    variants.add("972"+qd.slice(1));
+  }
+  if(qd.startsWith("972") && qd.length >= 11){
+    variants.add("0"+qd.slice(3));
+  }
+
+  const vVariants = new Set([vRaw]);
+  if(vRaw.startsWith("972") && vRaw.length >= 11){
+    vVariants.add("0"+vRaw.slice(3));
+  }
+  if(vRaw.startsWith("0") && vRaw.length >= 9){
+    vVariants.add("972"+vRaw.slice(1));
+    vVariants.add(vRaw.slice(1));
+  }
+
+  for(const vv of vVariants){
+    for(const qq of variants){
+      if(vv === qq) return 100;
+    }
+  }
+  for(const vv of vVariants){
+    for(const qq of variants){
+      if(vv.endsWith(qq) || vv.includes(qq)) return 70;
+    }
+  }
+  return 0;
+}
       // name
       const v = norm(l.name || "");
       if(v === qq) return 100;
