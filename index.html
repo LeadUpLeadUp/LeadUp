@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -3530,7 +3531,11 @@ function openLeadForm(leadId=null){
               <label>טלפון</label>
               <input name="phone" value="${escapeHTML(data.phone)}" placeholder="05X-XXXXXXX" inputmode="tel"/>
             
-              <input name="tz" value="${escapeHTML(data.tz||data.idNumber||"")}" placeholder="תעודת זהות" inputmode="numeric"/>
+                          </div>
+            <div>
+              <label>ת.ז</label>
+              <input name="tz" value="${escapeHTML(data.tz||data.idNumber||"")}" placeholder="ת.ז" inputmode="numeric"/>
+            </div>
 </div>
           </div>
 
