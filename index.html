@@ -2970,6 +2970,183 @@ input, select, textarea, button{
   display: block !important;
 }
 </style>
+
+<style>
+/* ===== Mirror: FORCE Fullscreen Document (Hide Left Panel) ===== */
+#mirrorModal .previewSplit{
+  grid-template-columns: 1fr !important; /* document only */
+}
+#mirrorModal .clientCard{
+  display: none !important;
+}
+#mirrorModal .docCard{
+  width: 100% !important;
+}
+#mirrorModal .modalCard.wide.mirrorPro{
+  width: 98vw !important;
+  height: 96vh !important;
+  max-height: 96vh !important;
+}
+#mirrorModal .docCard .frameWrap,
+#mirrorModal #mirrorFrame{
+  height: 100% !important;
+}
+</style>
+
+<style>
+/* ===== Mirror: TRUE Full Width & Height ===== */
+#mirrorModal{
+  padding: 0 !important;
+}
+#mirrorModal .modalOverlay{
+  padding: 0 !important;
+}
+#mirrorModal .modalCard.wide.mirrorPro{
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
+#mirrorModal .modalHeader{
+  border-radius: 0 !important;
+}
+#mirrorModal .modalBody{
+  height: calc(100vh - 64px) !important; /* leave header visible */
+}
+</style>
+
+<style>
+/* ===== DOC ONLY MODE (toggle) =====
+   Enabled only when #mirrorModal has class "docOnly".
+   This prevents black screen by keeping the normal UI visible until a document is loaded.
+*/
+#mirrorModal.docOnly .modalHead,
+#mirrorModal.docOnly .mirrorProLeft,
+#mirrorModal.docOnly .previewHead,
+#mirrorModal.docOnly .clientCard{
+  display:none !important;
+}
+
+#mirrorModal.docOnly .modalCard.wide.mirrorPro{
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
+
+#mirrorModal.docOnly .mirrorProBody,
+#mirrorModal.docOnly .mirrorProGrid,
+#mirrorModal.docOnly .mirrorProRight,
+#mirrorModal.docOnly .previewCard,
+#mirrorModal.docOnly .previewSplit,
+#mirrorModal.docOnly .docCard,
+#mirrorModal.docOnly .frameWrap{
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+#mirrorModal.docOnly .previewSplit{
+  grid-template-columns: 1fr !important;
+}
+
+#mirrorModal.docOnly #mirrorFrame{
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display:block !important;
+  background: #fff;
+}
+
+/* Floating exit button */
+#mirrorDocOnlyExit{
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 999999;
+  display: none;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(12,12,18,.55);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+#mirrorModal.docOnly #mirrorDocOnlyExit{ display: inline-flex; align-items:center; gap:8px; }
+</style>
+
+<style>
+/* ===== DOC ONLY MODE: TRUE FULLSCREEN OVER PAGE ===== */
+/* When in docOnly, break out of modal sizing and cover the entire viewport */
+#mirrorModal.docOnly{
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 999999 !important;
+}
+
+/* Hide modal chrome completely */
+#mirrorModal.docOnly .modalOverlay,
+#mirrorModal.docOnly .modalCard,
+#mirrorModal.docOnly .modalHeader,
+#mirrorModal.docOnly .mirrorProLeft,
+#mirrorModal.docOnly .previewHeader,
+#mirrorModal.docOnly .clientCard{
+  display: none !important;
+}
+
+/* Force iframe to be the only visible layer */
+#mirrorModal.docOnly #mirrorFrame{
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  border: 0 !important;
+  display: block !important;
+  background: #fff !important;
+  z-index: 999998 !important;
+}
+
+/* Floating exit button always above iframe */
+#mirrorModal.docOnly #mirrorDocOnlyExit{
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 1000000 !important;
+  display: inline-flex !important;
+}
+</style>
+
+<style>
+/* ===== Quick Doc Switcher ===== */
+#docQuickSwitch{
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1000001;
+  display: none;
+  gap: 8px;
+}
+#docQuickSwitch button{
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  background: rgba(20,20,30,.85);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+#mirrorModal.docOnly #docQuickSwitch{
+  display: flex;
+}
+</style>
 </head>
 
 <body>
@@ -5109,6 +5286,7 @@ function getSelectedLead(){
 <!-- ===== Mirror Client Modal (Real) ===== -->
 
 <div id="mirrorModal" class="modalOverlay" role="dialog" aria-modal="true">
+  <button id="mirrorDocOnlyExit" type="button">⟵ חזרה למסך שיקוף</button>
   <div class="modalCard wide mirrorPro">
     <div class="modalHead mirrorProHead">
       <div class="mhLeft">
@@ -6807,6 +6985,328 @@ function setKV(lead){
       e.stopPropagation();
       doApply();
     }, true);
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== DOC ONLY MODE Toggle Logic ===== */
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    if(!modal) return;
+
+    const exitBtn = document.getElementById("mirrorDocOnlyExit");
+    const applyBtn = document.getElementById("mirrorApply");
+    const companySel = document.getElementById("mirrorCompanySelect");
+    const pdfUrl = document.getElementById("mirrorPdfUrl");
+    const frame = document.getElementById("mirrorFrame");
+
+    function enterDocOnly(){
+      modal.classList.add("docOnly");
+    }
+    function exitDocOnly(){
+      modal.classList.remove("docOnly");
+    }
+
+    // Exit handlers
+    exitBtn && exitBtn.addEventListener("click", (e)=>{ e.preventDefault(); exitDocOnly(); });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && modal.classList.contains("docOnly")) exitDocOnly();
+    });
+
+    // Enter doc-only only after a real document is loaded
+    function maybeEnter(){
+      const url = (pdfUrl?.value || "").trim();
+      if(!url) return;
+      // small delay to let iframe set src
+      setTimeout(()=>enterDocOnly(), 50);
+    }
+
+    // When user clicks "הצג מסמך" -> enter doc-only after load
+    applyBtn && applyBtn.addEventListener("click", ()=>{ maybeEnter(); });
+
+    // If selection auto-loads the doc, also enter
+    companySel && companySel.addEventListener("change", ()=>{ 
+      // if your code auto-loads, we can enter; otherwise wait for apply
+      setTimeout(()=>{
+        const url = (pdfUrl?.value || "").trim();
+        if(url) {
+          // ensure iframe src is set if it wasn't
+          if(frame && frame.src !== url) frame.src = url;
+          enterDocOnly();
+        }
+      }, 150);
+    });
+
+    // Safety: if iframe ends up blank, exit doc-only
+    if(frame){
+      frame.addEventListener("load", ()=>{
+        try{
+          const src = frame.getAttribute("src") || "";
+          if(!src || src === "about:blank") exitDocOnly();
+        }catch(e){}
+      });
+    }
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Fix: "הצג מסמך" must NOT close Mirror modal =====
+   Symptoms: clicking "הצג מסמך" closes the mirror window and returns to main screen.
+   Fix:
+   - Capture click on #mirrorApply, stop propagation (bypass any existing handlers that call hide()).
+   - Ensure the modal stays open and switch to docOnly fullscreen view.
+   - Also prevent overlay click-to-close while in docOnly mode.
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  function toast(msg, type){
+    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
+    try{ alert(msg); }catch(e){}
+  }
+
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    const applyBtn = document.getElementById("mirrorApply");
+    const pdfUrl = document.getElementById("mirrorPdfUrl");
+    const frame = document.getElementById("mirrorFrame");
+    const openExtA = document.getElementById("mirrorOpenExternal");
+
+    if(!modal || !applyBtn || !pdfUrl || !frame) return;
+
+    function enterDocOnly(url){
+      // keep mirror visible (some scripts remove .show / mirrorFS)
+      try{
+        modal.classList.add("show");
+        document.body.classList.add("mirrorFS");
+      }catch(e){}
+      try{
+        modal.classList.add("docOnly");
+      }catch(e){}
+      // set iframe last
+      frame.src = url;
+      if(openExtA){
+        openExtA.href = url;
+        openExtA.style.display = "inline-flex";
+      }
+    }
+
+    // Strong capture handler to override any existing click handlers
+    document.addEventListener("click", function(e){
+      const btn = e.target && e.target.closest ? e.target.closest("#mirrorApply") : null;
+      if(!btn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const url = (pdfUrl.value || "").trim();
+      if(!url){
+        toast("בחר מסמך / העלה PDF כדי להציג.", "warn");
+        return;
+      }
+      enterDocOnly(url);
+      toast("המסמך נפתח על כל המסך ✅", "ok");
+    }, true);
+
+    // Prevent closing on overlay click while in docOnly
+    modal.addEventListener("click", function(e){
+      if(modal.classList.contains("docOnly")){
+        // don't allow any overlay click-to-close logic to run
+        e.stopPropagation();
+      }
+    }, true);
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Auto Open Document On Selection =====
+   Automatically opens the document in fullscreen when a company/document is selected,
+   removing the need to click "הצג מסמך".
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  function toast(msg, type){
+    try{ window.toast && window.toast(msg, type||"ok"); return; }catch(e){}
+    try{ alert(msg); }catch(e){}
+  }
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    const companySel = document.getElementById("mirrorCompanySelect");
+    const pdfUrl = document.getElementById("mirrorPdfUrl");
+    const frame = document.getElementById("mirrorFrame");
+    const openExtA = document.getElementById("mirrorOpenExternal");
+
+    if(!modal || !companySel || !pdfUrl || !frame) return;
+
+    function openDoc(url){
+      if(!url) return;
+      try{
+        modal.classList.add("show");
+        modal.classList.add("docOnly");
+        document.body.classList.add("mirrorFS");
+      }catch(e){}
+      frame.src = url;
+      if(openExtA){
+        openExtA.href = url;
+        openExtA.style.display = "inline-flex";
+      }
+      toast("המסמך נפתח אוטומטית 📄", "ok");
+    }
+
+    companySel.addEventListener("change", function(){
+      // give time for existing code to update pdfUrl
+      setTimeout(function(){
+        const url = (pdfUrl.value || "").trim();
+        if(url){
+          openDoc(url);
+        }
+      }, 150);
+    });
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Quick Document Switcher Logic ===== */
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    const companySel = document.getElementById("mirrorCompanySelect");
+    const pdfUrl = document.getElementById("mirrorPdfUrl");
+    const frame = document.getElementById("mirrorFrame");
+
+    if(!modal || !companySel || !pdfUrl || !frame) return;
+
+    // Create floating controls
+    let panel = document.getElementById("docQuickSwitch");
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "docQuickSwitch";
+      panel.innerHTML = `
+        <button id="docPrev">⬅ מסמך קודם</button>
+        <button id="docNext">מסמך הבא ➡</button>
+      `;
+      document.body.appendChild(panel);
+    }
+
+    function getOptions(){
+      return Array.from(companySel.options).filter(o=>o.value);
+    }
+
+    function openByIndex(idx){
+      const opts = getOptions();
+      if(!opts.length) return;
+      if(idx < 0) idx = opts.length-1;
+      if(idx >= opts.length) idx = 0;
+      companySel.selectedIndex = opts[idx].index;
+      companySel.dispatchEvent(new Event("change",{bubbles:true}));
+    }
+
+    function currentIndex(){
+      const opts = getOptions();
+      const cur = companySel.value;
+      return opts.findIndex(o=>o.value === cur);
+    }
+
+    panel.querySelector("#docPrev").addEventListener("click", ()=>{
+      const idx = currentIndex();
+      openByIndex(idx-1);
+    });
+
+    panel.querySelector("#docNext").addEventListener("click", ()=>{
+      const idx = currentIndex();
+      openByIndex(idx+1);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (e)=>{
+      if(!modal.classList.contains("docOnly")) return;
+      if(e.key === "ArrowLeft"){
+        e.preventDefault();
+        panel.querySelector("#docPrev").click();
+      }
+      if(e.key === "ArrowRight"){
+        e.preventDefault();
+        panel.querySelector("#docNext").click();
+      }
+    });
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== Mirror: Prevent "throw out" on company selection =====
+   Fixes: selecting an insurance company/document closes the mirror (returns to main screen).
+   Cause: an overlay click-to-close handler catches the click that opens/closes the <select> dropdown.
+   Fix:
+   - Stop propagation for clicks/mouse downs inside the modal card.
+   - Stop propagation specifically for #mirrorCompanySelect.
+   - Keep modal open (force .show + body mirrorFS) on selection change.
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+  onReady(function(){
+    const modal = document.getElementById("mirrorModal");
+    const card  = modal ? modal.querySelector(".modalCard") : null;
+    const companySel = document.getElementById("mirrorCompanySelect");
+
+    if(!modal) return;
+
+    // 1) Never let clicks inside the modal card bubble to overlay closers
+    if(card){
+      ["mousedown","mouseup","click","touchstart"].forEach(ev=>{
+        card.addEventListener(ev, (e)=>{
+          e.stopPropagation();
+        }, true); // capture
+      });
+    }
+
+    // 2) Extra protection for the select element (dropdown clicks)
+    if(companySel){
+      ["mousedown","click","touchstart"].forEach(ev=>{
+        companySel.addEventListener(ev, (e)=>{
+          e.stopPropagation();
+        }, true);
+      });
+
+      companySel.addEventListener("change", ()=>{
+        // force mirror to stay open
+        try{
+          modal.classList.add("show");
+          document.body.classList.add("mirrorFS");
+        }catch(e){}
+      }, true);
+    }
   });
 })();
 </script>
