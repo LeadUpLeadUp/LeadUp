@@ -1178,41 +1178,6 @@ html[data-theme="dark"] .brand .sub{
 }
 
 
-/* ===== Mirror Client (Real View) ===== */
-.mirrorGrid{display:grid;grid-template-columns:360px 1fr;gap:14px;flex:1;min-height:0}
-.mirrorPanel{border:1px solid var(--line);background:var(--panel2);border-radius:16px;padding:12px;overflow:auto}
-.mirrorPanel h4{margin:0 0 10px;font-size:14px}
-.mirrorField{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-.mirrorField label{font-size:12px;color:var(--muted)}
-.mirrorField input,.mirrorField select{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);outline:none}
-.mirrorCard{border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--panel)}
-.mirrorKV{display:grid;grid-template-columns:92px 1fr;gap:8px;font-size:13px}
-.mirrorKV div:nth-child(odd){color:var(--muted)}
-.mirrorKV div:nth-child(even){font-weight:700}
-.mirrorActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.mirrorActions .btnGhost,.mirrorActions .btnGold{white-space:nowrap}
-.mirrorPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel2);display:flex;flex-direction:column;min-height:0}
-.mirrorPreviewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
-.mirrorPreviewHead .ttl{font-weight:900}
-.mirrorPreviewHead .meta{font-size:12px;color:var(--muted)}
-.mirrorPreviewBody{flex:1;min-height:0}
-.mirrorPreviewBody iframe{width:100%;height:100%;border:0;background:#fff}
-.mirrorNotice{font-size:12px;color:var(--muted);line-height:1.6}
-@media (max-width: 920px){
-  .mirrorGrid{grid-template-columns:1fr}
-}
-.mirrorOnly body{overflow:hidden}
-.mirrorStandalone{position:fixed;inset:0;background:#fff;z-index:100000;display:none}
-.mirrorStandalone.show{display:block}
-.mirrorStandaloneInner{position:absolute;inset:0;display:flex;flex-direction:column}
-.mirrorStandaloneTop{padding:12px 16px;border-bottom:1px solid rgba(214,178,94,0.55);box-shadow:0 4px 14px rgba(0,0,0,0.08)}
-.mirrorStandaloneTop .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.mirrorStandaloneTop .row .title{font-weight:1000}
-.mirrorStandaloneTop .row .sub{font-size:12px;color:#555}
-.mirrorStandaloneMain{flex:1;min-height:0;padding:14px 16px;background:#fff7e6}
-.mirrorStandaloneMain .wrap{height:100%;max-width:1200px;margin:0 auto}
-
-
 /* ===== Fix: Modal labels contrast on Light/Cream UI ===== */
 html[data-theme="light"] label{
   color: rgba(12,12,18,.82) !important;
@@ -1251,136 +1216,6 @@ html[data-theme="light"] .modalBody textarea::placeholder{
 }
 
 
-/* ==== Mirror Client: wider modal + steps template ==== */
-#mirrorModal .modalCard.wide{
-  width:min(1320px, 98vw);
-  height:min(88vh, 860px);
-  display:flex;
-  flex-direction:column;
-}
-#mirrorModal .modalBody{flex:1; min-height:0;}
-#mirrorModal .modalCard.wide .mirrorGrid{grid-template-columns:420px 1fr;}
-#mirrorModal .mirrorPanel{min-height:0;}
-#mirrorModal .mirrorPreview{min-height:520px;}
-#mirrorModal .mirrorPanel h4{margin:0 0 6px}
-
-.mirrorSteps{
-  margin-top:10px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background: rgba(214,178,94,.06);
-  padding:10px 10px;
-}
-.mirrorSteps > summary{
-  cursor:pointer;
-  font-weight:800;
-  color: var(--text);
-  list-style:none;
-}
-.mirrorSteps > summary::-webkit-details-marker{display:none;}
-.mirrorStepsBody{margin-top:8px; display:flex; flex-direction:column; gap:10px;}
-.mirrorStepsGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-@media (max-width: 880px){
-  #mirrorModal .modalCard.wide .mirrorGrid{grid-template-columns:1fr;}
-  .mirrorStepsGrid{grid-template-columns:1fr;}
-}
-
-
-/* ==== Layout tweak: widen leads list, slightly shrink control center ==== */
-#viewRight{ min-width: 320px; }
-#viewLeads{ min-width: 0; }
-#viewLeads .tableWrap{ overflow:auto; }
-
-
-/* ==== Leads table: more "air" without breaking layout ==== */
-#viewLeads table{
-  min-width: 1120px;
-  border-spacing: 0 10px; /* vertical breathing room */
-}
-#viewLeads thead th{
-  padding: 12px 14px;
-  font-size: 13px;
-}
-#viewLeads tbody td{
-  padding: 14px 14px;
-  font-size: 13.5px;
-}
-#viewLeads tbody tr{
-  height: 64px;
-}
-#viewLeads th:nth-child(1), #viewLeads td:nth-child(1){ min-width: 200px; } /* שם */
-#viewLeads th:nth-child(2), #viewLeads td:nth-child(2){ min-width: 150px; } /* טלפון */
-#viewLeads th:nth-child(3), #viewLeads td:nth-child(3){ min-width: 120px; } /* סטטוס */
-#viewLeads th:nth-child(4), #viewLeads td:nth-child(4){ min-width: 110px; } /* מקור */
-#viewLeads th:nth-child(5), #viewLeads td:nth-child(5){ min-width: 150px; } /* חום */
-#viewLeads th:nth-child(6), #viewLeads td:nth-child(6){ min-width: 170px; } /* מעקב הבא */
-#viewLeads th:nth-child(7), #viewLeads td:nth-child(7){ min-width: 170px; } /* פעולות */
-
-
-/* ==== Leads table: pro alignment for actions column ==== */
-#viewLeads td .actions{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start; /* RTL: start = right */
-  gap:10px;
-  flex-wrap:nowrap;
-}
-#viewLeads td:last-child{ white-space:nowrap; }
-#viewLeads .iconBtn{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  font-size:16px;
-  line-height:1;
-}
-
-
-/* ==== Ensure leads table fits viewport without horizontal scroll ==== */
-#viewLeads{
-  overflow-x: hidden;
-}
-
-#viewLeads .tableWrap{
-  overflow-x: hidden;
-}
-
-#viewLeads table{
-  width:100%;
-  min-width:0; /* allow table to shrink to container */
-  table-layout: fixed;
-}
-
-#viewLeads th, 
-#viewLeads td{
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-/* rebalance column widths so everything fits */
-#viewLeads th:nth-child(1), #viewLeads td:nth-child(1){ width: 22%; } /* שם */
-#viewLeads th:nth-child(2), #viewLeads td:nth-child(2){ width: 18%; } /* טלפון */
-#viewLeads th:nth-child(3), #viewLeads td:nth-child(3){ width: 14%; } /* סטטוס */
-#viewLeads th:nth-child(4), #viewLeads td:nth-child(4){ width: 14%; } /* מקור */
-#viewLeads th:nth-child(5), #viewLeads td:nth-child(5){ width: 14%; } /* חום */
-#viewLeads th:nth-child(6), #viewLeads td:nth-child(6){ width: 18%; } /* פעולות */
-
-
-/* ==== E-Sign: wide clean modal + options ==== */
-#esignModal .modalCard.wide{
-  width:min(1320px, 98vw);
-  height:min(88vh, 860px);
-  display:flex;
-  flex-direction:column;
-}
-#esignModal .modalBody{flex:1;min-height:0;}
-#esignModal .mirrorGrid{gap:14px;}
-#esignModal .mirrorPanel, #esignModal .mirrorPreview{min-height:0;}
-#esignModal .mirrorPreview{border:1px solid var(--line);border-radius:18px;background:rgba(214,178,94,.06);}
 #esignModal .field .cap{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
 #esignModal input, #esignModal textarea{
   padding:12px 12px;
@@ -1419,7 +1254,6 @@ html[data-theme="light"] .modalBody textarea::placeholder{
   font-size:14px;
 }
 @media (max-width: 920px){
-  #esignModal .mirrorGrid{grid-template-columns:1fr !important;}
   #esignModal .modalCard.wide{height:min(92vh, 900px);}
 }
 
@@ -1458,7 +1292,6 @@ html[data-theme="light"] .modalBody textarea::placeholder{
   min-height:0;
 }
 
-#esignModal .mirrorPanel{
   background: rgba(214,178,94,.06);
   border:1px solid var(--line);
   border-radius:18px;
@@ -1528,7 +1361,6 @@ html[data-theme="light"] .modalBody textarea::placeholder{
 @media (max-width: 980px){
   #esignModal .modalCard.wide{height:min(94vh, 980px)}
   #esignModal .esignGrid{grid-template-columns:1fr}
-  #esignModal .mirrorPanel, #esignModal .esignPreview{max-height:none}
 }
 
 
@@ -1813,46 +1645,23 @@ html[data-theme="light"] .modalBody textarea::placeholder{
   padding:0 !important;
 }
 
-/* ===== Mirror Find (Search) ===== */
-.mirrorSearchRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-.mirrorSearchRow input{flex:1; min-width:180px}
 .seg{display:inline-flex; background:var(--panel2); border:1px solid var(--line); border-radius:12px; overflow:hidden}
 .segBtn{border:0; background:transparent; color:var(--text); padding:10px 12px; cursor:pointer; font-weight:800}
 .segBtn.active{background:linear-gradient(180deg, rgba(214,178,94,.22), rgba(214,178,94,.10)); color:var(--gold)}
 
 
-/* ===== Mirror Checklist ===== */
-.mirrorChecklist{margin-top:14px; padding-top:12px; border-top:1px solid var(--line)}
-.mirrorChecklistTop{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap}
-.mirrorProgress{display:flex; align-items:center; gap:10px}
-.mirrorProgress .bar{width:220px; height:10px; background:var(--panel2); border:1px solid var(--line); border-radius:999px; overflow:hidden}
-.mirrorProgress .fill{height:100%; background:linear-gradient(90deg, var(--gold), var(--gold2))}
-.mirrorProgress .pct{min-width:48px; text-align:left; color:var(--muted); font-weight:800}
-.mirrorStepCard{margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg, rgba(214,178,94,.08), rgba(255,255,255,0))}
-.mirrorStepHead{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
-.mirrorStepHead .num{width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:rgba(214,178,94,.18); border:1.2px solid rgba(214,178,94,.48); font-weight:900}
-.mirrorStepHead .ttl{flex:1; font-weight:900}
 .chk{display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:800}
-.mirrorScript{width:100%; margin-top:10px; border-radius:14px; border:1px solid var(--line); background:var(--panel); color:var(--text); padding:12px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-.mirrorStepNav{display:flex; gap:10px; justify-content:space-between; margin-top:10px}
 
 
-/* ===== Mirror layout ordering ===== */
-.mirrorContainer{
   display:flex;
   flex-direction:column;
   gap:18px;
 }
-.mirrorSearch{order:1;}
-.mirrorDocSelect{order:2;}
-.mirrorChecklist{order:3;}
-.mirrorCard{
   background:var(--panel);
   border:1px solid var(--line);
   border-radius:14px;
   padding:14px;
 }
-.mirrorCard h3{
   margin:0 0 10px;
   font-size:15px;
   color:var(--gold);
@@ -1862,20 +1671,13 @@ html[data-theme="light"] .modalBody textarea::placeholder{
 /* ============================
    MIRROR (Agent) FULLSCREEN + WIZARD
    ============================ */
-body.mirrorFS .side{display:none !important;}
-body.mirrorFS .app{grid-template-columns:1fr !important;}
-body.mirrorFS .topbar{display:none !important;}
-body.mirrorFS .content{display:none !important;} /* remove distractions */
 
-#mirrorModal{
   position:absolute !important;
   inset:0 !important;
   padding:0 !important;
   z-index:30;
   display:none;
 }
-#mirrorModal.show{display:flex !important;}
-#mirrorModal .modalCard{
   width:100% !important;
   height:100% !important;
   max-width:none !important;
@@ -1888,7 +1690,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   display:flex;
   flex-direction:column;
 }
-#mirrorModal .modalHead{
   position:sticky;
   top:0;
   z-index:2;
@@ -1896,29 +1697,24 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   border-bottom:1.5px solid rgba(214,178,94,0.55);
   box-shadow:0 4px 14px rgba(0,0,0,0.08);
 }
-#mirrorModal .modalBody{flex:1;min-height:0;overflow:hidden;padding:0 !important;}
 
-#mirrorModal .mirrorGrid{
   height:100%;
   grid-template-columns: 480px 1fr;
   gap:14px;
   padding:14px 16px;
 }
 
-#mirrorModal .mirrorPanel{
   background:rgba(255,255,255,.70);
   border-radius:18px;
   padding:14px;
 }
 
-.mwStepper{
   display:flex;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;
   margin-bottom:12px;
 }
-.mwStepPill{
   display:inline-flex;
   align-items:center;
   gap:10px;
@@ -1928,15 +1724,11 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   background:linear-gradient(180deg, rgba(214,178,94,.16), rgba(214,178,94,.08));
   font-weight:900;
 }
-.mwStepPill .n{
   width:28px;height:28px;border-radius:12px;
   display:grid;place-items:center;
   background:rgba(214,178,94,.22);
   border:1.2px solid rgba(214,178,94,.55);
 }
-.mwStepPill.active{background:linear-gradient(180deg, rgba(214,178,94,.25), rgba(214,178,94,.10));}
-.mwStepPill.done{opacity:.9;}
-.mwBar{
   flex:1;
   min-width:160px;
   height:10px;
@@ -1945,18 +1737,14 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   border:1.2px solid rgba(214,178,94,.48);
   background:rgba(255,255,255,.65);
 }
-.mwBar .fill{
   height:100%;
   width:0%;
   background:linear-gradient(90deg, var(--gold), var(--gold2));
 }
 
-.mwStep{
   display:none;
 }
-.mwStep.show{display:block;}
 
-.mwNav{
   display:flex;
   gap:10px;
   justify-content:space-between;
@@ -1965,37 +1753,25 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   border-top:1px solid rgba(214,178,94,0.35);
 }
 
-.mwHint{
   font-size:12px;
   color:rgba(12,12,18,.62);
   line-height:1.6;
   margin-top:8px;
 }
 
-#mirrorModal.readingMode .mirrorPanel{background:rgba(255,255,255,.78);}
-#mirrorModal.readingMode .mirrorField label{font-size:14px !important;font-weight:1000 !important;}
-#mirrorModal.readingMode .mirrorField input,
-#mirrorModal.readingMode .mirrorField select{padding:14px !important;font-size:16px !important;font-weight:900;}
-#mirrorModal.readingMode .mirrorStepCard{font-size:16px;line-height:1.85;}
-#mirrorModal.readingMode .mirrorScript{font-size:16px;line-height:1.9;}
-#mirrorModal.readingMode .btnGhost,#mirrorModal.readingMode .btnGold,#mirrorModal.readingMode .btn{
   padding:12px 14px !important;
   border-radius:14px !important;
   font-weight:1000 !important;
 }
 
 @media (max-width: 980px){
-  #mirrorModal .mirrorGrid{grid-template-columns:1fr;}
 }
 
 
 /* ============================
    MIRROR (Agent) PRO UI polish
    ============================ */
-#mirrorModal .modalHead .title{font-size:18px;font-weight:1000;letter-spacing:.2px}
-#mirrorModal .modalHead .sub{font-size:12.5px;color:rgba(12,12,18,.62);font-weight:800}
 
-#mirrorModal .mirrorPanel{
   display:flex;
   flex-direction:column;
   gap:12px;
@@ -2003,7 +1779,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   height:100%;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
-#mirrorModal .mirrorPanel h4{
   margin:0;
   padding:10px 12px;
   border-radius:14px;
@@ -2013,54 +1788,41 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   font-weight:1000;
 }
 
-#mirrorModal .mwStepper{
   background:rgba(255,255,255,.70);
   border:1px solid rgba(214,178,94,.18);
   border-radius:18px;
   padding:10px 12px;
 }
-#mirrorModal .mwStepPill{
   padding:9px 10px;
   border-radius:999px;
   border:1px solid rgba(214,178,94,.28);
   background:rgba(214,178,94,.08);
   color:#1a1a1f;
 }
-#mirrorModal .mwStepPill.active{
   border-color: rgba(214,178,94,.55);
   background: linear-gradient(180deg, rgba(214,178,94,.20), rgba(214,178,94,.08));
 }
-#mirrorModal .mwStepPill.done{opacity:1; filter:saturate(.9)}
-#mirrorModal .mwStepPill .n{
   background:rgba(214,178,94,.20);
   border-color:rgba(214,178,94,.35);
   color:#1a1a1f;
 }
 
-#mirrorModal .mirrorField{
   margin-bottom:0;
   padding:10px 10px;
   border:1px solid rgba(214,178,94,.16);
   background:rgba(255,255,255,.68);
   border-radius:16px;
 }
-#mirrorModal .mirrorField label{
   color:rgba(12,12,18,.78) !important;
   font-weight:900 !important;
 }
-#mirrorModal .mirrorSearchRow{gap:10px}
-#mirrorModal .seg{background:rgba(255,255,255,.7)}
-#mirrorModal .segBtn{color:#1a1a1f}
-#mirrorModal .segBtn.active{color:#1a1a1f;background:rgba(214,178,94,.18)}
 
-#mirrorModal .mwHint{
   background:rgba(255,255,255,.55);
   border:1px dashed rgba(214,178,94,.35);
   border-radius:14px;
   padding:10px 10px;
 }
 
-#mirrorModal .mwNav{
   position:sticky;
   bottom:0;
   background:rgba(255,247,230,.92);
@@ -2070,20 +1832,17 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   border-radius:16px;
   box-shadow: 0 -10px 24px rgba(0,0,0,0.06);
 }
-#mirrorModal .mwNav .mwNavRight{
   display:flex;
   gap:10px;
   align-items:center;
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-#mirrorModal .mwNav .mwNavLeft{
   display:flex;
   gap:10px;
   align-items:center;
 }
 
-#mirrorModal .mwActionsBar{
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -2094,24 +1853,19 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   border:1px solid rgba(214,178,94,.18);
   background:rgba(255,255,255,.68);
 }
-#mirrorModal .mwActionsBar .ttl{
   font-weight:1000;
   color:#1a1a1f;
 }
-#mirrorModal .mwActionsBar .btnRow{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-#mirrorModal .mwActionsBar .btnRow .btnGhost,
-#mirrorModal .mwActionsBar .btnRow .btnGold{
   padding:10px 12px;
   border-radius:14px;
   font-weight:1000;
 }
 
-#mirrorModal .mirrorNotice{
   background:rgba(255,255,255,.55);
   border:1px solid rgba(214,178,94,.18);
   border-radius:16px;
@@ -2119,25 +1873,18 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   color:rgba(12,12,18,.62);
 }
 
-#mirrorModal .mirrorStepCard{
   border-radius:18px;
   background:rgba(255,255,255,.68);
   border:1px solid rgba(214,178,94,.18);
 }
 
-#mirrorModal .mirrorProgress .bar{width:260px}
 @media (max-width: 980px){
-  #mirrorModal .mirrorGrid{padding:12px}
-  #mirrorModal .mirrorProgress .bar{width:200px}
 }
 
 
 /* ============================
    MIRROR PRO (Rebuild) — CRM layout
    ============================ */
-#mirrorModal .modalCard.mirrorPro{background:#fff7e6}
-#mirrorModal .mirrorProBody{padding:0 !important; overflow:hidden}
-#mirrorModal .mirrorProGrid{
   height:100%;
   display:grid;
   grid-template-columns: 520px 1fr;
@@ -2145,11 +1892,7 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   padding:14px 16px;
   min-height:0;
 }
-#mirrorModal .mirrorProLeft, #mirrorModal .mirrorProRight{min-height:0}
-#mirrorModal .mirrorProLeft{display:flex; flex-direction:column; gap:12px; min-height:0}
-#mirrorModal .mirrorProRight{min-height:0}
 
-#mirrorModal .mirrorProHead{
   background:#fff7e6;
   border-bottom:1.5px solid rgba(214,178,94,0.55);
   box-shadow:0 4px 14px rgba(0,0,0,0.08);
@@ -2158,8 +1901,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   justify-content:space-between;
   gap:12px;
 }
-#mirrorModal .mirrorProHead .mhRight{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-#mirrorModal .mirrorProHead .chip{
   display:inline-flex;
   align-items:center;
   gap:8px;
@@ -2223,8 +1964,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   gap:12px;
 }
 .cardTitle{font-weight:1000;color:#1a1a1f;margin:0 0 4px}
-.mwStep{display:none}
-.mwStep.show{display:block}
 
 .rowBtns{display:flex; gap:10px; flex-wrap:wrap}
 .rowBtns .btnGold, .rowBtns .btnGhost{border-radius:14px; font-weight:1000}
@@ -2232,7 +1971,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
 
 .checkTop{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap}
 .miniTitle{font-size:12px; font-weight:1000; color:rgba(12,12,18,.70); margin-bottom:6px}
-#mirrorModal .mirrorProgress .bar{width:260px}
 
 .navBar{
   margin-top:auto;
@@ -2295,51 +2033,38 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   overflow:hidden;
   border:1px solid rgba(214,178,94,.18);
 }
-#mirrorFrame{width:100%;height:100%;border:0;background:#fff}
 
-#mirrorModal.readingMode .workCard{background:rgba(255,255,255,.82)}
-#mirrorModal.readingMode .mirrorField label{font-size:14px !important;font-weight:1000 !important;}
-#mirrorModal.readingMode .mirrorField input{padding:14px !important;font-size:16px !important;font-weight:900;}
-#mirrorModal.readingMode .btnGold,#mirrorModal.readingMode .btnGhost{padding:12px 14px !important;font-weight:1000 !important;}
 
 @media (max-width: 1100px){
-  #mirrorModal .mirrorProGrid{grid-template-columns:1fr; }
   .previewSplit{grid-template-rows: 190px 1fr}
 }
 
 
-/* ===== Mirror: Client details (clear + full) ===== */
-#mirrorModal .clientCard{
   display:flex;
   flex-direction:column;
   min-height:0;
 }
-#mirrorModal .clientCard .mirrorCard{
   flex:1;
   min-height:0;
   overflow:auto;
   padding:12px;
   border-radius:16px;
 }
-#mirrorModal .mirrorKV{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:10px 14px;
   font-size:13.5px;
   line-height:1.35;
 }
-#mirrorModal .mirrorKV .kvItem{
   border:1px solid rgba(214,178,94,.16);
   background:rgba(255,255,255,.78);
   border-radius:14px;
   padding:10px 10px;
 }
-#mirrorModal .mirrorKV .kvLbl{
   font-size:11.5px;
   color:rgba(12,12,18,.62);
   font-weight:900;
 }
-#mirrorModal .mirrorKV .kvVal{
   margin-top:6px;
   font-size:14px;
   color:#1a1a1f;
@@ -2347,7 +2072,6 @@ body.mirrorFS .content{display:none !important;} /* remove distractions */
   word-break:break-word;
 }
 @media (max-width: 1100px){
-  #mirrorModal .mirrorKV{grid-template-columns:1fr;}
 }
 
 
@@ -2872,60 +2596,44 @@ input, select, textarea, button{
 
 
 <style>
-/* ===== Mirror Preview Full Area ===== */
-#mirrorModal .mirrorGrid{
   height: 100%;
   min-height: 0;
 }
-#mirrorModal .mirrorPreview{
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
 }
-#mirrorModal .mirrorPreviewBody{
   flex: 1 1 auto;
   min-height: 0;
 }
-#mirrorModal .mirrorPreviewBody iframe,
-#mirrorModal #mirrorFrame{
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
 }
-#mirrorModal .modalCard.wide,
-#mirrorModal .modalBody{
   height: 100% !important;
 }
 </style>
 
 <style>
-#mirrorApply{pointer-events:auto !important; opacity:1 !important;}
 </style>
 
 <style>
-/* ===== Mirror: Make document preview use all free area ===== */
-#mirrorModal .modalCard.wide.mirrorPro{
   width: min(1400px, 96vw) !important;
   height: 92vh !important;
   max-height: 92vh !important;
 }
-#mirrorModal .mirrorProBody,
-#mirrorModal .mirrorProGrid{
   height: 100% !important;
   min-height: 0 !important;
 }
 
 /* Stepper side + preview side sizing */
-#mirrorModal .mirrorProLeft{
   min-height: 0 !important;
 }
-#mirrorModal .mirrorProRight{
   min-height: 0 !important;
   height: 100% !important;
 }
 
 /* The preview card should stretch fully */
-#mirrorModal .previewCard{
   height: 100% !important;
   min-height: 0 !important;
   display: flex !important;
@@ -2933,7 +2641,6 @@ input, select, textarea, button{
 }
 
 /* Split: keep client card narrow, give doc most space */
-#mirrorModal .previewSplit{
   flex: 1 1 auto !important;
   min-height: 0 !important;
   display: grid !important;
@@ -2943,8 +2650,6 @@ input, select, textarea, button{
 }
 
 /* Client and document cards should stretch */
-#mirrorModal .clientCard,
-#mirrorModal .docCard{
   min-height: 0 !important;
   height: 100% !important;
   display: flex !important;
@@ -2952,7 +2657,6 @@ input, select, textarea, button{
 }
 
 /* Make the iframe container fill the remaining height */
-#mirrorModal .docCard .frameWrap{
   flex: 1 1 auto !important;
   min-height: 0 !important;
   height: 100% !important;
@@ -2961,8 +2665,6 @@ input, select, textarea, button{
 }
 
 /* Make iframe truly full */
-#mirrorModal .docCard .frameWrap iframe,
-#mirrorModal #mirrorFrame{
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
@@ -2972,63 +2674,44 @@ input, select, textarea, button{
 </style>
 
 <style>
-/* ===== Mirror: FORCE Fullscreen Document (Hide Left Panel) ===== */
-#mirrorModal .previewSplit{
   grid-template-columns: 1fr !important; /* document only */
 }
-#mirrorModal .clientCard{
   display: none !important;
 }
-#mirrorModal .docCard{
   width: 100% !important;
 }
-#mirrorModal .modalCard.wide.mirrorPro{
   width: 98vw !important;
   height: 96vh !important;
   max-height: 96vh !important;
 }
-#mirrorModal .docCard .frameWrap,
-#mirrorModal #mirrorFrame{
   height: 100% !important;
 }
 </style>
 
 <style>
-/* ===== Mirror: TRUE Full Width & Height ===== */
-#mirrorModal{
   padding: 0 !important;
 }
-#mirrorModal .modalOverlay{
   padding: 0 !important;
 }
-#mirrorModal .modalCard.wide.mirrorPro{
   width: 100vw !important;
   max-width: 100vw !important;
   height: 100vh !important;
   max-height: 100vh !important;
   border-radius: 0 !important;
 }
-#mirrorModal .modalHeader{
   border-radius: 0 !important;
 }
-#mirrorModal .modalBody{
   height: calc(100vh - 64px) !important; /* leave header visible */
 }
 </style>
 
 <style>
 /* ===== DOC ONLY MODE (toggle) =====
-   Enabled only when #mirrorModal has class "docOnly".
    This prevents black screen by keeping the normal UI visible until a document is loaded.
 */
-#mirrorModal.docOnly .modalHead,
-#mirrorModal.docOnly .mirrorProLeft,
-#mirrorModal.docOnly .previewHead,
-#mirrorModal.docOnly .clientCard{
   display:none !important;
 }
 
-#mirrorModal.docOnly .modalCard.wide.mirrorPro{
   width: 100vw !important;
   max-width: 100vw !important;
   height: 100vh !important;
@@ -3036,22 +2719,13 @@ input, select, textarea, button{
   border-radius: 0 !important;
 }
 
-#mirrorModal.docOnly .mirrorProBody,
-#mirrorModal.docOnly .mirrorProGrid,
-#mirrorModal.docOnly .mirrorProRight,
-#mirrorModal.docOnly .previewCard,
-#mirrorModal.docOnly .previewSplit,
-#mirrorModal.docOnly .docCard,
-#mirrorModal.docOnly .frameWrap{
   height: 100% !important;
   min-height: 0 !important;
 }
 
-#mirrorModal.docOnly .previewSplit{
   grid-template-columns: 1fr !important;
 }
 
-#mirrorModal.docOnly #mirrorFrame{
   width: 100% !important;
   height: 100% !important;
   border: 0 !important;
@@ -3060,7 +2734,6 @@ input, select, textarea, button{
 }
 
 /* Floating exit button */
-#mirrorDocOnlyExit{
   position: fixed;
   top: 14px;
   left: 14px;
@@ -3075,13 +2748,11 @@ input, select, textarea, button{
   cursor: pointer;
   font-weight: 700;
 }
-#mirrorModal.docOnly #mirrorDocOnlyExit{ display: inline-flex; align-items:center; gap:8px; }
 </style>
 
 <style>
 /* ===== DOC ONLY MODE: TRUE FULLSCREEN OVER PAGE ===== */
 /* When in docOnly, break out of modal sizing and cover the entire viewport */
-#mirrorModal.docOnly{
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
@@ -3092,17 +2763,10 @@ input, select, textarea, button{
 }
 
 /* Hide modal chrome completely */
-#mirrorModal.docOnly .modalOverlay,
-#mirrorModal.docOnly .modalCard,
-#mirrorModal.docOnly .modalHeader,
-#mirrorModal.docOnly .mirrorProLeft,
-#mirrorModal.docOnly .previewHeader,
-#mirrorModal.docOnly .clientCard{
   display: none !important;
 }
 
 /* Force iframe to be the only visible layer */
-#mirrorModal.docOnly #mirrorFrame{
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
@@ -3114,7 +2778,6 @@ input, select, textarea, button{
 }
 
 /* Floating exit button always above iframe */
-#mirrorModal.docOnly #mirrorDocOnlyExit{
   position: fixed !important;
   top: 12px !important;
   left: 12px !important;
@@ -3143,7 +2806,6 @@ input, select, textarea, button{
   color: #fff;
   backdrop-filter: blur(8px);
 }
-#mirrorModal.docOnly #docQuickSwitch{
   display: flex;
 }
 </style>
@@ -3221,11 +2883,6 @@ input, select, textarea, button{
       <button type="button" id="navESign" data-view="esign">
         <span class="k">✍️ שליחה לחתימת לקוח</span>
       </button>
-
-      <button type="button" id="navMirror" data-view="mirror">
-        <span class="k">🪞 צ'ק ליסט שיקוף עסקה</span>
-      </button>
-
 
       <button data-view="settings">
         <span class="k">⚙️ הגדרות</span>
@@ -3649,31 +3306,7 @@ function heatTag(score){
 }
 
 
-function openMirrorModal(){
-  const mm = document.getElementById("mirrorModal");
-  if(!mm) { alert("מסך שיקוף לא נטען"); return; }
-  mm.classList.add("show");
-  // mark nav active
-  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view==="mirror"));
-  // keep title consistent
-  try{
-    if(window.el && el("viewTitle")) el("viewTitle").textContent = "צ'ק ליסט שיקוף עסקה";
-    if(window.el && el("viewSub")) el("viewSub").textContent = "בחירת לקוח • בחירת חברת ביטוח • שלבים נעולים";
-  }catch(e){}
-}
-function closeMirrorModal(){
-  const mm = document.getElementById("mirrorModal");
-  if(mm) mm.classList.remove("show");
-  // return nav to leads
-  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view==="leads"));
-  try{ setView("leads"); }catch(e){}
-}
-document.addEventListener("click",(e)=>{
-  const mm = document.getElementById("mirrorModal");
-  if(!mm) return;
-  if(e.target && e.target.id === "mirrorClose") closeMirrorModal();
-  if(e.target === mm) closeMirrorModal(); // click outside card
-});
+
 /* ===== Views ===== */
 const nav = el("nav");
 nav.addEventListener("click", (e)=>{
@@ -3682,8 +3315,7 @@ nav.addEventListener("click", (e)=>{
   setView(btn.dataset.view);
 });
 function setView(view){
-  // "mirror" / "esign" / "proposal" are modal flows (not full pages)
-  if(view === "mirror") { openMirrorModal(); return; }
+  // "esign" / "proposal" are modal flows (not full pages)
   if(view === "esign")  { openESignModal && openESignModal(); return; }
   if(view === "proposal"){ openProposalModal && openProposalModal(); return; }
   if(!["leads","myflows","tasks","timeline","settings"].includes(view)) view="leads";
@@ -5283,2031 +4915,100 @@ function getSelectedLead(){
 
 
 
-<!-- ===== Mirror Client Modal (Real) ===== -->
-
-<div id="mirrorModal" class="modalOverlay" role="dialog" aria-modal="true">
-  <button id="mirrorDocOnlyExit" type="button">⟵ חזרה למסך שיקוף</button>
-  <div class="modalCard wide mirrorPro">
-    <div class="modalHead mirrorProHead">
-      <div class="mhLeft">
-        <div class="title">🪞 שיקוף לנציג</div>
-        <div class="sub">מסך הקראה מובנה • שלבים נעולים • תצוגת מסמך ללקוח</div>
-      </div>
-      <div class="mhRight">
-        <div class="chip" id="mirrorClientChip" title="לקוח שנבחר">לקוח: <b id="mirrorClientName">—</b></div>
-        <button class="btnGhost" id="mirrorClose" type="button">✕ יציאה</button>
-      </div>
-    </div>
-
-    <div class="modalBody mirrorProBody">
-      <div class="mirrorProGrid">
-
-        <!-- Left: Agent workflow -->
-        <aside class="mirrorProLeft">
-          <div class="stepperCard">
-            <div class="stepperTop">
-              <div class="stepperTitle">תהליך שיקוף</div>
-              <div class="stepperBar"><div class="fill" id="mwBarFill"></div></div>
-            </div>
-            <div class="stepperList" role="list">
-              <button class="stepItem active" id="mwPill1" type="button">
-                <span class="n">1</span>
-                <span class="t">שליפת לקוח</span>
-                <span class="s">ת.ז / שם / טלפון</span>
-              </button>
-              <button class="stepItem" id="mwPill2" type="button">
-                <span class="n">2</span>
-                <span class="t">בחירת חברת ביטוח</span>
-                <span class="s">קישור PDF/דף</span>
-              </button>
-              <button class="stepItem" id="mwPill3" type="button">
-                <span class="n">3</span>
-                <span class="t">צ׳ק ליסט הקראה</span>
-                <span class="s">נעילה לפי “בוצע”</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="workCard">
-            <!-- STEP 1 -->
-            <div class="mwStep show" id="mwStep1">
-              <div class="cardTitle">שלב 1 — שליפת לקוח</div>
-
-              <div class="mirrorField">
-                <label>חפש לקוח</label>
-                <div class="mirrorSearchRow">
-                  <div class="seg" id="mirrorFindType">
-                    <button type="button" class="segBtn active" data-type="tz">ת.ז</button>
-                    <button type="button" class="segBtn" data-type="name">שם</button>
-                    <button type="button" class="segBtn" data-type="phone">טלפון</button>
-                  </div>
-                  <input id="mirrorFindQ" placeholder="הקלד וחפש…" autocomplete="off"/>
-                  <button class="btnGold" id="mirrorFindBtn" type="button">שלוף</button>
-                </div>
-                <div class="hint">המערכת תטען את הלקוח למסך השיקוף ותפתח את שלב 2.</div>
-              </div>
-
-              <!-- hidden select for compatibility with existing logic -->
-              <select id="mirrorLeadSelect" style="display:none">
-                <option value="">—</option>
-              </select>
-
-              <div class="softHint">טיפ: אם יש כמה התאמות, כתוב יותר מדויק (למשל 3 ספרות אחרונות בטלפון).</div>
-            </div>
-
-            <!-- STEP 2 -->
-            <div class="mwStep" id="mwStep2">
-              <div class="cardTitle">שלב 2 — בחירת חברת ביטוח</div>
-
-              <div class="mirrorField">
-                <label>בחירת חברת ביטוח (מסמך)</label>
-                <select id="mirrorCompanySelect">
-                  <option value="">— בחר חברה / מסמך —</option>
-                  <option value="כיסויים מנורה - יוני 2024">כיסויים מנורה - יוני 2024</option>
-                  <option value="כיסויים מגדל - יוני 2024">כיסויים מגדל - יוני 2024</option>
-                  <option value="כיסויים הראל - יוני 2024">כיסויים הראל - יוני 2024</option>
-                  <option value="כיסויים חברת איילון - אוקטובר 2023">כיסויים חברת איילון - אוקטובר 2023</option>
-                  <option value="כיסויים הפניקס - יוני 2024">כיסויים הפניקס - יוני 2024</option>
-                </select>
-                <div class="softHint">ברגע שבוחרים — המסמך נטען בצד ימין אוטומטית (אם הוגדר קישור או הועלה PDF).</div>
-              </div>
-
-              <div class="mirrorField">
-                <label>העלאת קבצי PDF (פעם אחת) — נשמר מקומית בדפדפן</label>
-                <input id="mirrorPdfUpload" type="file" accept="application/pdf" multiple />
-                <div class="softHint">הקבצים נשמרים מקומית (LocalStorage). אם PDF גדול מדי — מומלץ להעלות לריפו (GitHub) ולשים URL במקום.</div>
-              </div>
-
-              <div class="mirrorField">
-                <label>שם מסמך להצגה (אוטומטי / ניתן לעריכה)</label>
-                <input id="mirrorOfferName" placeholder="לדוגמה: כיסויים מנורה - יוני 2024"/>
-              </div>
-
-              <div class="mirrorField">
-                <input id="mirrorPdfUrl" placeholder="https://...pdf או https://..."/>
-                <div class="softHint">אם העלית PDF — השדה יתמלא לבד. אפשר גם לשים כאן URL של PDF מהריפו.</div>
-              </div>
-<div class="rowBtns">
-                <button class="btnGold" id="mirrorApply" type="button">הצג מסמך</button>
-                <button class="btnGhost" id="mirrorCopyLink" type="button">העתק קישור</button>
-                <button class="btnGhost" id="mirrorOpenLink" type="button">פתח קישור</button>
-              </div>
-
-              <div class="mirrorNotice">
-                אם PDF חוסם טעינה בתוך חלון (iframe) — עדיין אפשר לפתוח אותו בטאב חדש.
-                <a class="btnGold" id="mirrorOpenExternal" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;margin-top:10px;align-self:flex-start">פתח מסמך בטאב</a>
-              </div>
-            </div>
-
-            <!-- STEP 3 -->
-            <div class="mwStep" id="mwStep3">
-              <div class="cardTitle">שלב 3 — צ׳ק ליסט הקראה לנציג</div>
-
-              <div class="checkTop">
-                <div>
-                  <div class="miniTitle">התקדמות</div>
-                  <div class="hint">אחוזים לפי “בוצע” (נשמר לפי הלקוח)</div>
-                </div>
-                <div class="mirrorProgress">
-                  <div class="bar"><div class="fill" id="mirrorProgFill" style="width:0%"></div></div>
-                  <div class="pct" id="mirrorProgPct">0%</div>
-                </div>
-              </div>
-
-              <div class="mirrorStepCard">
-                <div class="mirrorStepHead">
-                  <div class="num" id="mirrorStepNum">1</div>
-                  <div class="ttl" id="mirrorStepTitle">—</div>
-                  <label class="chk"><input type="checkbox" id="mirrorStepDone"/> בוצע</label>
-                </div>
-
-                <textarea id="mirrorStepScript" class="mirrorScript" rows="7" spellcheck="false"></textarea>
-
-                <div class="mirrorStepNav">
-                  <button class="btnGhost" id="mirrorPrevStep" type="button">◀ הקודם</button>
-                  <button class="btnGhost" id="mirrorNextStep" type="button">הבא ▶</button>
-                </div>
-              </div>
-
-              <div class="rowBtns">
-                <button class="btnGhost" id="mirrorFull" type="button">מסך מלא</button>
-                <button class="btnGold" id="mirrorScriptOpen" type="button">🗣️ טקסט הקראה</button>
-              </div>
-            </div>
-
-            <div class="navBar">
-              <button class="btnGhost" id="mwBack" type="button">◀ הקודם</button>
-              <button class="btnGhost" id="mwReadMode" type="button">🗣️ מצב הקראה</button>
-              <button class="btnGold" id="mwNext" type="button">הבא ▶</button>
-            </div>
-          </div>
-        </aside>
-
-        <!-- Right: Preview -->
-        <section class="mirrorProRight">
-          <div class="previewCard">
-            <div class="previewHead">
-              <div>
-                <div class="ttl" id="mirrorPrevTitle">מסמך</div>
-                <div class="meta" id="mirrorPrevMeta">בחר לקוח + מסמך</div>
-              </div>
-              <div class="rightBtns">
-                <button class="btnGhost" id="mirrorDone" type="button">סיום ✔</button>
-                <button class="btnGhost" id="mirrorClear" type="button">נקה</button>
-              </div>
-            </div>
-
-            <div class="previewSplit">
-              <div class="clientCard">
-                <div class="miniTitle">פרטי לקוח</div>
-                <div class="mirrorCard">
-                  <div class="mirrorKV" id="mirrorKV"></div>
-                </div>
-              </div>
-
-              <div class="docCard">
-                <div class="miniTitle">תצוגת מסמך</div>
-                <div class="frameWrap">
-                  <iframe id="mirrorFrame" title="מסמך" src="about:blank"></iframe>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-
-    <div class="modalFoot">
-      <button class="btnGhost" id="mirrorClear">נקה</button>
-      <button class="btnGold" id="mirrorDone">סגור</button>
-    </div>
-  </div>
-
-<!-- ===== Mirror Talk Script Modal ===== -->
-<div id="mirrorScriptModal" class="modalOverlay" role="dialog" aria-modal="true">
-  <div class="modalCard wide">
-    <div class="modalHead">
-      <div>
-        <div class="title">שיקוף השיחה</div>
-        <div class="sub">מסך עבודה לנציג — טקסט להקראה/שיקוף ללקוח</div>
-      </div>
-      <button class="btnGhost" id="mirrorScriptClose">✕ סגור</button>
-    </div>
-
-    <div class="modalBody" style="padding:14px 16px; display:flex; flex-direction:column; gap:10px;">
-      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div class="badge" id="mirrorScriptLeadBadge">לקוח: —</div>
-        <div class="row" style="gap:8px;flex-wrap:wrap">
-          <button class="btnGhost" id="mirrorScriptCopy">📋 העתק טקסט</button>
-          <button class="btnGhost" id="mirrorScriptClear">🧹 נקה</button>
-          <button class="btnGhost" id="mirrorScriptFull">⛶ מסך מלא</button>
-        </div>
-      </div>
-
-      <textarea id="mirrorScriptText" class="mirrorScriptArea"
-        placeholder="כאן הנציג יכתוב את שיקוף העסקה/הרכישה, ויקריא ללקוח..."></textarea>
-
-      <div class="help" style="margin-top:2px">
-        נשמר אוטומטית לפי הלקוח שנבחר (Local). אפשר להעתיק ולהדביק מחדש בכל שיחה.
-      </div>
-    </div>
-
-    <div class="modalFoot">
-      <button class="btnGold" id="mirrorScriptDone">סגור</button>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<!-- ===== Mirror Standalone (Link View) ===== -->
-<div id="mirrorStandalone" class="mirrorStandalone">
-  <div class="mirrorStandaloneInner">
-    <div class="mirrorStandaloneTop">
-      <div class="row">
-        <div>
-          <div class="title" id="mirrorS_Title">שיקוף ללקוח</div>
-          <div class="sub" id="mirrorS_Sub">תצוגת לקוח</div>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center">
-          <button class="btnGhost" id="mirrorS_Full">מסך מלא</button>
-          <a class="btnGold" id="mirrorS_Open" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:none">פתח מסמך</a>
-        </div>
-      </div>
-    </div>
-    <div class="mirrorStandaloneMain">
-      <div class="wrap" style="height:100%">
-        <div class="mirrorGrid" style="height:100%">
-          <div class="mirrorPanel">
-            <h4>פרטי לקוח</h4>
-            <div class="mirrorCard">
-              <div class="mirrorKV" id="mirrorS_KV"></div>
-            </div>
-          </div>
-          <div class="mirrorPreview" style="height:100%">
-            <div class="mirrorPreviewHead">
-              <div>
-                <div class="ttl" id="mirrorS_DocTitle">מסמך</div>
-                <div class="meta" id="mirrorS_DocMeta">—</div>
-              </div>
-            </div>
-            <div class="mirrorPreviewBody">
-              <iframe id="mirrorS_Frame" title="מסמך" src="about:blank"></iframe>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 
 <script>
-/* ===== Mirror Client (Real) Logic ===== */
-(function(){
-  const modal = document.getElementById('mirrorModal');
-  const openBtn = document.querySelector('[data-view="mirror"]');
-  const closeBtn = document.getElementById('mirrorClose');
-  const doneBtn  = document.getElementById('mirrorDone');
-  const clearBtn = document.getElementById('mirrorClear');
-
-  const sel = document.getElementById('mirrorLeadSelect');
-  const offerName = document.getElementById('mirrorOfferName');
-  const pdfUrl = document.getElementById('mirrorPdfUrl');
-
-  const companySel = document.getElementById('mirrorCompanySelect');
-  const pdfUpload  = document.getElementById('mirrorPdfUpload');
-
-  // PDF library (stored locally in the browser)
-  const PDF_LIB_KEY = "leadup_pdf_library_v1";
-  function loadPdfLib(){
-    try{ return JSON.parse(localStorage.getItem(PDF_LIB_KEY) || "{}") || {}; }
-    catch(e){ return {}; }
-  }
-  function savePdfLib(lib){
-    try{ localStorage.setItem(PDF_LIB_KEY, JSON.stringify(lib)); }catch(e){}
-  }
-  let pdfLib = loadPdfLib();
-
-  function normalizeName(s){
-    return (s||"").toString().trim()
-      .replace(/\.(pdf)$/i,"")
-      .replace(/[\s_]+/g," ")
-      .replace(/[–—]/g,"-")
-      .trim();
-  }
-  function matchOptionKey(baseName){
-    const base = normalizeName(baseName);
-    if(!companySel) return "";
-    const opts = Array.from(companySel.options).map(o=>o.value).filter(Boolean);
-    // try contains match in both directions
-    for(const v of opts){
-      const nv = normalizeName(v);
-      if(!nv) continue;
-      if(base.includes(nv) || nv.includes(base)) return v;
-    }
-    return "";
-  }
-  function setLibEntry(key, dataUrl){
-    if(!key) return;
-    pdfLib[key] = dataUrl;
-    savePdfLib(pdfLib);
-  }
-  function getLibEntry(key){
-    return (key && pdfLib && pdfLib[key]) ? pdfLib[key] : "";
-  }
-
-
-  const kv = document.getElementById('mirrorKV');
-  const frame = document.getElementById('mirrorFrame');
-  const prevTitle = document.getElementById('mirrorPrevTitle');
-  const prevMeta = document.getElementById('mirrorPrevMeta');
-  const openExternal = document.getElementById('mirrorOpenExternal');
-
-  const btnApply = document.getElementById('mirrorApply');
-  const btnCopy  = document.getElementById('mirrorCopyLink');
-  const btnOpen  = document.getElementById('mirrorOpenLink');
-  const btnFull  = document.getElementById('mirrorFull');
-
-  function show(){ document.body.classList.add("mirrorFS");  modal.classList.add('show'); refreshLeadSelect();  mwSet(1); }
-  function hide(){ document.body.classList.remove("mirrorFS");  modal.classList.remove('show');  modal.classList.remove("readingMode"); }
-
-  /* --- Agent Mirror Wizard (1/2/3) + Reading Mode --- */
-  let mwStep = 1;
-  const mwP1 = document.getElementById("mwPill1");
-  const mwP2 = document.getElementById("mwPill2");
-  const mwP3 = document.getElementById("mwPill3");
-  const mwS1 = document.getElementById("mwStep1");
-  const mwS2 = document.getElementById("mwStep2");
-  const mwS3 = document.getElementById("mwStep3");
-  const mwBack = document.getElementById("mwBack");
-  const mwNext = document.getElementById("mwNext");
-  const mwFill = document.getElementById("mwBarFill");
-  const mwRead = document.getElementById("mwReadMode");
-
-  function mwValid(step){
-    if(step === 1){
-      return !!(currentLeadObj && (currentLeadObj.id || currentLeadObj.phone || currentLeadObj.name));
-    }
-    if(step === 2){
-      const url = (pdfUrl?.value || "").trim();
-      return url.length > 6;
-    }
-    return true;
-  }
-
-  function mwSet(n){
-    mwStep = Math.max(1, Math.min(3, n));
-    mwS1?.classList.toggle("show", mwStep === 1);
-    mwS2?.classList.toggle("show", mwStep === 2);
-    mwS3?.classList.toggle("show", mwStep === 3);
-
-    mwP1?.classList.toggle("active", mwStep === 1);
-    mwP2?.classList.toggle("active", mwStep === 2);
-    mwP3?.classList.toggle("active", mwStep === 3);
-
-    mwP1?.classList.toggle("done", mwStep > 1);
-    mwP2?.classList.toggle("done", mwStep > 2);
-
-    if(mwFill) mwFill.style.width = ((mwStep-1)/2*100) + "%";
-
-    if(mwBack) mwBack.disabled = mwStep === 1;
-    if(mwNext){
-      mwNext.textContent = (mwStep === 3) ? "סיום ✔" : "הבא ▶";
-      mwNext.disabled = !mwValid(mwStep);
-    }
-  }
-
-  function mwToast(msg){
-    // reuse global toast if exists, else alert
-    if(window.toast){ window.toast(msg); }
-    else { alert(msg); }
-  }
-
-  if(mwBack) mwBack.addEventListener("click", ()=> mwSet(mwStep-1));
-  if(mwNext) mwNext.addEventListener("click", ()=>{
-    if(!mwValid(mwStep)){
-      mwToast(mwStep===1 ? "צריך קודם לשלוף/לבחור לקוח." : "צריך לבחור מסמך (להדביק קישור PDF/מסמך).");
-      return;
-    }
-    if(mwStep < 3) mwSet(mwStep+1);
-    else hide();
-  });
-
-  if(mwRead) mwRead.addEventListener("click", ()=>{
-    modal.classList.toggle("readingMode");
-    mwRead.textContent = modal.classList.contains("readingMode") ? "🔎 מצב רגיל" : "🗣️ מצב הקראה";
-  });
-
-  // re-validate step 2 when URL changes
-  if(pdfUrl){
-    pdfUrl.addEventListener("input", ()=>{ if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2); });
-  }
-
-
-
-  function esc(v){ return (window.escapeHTML ? window.escapeHTML(v||'') : (v||'')); }
-
-  function refreshLeadSelect(){
-    if(
-  // company/document selection -> auto fill + auto preview
-  if(companySel){
-    companySel.addEventListener("change", ()=>{
-      const key = companySel.value;
-      if(key){
-        if(offerName) offerName.value = key;
-        const fromLib = getLibEntry(key);
-        if(fromLib){
-          pdfUrl.value = fromLib;
-        }else{
-          // keep existing URL if user already pasted one, otherwise empty
-          if(!pdfUrl.value.trim()) pdfUrl.value = "";
-        }
-      }
-      applyPreview();
-      if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2);
-    });
-  }
-
-  // upload PDFs and bind them to the selected option (or auto-match by filename)
-  if(pdfUpload){
-    pdfUpload.addEventListener("change", ()=>{
-      const files = Array.from(pdfUpload.files || []);
-      if(!files.length) return;
-
-      files.forEach(file=>{
-        const maxBytes = 4 * 1024 * 1024; // localStorage-friendly limit
-        if(file.size > maxBytes){
-          mwToast(`הקובץ "${file.name}" גדול מדי לשמירה מקומית. מומלץ להעלות לריפו ולהדביק URL במקום.`);
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = ()=>{
-          const base = normalizeName(file.name);
-          const matched = matchOptionKey(base);
-          const key = matched || companySel?.value || base;
-          setLibEntry(key, reader.result);
-          mwToast(`ה‑PDF נשמר: ${key} ✅`);
-          // if user is currently viewing that key – refresh preview
-          if(companySel && (companySel.value === key || (!companySel.value && matched))){
-            if(!companySel.value && matched) companySel.value = matched;
-            if(offerName) offerName.value = companySel.value || key;
-            if(pdfUrl) pdfUrl.value = reader.result;
-            applyPreview();
-            if(mwStep===2 && mwNext) mwNext.disabled = !mwValid(2);
-          }
-        };
-        reader.onerror = ()=> mwToast(`לא הצלחתי לקרוא את "${file.name}". נסה שוב.`);
-        reader.readAsDataURL(file);
-      });
-
-      // allow re-upload same file again
-      pdfUpload.value = "";
-    });
-  }
-!window.appState || !Array.isArray(window.appState.leads)) return;
-    const leads = window.appState.leads.slice().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-    const current = sel.value;
-    sel.innerHTML = '<option value="">— לחץ לבחירה —</option>' + leads.map(l=>{
-      const label = `${l.name||'—'} • ${l.phone||''}`.trim();
-      return `<option value="${esc(l.id)}">${esc(label)}</option>`;
-    }).join('');
-    if(current) sel.value = current;
-  }
-
-
-  /* --- Mirror Find Lead (TZ/Name/Phone) --- */
-  let mirrorFindType = "tz";
-  const findTypeWrap = document.getElementById("mirrorFindType");
-  const findQ = document.getElementById("mirrorFindQ");
-  const findBtn = document.getElementById("mirrorFindBtn");
-
-  function norm(s){ return String(s||"").trim().toLowerCase(); }
-  function digits(s){ return String(s||"").replace(/\D/g,""); }
-
-  function getLeadByQuery(q, type){
-    // Prefer in-memory state, but if for some reason it isn't available yet (e.g. module order),
-    // fall back to localStorage.
-    let state = (window.appState && Array.isArray(window.appState.leads)) ? window.appState : null;
-    if(!state){
-      try{
-        const raw = localStorage.getItem("leadup_v1");
-        const parsed = raw ? JSON.parse(raw) : null;
-        if(parsed && Array.isArray(parsed.leads)) state = parsed;
-      }catch(e){}
-    }
-    if(!state || !Array.isArray(state.leads)) return null;
-    const leads = state.leads;
-    const qq = norm(q);
-    const qd = digits(q);
-
-    if(!qq) return null;
-
-    // Try exact-first, then contains
-    const score = (l)=>{
-      if(type==="tz"){
-  const v = digits(l.tz || l.idNumber || l.tzNumber || l.idnum || l.idNum || "");
-  if(!qd) return 0;
-  if(v === qd) return 100;
-  if(v.endsWith(qd) || v.includes(qd)) return 70;
-  return 0;
-}
-      if(type==="phone"){
-  // Normalize Israeli numbers: allow matching 05X... against +9725X... and vice versa
-  const vRaw = digits(l.phone || l.phoneNumber || l.mobile || l.tel || "");
-  if(!qd) return 0;
-
-  const variants = new Set([qd]);
-
-  if(qd.startsWith("0") && qd.length >= 9){
-    variants.add(qd.slice(1));
-    variants.add("972"+qd.slice(1));
-  }
-  if(qd.startsWith("972") && qd.length >= 11){
-    variants.add("0"+qd.slice(3));
-  }
-
-  const vVariants = new Set([vRaw]);
-  if(vRaw.startsWith("972") && vRaw.length >= 11){
-    vVariants.add("0"+vRaw.slice(3));
-  }
-  if(vRaw.startsWith("0") && vRaw.length >= 9){
-    vVariants.add("972"+vRaw.slice(1));
-    vVariants.add(vRaw.slice(1));
-  }
-
-  for(const vv of vVariants){
-    for(const qq of variants){
-      if(vv === qq) return 100;
-    }
-  }
-  for(const vv of vVariants){
-    for(const qq of variants){
-      if(vv.endsWith(qq) || vv.includes(qq)) return 70;
-    }
-  }
-  return 0;
-}
-      // name
-      const v = norm(l.name || "");
-      if(v === qq) return 100;
-      if(v.startsWith(qq)) return 80;
-      if(v.includes(qq)) return 60;
-      return 0;
-    };
-
-    let best=null, bestScore=0;
-    for(const l of leads){
-      const s = score(l);
-      if(s>bestScore){ bestScore=s; best=l; }
-    }
-    return (bestScore>0) ? best : null;
-  }
-
-  function applyLeadSelection(lead){
-    if(!lead) return;
-    // set select value if exists
-    if(sel){
-      sel.value = lead.id || lead._id || sel.value;
-      // if we didn't find by id, try to match by name/phone in options
-      if(!sel.value){
-        const opt = [...sel.options].find(o => (o.textContent||"").includes(lead.phone||"") && (o.textContent||"").includes(lead.name||""));
-        if(opt) sel.value = opt.value;
-      }
-    }
-    setKV(lead);
-    // auto-fill defaults if empty
-    if(offerName && !offerName.value) offerName.value = `הצעה ללקוח: ${lead.name||""}`.trim();
-    // load checklist for lead
-    loadChecklistForLead(lead);
-  }
-
-  if(findTypeWrap){
-    findTypeWrap.addEventListener("click", (e)=>{
-      const b = e.target.closest(".segBtn");
-      if(!b) return;
-      [...findTypeWrap.querySelectorAll(".segBtn")].forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      mirrorFindType = b.dataset.type || "tz";
-      if(findQ){
-        findQ.placeholder = mirrorFindType==="tz" ? "הקלד ת.ז…" : (mirrorFindType==="phone" ? "הקלד טלפון…" : "הקלד שם…");
-        findQ.focus();
-      }
-    });
-  }
-
-  function doFind(){
-    const q = findQ ? findQ.value : "";
-    const lead = getLeadByQuery(q, mirrorFindType);
-    if(!lead){
-      toast && toast("לא נמצא לקוח מתאים. נסה שוב.", "warn");
-      return;
-    }
-    applyLeadSelection(lead);
-    toast && toast(`נטען לקוח: ${lead.name||"—"}`, "ok");
-  }
-
-  if(findBtn) findBtn.addEventListener("click", doFind);
-  if(findQ) findQ.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); doFind(); } });
-
-  /* --- Mirror Checklist (rep script) --- */
-  const STEPS = [
-    {key:"open",   title:"פתיחה והזדהות", script:(l)=>`שלום ${l?.name||""}, מדבר/ת __ מהסוכנות.\nאני רוצה לעשות שיקוף קצר כדי לוודא שהבנתי נכון את הפרטים לפני שממשיכים.\nזה בסדר?`},
-    {key:"verify", title:"אימות פרטים", script:(l)=>`רק אימות קצר:\n• שם: ${l?.name||"—"}\n• טלפון: ${l?.phone||"—"}\n• ת.ז: ${l?.tz||l?.idNumber||"—"}\nיש עוד פרט שתרצה/י לעדכן?`},
-    {key:"needs",  title:"צרכים ודגשים", script:()=>`מה הכי חשוב לך בכיסוי/בפוליסה?\nיש משהו שחשוב להחריג או להדגיש?`},
-    {key:"offer",  title:"הצגת ההצעה", script:()=>`אני מציג/ה עכשיו את ההצעה.\nאעבור איתך על הסעיפים המרכזיים ומה כלול ומה לא כלול.`},
-    {key:"price",  title:"מחיר ותשלום", script:()=>`המחיר הוא __ לחודש/לשנה.\nאמצעי תשלום: __\nיש דמי טיפול/השתתפות עצמית/חריגים שכדאי לדעת: __`},
-    {key:"confirm",title:"אישור והמשך תהליך", script:()=>`רק לוודא—הכל ברור ומאושר להמשיך?\nהשלב הבא: חתימה/שליחת מסמכים.\nאני שולח/ת לך עכשיו קישור/מסמך.`},
-    {key:"close",  title:"סיכום", script:()=>`סיכום קצר: __\nאם עולה שאלה—אפשר לפנות אליי בוואטסאפ/טלפון.\nתודה רבה ושיהיה יום מצוין!`}
-  ];
-
-  const ckWrap = document.getElementById("mirrorChecklist");
-  const stepNumEl = document.getElementById("mirrorStepNum");
-  const stepTitleEl = document.getElementById("mirrorStepTitle");
-  const stepScriptEl = document.getElementById("mirrorStepScript");
-  const stepDoneEl = document.getElementById("mirrorStepDone");
-  const prevStepBtn = document.getElementById("mirrorPrevStep");
-  const nextStepBtn = document.getElementById("mirrorNextStep");
-  const progFill = document.getElementById("mirrorProgFill");
-  const progPct  = document.getElementById("mirrorProgPct");
-
-  let currentLeadId = null;
-  let currentLeadObj = null;
-  let currentStep = 0;
-  let checklistState = {done:{}, scripts:{}};
-
-  function ckKey(){
-    return currentLeadId ? ("mirror_checklist_" + currentLeadId) : "mirror_checklist__none";
-  }
-
-  function saveChecklist(){
-    try{
-      localStorage.setItem(ckKey(), JSON.stringify({step:currentStep, state:checklistState}));
-    }catch(e){}
-  }
-
-  function loadChecklistForLead(lead){
-    currentLeadObj = lead || null;
-    currentLeadId = lead?.id || lead?._id || lead?.phone || "lead";
-    checklistState = {done:{}, scripts:{}};
-    currentStep = 0;
-
-    try{
-      const raw = localStorage.getItem(ckKey());
-      if(raw){
-        const obj = JSON.parse(raw);
-        if(obj && obj.state) checklistState = obj.state;
-        if(typeof obj.step === "number") currentStep = Math.max(0, Math.min(STEPS.length-1, obj.step));
-      }
-    }catch(e){}
-
-    // if no script stored for a step, set default template
-    STEPS.forEach((s,i)=>{
-      if(typeof checklistState.scripts[s.key] !== "string"){
-        checklistState.scripts[s.key] = (s.script(currentLeadObj) || "").trim();
-      }
-      if(typeof checklistState.done[s.key] !== "boolean") checklistState.done[s.key] = false;
-    });
-
-    renderStep();
-    renderProgress();
-    saveChecklist();
-  }
-
-  function renderProgress(){
-    const total = STEPS.length;
-    const doneCount = STEPS.filter(s => checklistState.done[s.key]).length;
-    const pct = total ? Math.round((doneCount/total)*100) : 0;
-    if(progFill) progFill.style.width = pct + "%";
-    if(progPct) progPct.textContent = pct + "%";
-  }
-
-  function renderStep(){
-    const s = STEPS[currentStep];
-    if(!s) return;
-    if(stepNumEl) stepNumEl.textContent = String(currentStep+1);
-    if(stepTitleEl) stepTitleEl.textContent = s.title;
-    if(stepDoneEl) stepDoneEl.checked = !!checklistState.done[s.key];
-    if(stepScriptEl) stepScriptEl.value = checklistState.scripts[s.key] || "";
-    if(prevStepBtn) prevStepBtn.disabled = currentStep===0;
-    if(nextStepBtn) nextStepBtn.disabled = currentStep===STEPS.length-1;
-  }
-
-  if(stepDoneEl){
-    stepDoneEl.addEventListener("change", ()=>{
-      const s = STEPS[currentStep];
-      checklistState.done[s.key] = !!stepDoneEl.checked;
-      renderProgress();
-      saveChecklist();
-    });
-  }
-
-  if(stepScriptEl){
-    stepScriptEl.addEventListener("input", ()=>{
-      const s = STEPS[currentStep];
-      checklistState.scripts[s.key] = stepScriptEl.value;
-      saveChecklist();
-    });
-  }
-
-  if(prevStepBtn) prevStepBtn.addEventListener("click", ()=>{ if(currentStep>0){ currentStep--; renderStep(); saveChecklist(); }});
-  if(nextStepBtn) nextStepBtn.addEventListener("click", ()=>{ const s = STEPS[currentStep]; if(!checklistState.done[s.key]){ if(window.toast){window.toast('צריך לסמן "בוצע" לפני מעבר לשלב הבא.');} else {alert('צריך לסמן "בוצע" לפני מעבר לשלב הבא.');} return; } if(currentStep<STEPS.length-1){ currentStep++; renderStep(); saveChecklist(); }});
-
-
-
-  
-function setKV(lead){
-    const l = lead || {};
-    const map = [
-      ["שם מלא", l.name],
-      ['ת.ז', l.tz || l.idNumber],
-      ["טלפון", l.phone],
-      ["טלפון נוסף", l.phone2 || l.altPhone],
-      ["אימייל", l.email],
-      ["סטטוס", l.status],
-      ["מקור", l.source],
-      ["בעלים", l.owner],
-      ["תאריך יצירה", l.createdAt],
-      ["קשר אחרון", l.lastContactAt],
-      ["מעקב הבא", l.nextFollowUpAt || l.nextAt],
-      ["סוג ביטוח", l.insuranceType || l.policyType],
-      ["חברה", l.company || l.carrier],
-      ["מספר פוליסה", l.policyNumber],
-      ["תאריך לידה", l.birthDate],
-      ["עיר", l.city],
-      ["כתובת", l.address],
-      ["הערה", l.note || l.notes],
-    ];
-
-    // Add any extra fields that exist but are not in the mapping (best-effort)
-    const knownKeys = new Set(["name","tz","idNumber","phone","phone2","altPhone","email","status","source","owner","createdAt","lastContactAt","nextFollowUpAt","nextAt","insuranceType","policyType","company","carrier","policyNumber","birthDate","city","address","note","notes","id","_id","contactCount","score","heat"]);
-    const extras = [];
-    for(const [k,v] of Object.entries(l)){
-      if(knownKeys.has(k)) continue;
-      if(v === null || v === undefined || v === "") continue;
-      if(typeof v === "object") continue; // keep it readable
-      const label = (k || "").replace(/_/g," ").trim();
-      extras.push([label, v]);
-    }
-
-    const items = map
-      .filter(([k,v])=> v !== undefined && v !== null && String(v).trim() !== "")
-      .concat(extras.slice(0, 12)); // avoid endless list
-
-    if(!items.length){
-      kv.innerHTML = '<div class="kvItem"><div class="kvLbl">פרטים</div><div class="kvVal">—</div></div>';
-    }else{
-      kv.innerHTML = items.map(([k,v])=>{
-        return `<div class="kvItem"><div class="kvLbl">${esc(k)}</div><div class="kvVal">${esc(v)}</div></div>`;
-      }).join('');
-    }
-
-    try{
-      const nm = document.getElementById("mirrorClientName");
-      if(nm) nm.textContent = (l.name || "—");
-    }catch(e){}
-  }
-
-  try{ const nm = document.getElementById("mirrorClientName"); if(nm) nm.textContent = (lead?.name || "—"); }catch(e){}
-
-
-  function applyPreview(){
-    const leadId = sel.value;
-    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
-    setKV(lead);
-
-    const name = offerName.value.trim() || 'מסמך';
-    const url  = pdfUrl.value.trim();
-
-    prevTitle.textContent = name || 'מסמך';
-    prevMeta.textContent = lead?.name ? ('לקוח: ' + (lead.name||'')) : 'בחר ליד להצגה';
-
-    if(url){
-      frame.src = url;
-      openExternal.href = url;
-      openExternal.style.display = 'inline';
-    }else{
-      frame.src = 'about:blank';
-      openExternal.href = '#';
-      openExternal.style.display = 'none';
-    }
-  }
-
-  function encodePayload(obj){
-    const json = JSON.stringify(obj);
-    return btoa(unescape(encodeURIComponent(json)));
-  }
-  function decodePayload(str){
-    const json = decodeURIComponent(escape(atob(str)));
-    return JSON.parse(json);
-  }
-
-  function buildMirrorLink(){
-    const leadId = sel.value;
-    const lead = (window.appState?.leads || []).find(l=>l.id===leadId) || null;
-
-    const payload = {
-      v: 1,
-      lead: lead ? {
-        name: lead.name||'',
-        phone: lead.phone||'',
-        email: lead.email||'',
-        status: lead.status||'',
-        source: lead.source||'',
-        owner: lead.owner||''
-      } : null,
-      offerName: offerName.value.trim() || '',
-      pdfUrl: pdfUrl.value.trim() || ''
-    };
-
-    const data = encodePayload(payload);
-    const base = location.origin + location.pathname;
-    return base + '?mirror=1&data=' + encodeURIComponent(data);
-  }
-
-  async function copyText(txt){
-    try{
-      await navigator.clipboard.writeText(txt);
-      if(window.toast) toast('הועתק ✅');
-      else alert('הועתק ✅');
-    }catch(e){
-      // fallback
-      const ta = document.createElement('textarea');
-      ta.value = txt;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-      if(window.toast) toast('הועתק ✅');
-      else alert('הועתק ✅');
-    }
-  }
-
-  function requestFull(el){
-    const target = el || document.documentElement;
-    const rfs = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
-    if(rfs) rfs.call(target);
-  }
-
-  // Wire events
-  openBtn?.addEventListener('click', ()=>{ show(); setTimeout(()=> sel.focus(), 0); });
-  closeBtn?.addEventListener('click', hide);
-  doneBtn?.addEventListener('click', hide);
-  clearBtn?.addEventListener('click', ()=>{
-    sel.value = '';
-    offerName.value = '';
-    pdfUrl.value = '';
-    setKV(null);
-    prevTitle.textContent = 'לא נבחר מסמך';
-    prevMeta.textContent = 'בחר ליד ומסמך';
-    frame.src = 'about:blank';
-    openExternal.style.display = 'none';
-  });
-
-  modal?.addEventListener('click', (e)=>{ if(e.target===modal) hide(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal?.classList.contains('show')) hide(); });
-
-  sel?.addEventListener('change', ()=> applyPreview());
-  btnApply?.addEventListener('click', ()=> applyPreview());
-  btnCopy?.addEventListener('click', ()=> copyText(buildMirrorLink()));
-  btnOpen?.addEventListener('click', ()=> window.open(buildMirrorLink(), '_blank', 'noopener'));
-  btnFull?.addEventListener('click', ()=> requestFull(document.querySelector('#mirrorModal .modalCard')));
-
-  // Hook into setView if exists
-  const _setView = window.setView;
-  if(typeof _setView === 'function'){
-    window.setView = function(view){
-      const r = _setView.apply(this, arguments);
-      if(view === 'mirror') show();
-      return r;
-    }
-  }
-
-  // ===== Standalone Mode (link view) =====
-  const params = new URLSearchParams(location.search);
-  const isMirror = params.get('mirror') === '1';
-  const dataParam = params.get('data');
-
-  const standalone = document.getElementById('mirrorStandalone');
-  if(isMirror && dataParam && standalone){
-    let payload = null;
-    try{ payload = decodePayload(decodeURIComponent(dataParam)); }catch(e){ payload = null; }
-
-    // hide app shell for clean view
-    try{
-      document.querySelector('.app')?.setAttribute('style','display:none');
-      document.body.style.background = '#fff7e6';
-    }catch(e){}
-
-    standalone.classList.add('show');
-
-    const kvEl = document.getElementById('mirrorS_KV');
-    const docTitle = document.getElementById('mirrorS_DocTitle');
-    const docMeta = document.getElementById('mirrorS_DocMeta');
-    const sFrame = document.getElementById('mirrorS_Frame');
-    const sOpen = document.getElementById('mirrorS_Open');
-    const sFull = document.getElementById('mirrorS_Full');
-
-    const lead = payload?.lead || null;
-    const pairs = [
-      ['שם', lead?.name || '—'],
-      ['ת.ז', lead?.tz || lead?.idNumber || '—'],
-      ['טלפון', lead?.phone || '—'],
-      ['אימייל', lead?.email || '—'],
-      ['סטטוס', lead?.status || '—'],
-      ['מקור', lead?.source || '—'],
-      ['בעלים', lead?.owner || '—'],
-    ];
-    kvEl.innerHTML = pairs.map(([k,v])=> `<div>${esc(k)}</div><div>${esc(v)}</div>`).join('');
-
-    docTitle.textContent = payload?.offerName || 'מסמך';
-    docMeta.textContent = lead?.name ? ('לקוח: ' + lead.name) : '—';
-
-    const url = payload?.pdfUrl || '';
-    if(url){
-      sFrame.src = url;
-      sOpen.href = url;
-      sOpen.style.display = 'inline-flex';
-    }else{
-      sFrame.src = 'about:blank';
-      sOpen.style.display = 'none';
-    }
-
-    sFull?.addEventListener('click', ()=> requestFull(standalone));
-  }
-
-})();
-</script>
-
-
-<script>
-/* ===== Mirror Talk Script Logic ===== */
-(function(){
-  const modal = document.getElementById('mirrorScriptModal');
-  if(!modal) return;
-
-  const openBtn = document.getElementById('mirrorScriptOpen');
-  const closeBtn = document.getElementById('mirrorScriptClose');
-  const doneBtn = document.getElementById('mirrorScriptDone');
-
-  const badge = document.getElementById('mirrorScriptLeadBadge');
-  const ta = document.getElementById('mirrorScriptText');
-
-  const btnCopy = document.getElementById('mirrorScriptCopy');
-  const btnClear = document.getElementById('mirrorScriptClear');
-  const btnFull = document.getElementById('mirrorScriptFull');
-
-  const mirrorLeadSelect = document.getElementById('mirrorLeadSelect');
-
-  function getLead(){
-    const leadId = mirrorLeadSelect?.value || "";
-    const lead = (window.appState?.leads || []).find(l=>l.id===leadId) || null;
-    return { leadId, lead };
-  }
-
-  function keyForLead(leadId){
-    return "LEADUP_MIRROR_SCRIPT_" + (leadId || "DEFAULT");
-  }
-
-  function show(){
-    const { leadId, lead } = getLead();
-    badge.textContent = "לקוח: " + (lead?.name || "—");
-    try{ ta.value = localStorage.getItem(keyForLead(leadId)) || ""; }catch(e){}
-    modal.classList.add('show');
-    setTimeout(()=> ta?.focus(), 0);
-  }
-
-  function hide(){
-    modal.classList.remove('show');
-  }
-
-  function saveDraft(){
-    const { leadId } = getLead();
-    try{ localStorage.setItem(keyForLead(leadId), ta.value || ""); }catch(e){}
-  }
-
-  openBtn?.addEventListener('click', show);
-  closeBtn?.addEventListener('click', hide);
-  doneBtn?.addEventListener('click', hide);
-
-  ta?.addEventListener('input', saveDraft);
-
-  btnCopy?.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(ta.value || "");
-      window.toast?.("הטקסט הועתק 📋");
-    }catch(e){
-      alert("לא ניתן להעתיק בדפדפן הזה. נסה Ctrl+C");
-    }
-  });
-
-  btnClear?.addEventListener('click', ()=>{
-    ta.value = "";
-    saveDraft();
-    window.toast?.("נוקה");
-  });
-
-  btnFull?.addEventListener('click', ()=>{
-    const card = modal.querySelector('.modalCard');
-    if(window.requestFull && card) window.requestFull(card);
-  });
-
-  modal.addEventListener('click', (e)=>{
-    if(e.target === modal) hide();
-  });
-
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape' && modal.classList.contains('show')) hide();
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Mirror Steps -> preload script templates ===== */
-(function(){
-  const wrap = document.getElementById('mirrorModal');
-  if(!wrap) return;
-
-  const openScriptBtn = document.getElementById('mirrorScriptOpen');
-  const scriptModal = document.getElementById('mirrorScriptModal');
-  const scriptText = document.getElementById('mirrorScriptText');
-
-  function leadName(){
-    const leadId = document.getElementById('mirrorLeadSelect')?.value || "";
-    const lead = (window.appState?.leads || []).find(l=>l.id===leadId);
-    return lead?.name || "הלקוח";
-  }
-
-  const templates = {
-    open: (n)=>`פתיחה והזדהות\n- שלום ${n}, מדבר/ת ___ מ-LEADUP.\n- אני מבצע/ת עכשיו שיקוף קצר כדי לוודא שהכל ברור לפני שמתקדמים.\n`,
-    needs:(n)=>`איסוף צרכים ואימות פרטים\n- רק מאשר/ת פרטים: שם, טלפון, אימייל.\n- הצורך שלך הוא: ___\n- יש דגשים/מצבים מיוחדים שחשוב לדעת? ___\n`,
-    offer:(n)=>`הצגת ההצעה ומה היא כוללת\n- ${n}, ההצעה שאנחנו מציגים כוללת: \n  1) ___\n  2) ___\n  3) ___\n- תקופת הכיסוי/תנאים עיקריים: ___\n`,
-    price:(n)=>`מחיר, תשלום והחרגות\n- המחיר הוא ___ (כולל/לא כולל ___).\n- אופן תשלום: ___ (תשלומים/חיוב חודשי/שנתי).\n- החרגות/הסתייגויות עיקריות: ___\n`,
-    confirm:(n)=>`אישור הלקוח והמשך תהליך\n- האם הכל ברור? יש שאלות?\n- אם מאשרים, השלב הבא הוא: ___\n- אני שולח/ת עכשיו סיכום במסמך/קישור.\n`,
-    close:(n)=>`סיכום, שאלות והודעת המשך\n- לסיכום: הצעה ___, מחיר ___, תוקף עד ___.\n- אשלח לך עכשיו את המסמך להצגה/הצעה, ואם תרצה נשלים את התהליך.\n- תודה ${n}!\n`
-  };
-
-  function showScriptWith(text){
-    // open modal
-    if(scriptModal) scriptModal.classList.add('show');
-    if(scriptText){
-      scriptText.value = text;
-      scriptText.dispatchEvent(new Event('input')); // trigger autosave
-      setTimeout(()=> scriptText.focus(), 0);
-    }
-  }
-
-  wrap.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.mirrorStepBtn');
-    if(!btn) return;
-    const step = btn.getAttribute('data-step');
-    const n = leadName();
-    const tmpl = templates[step] ? templates[step](n) : "";
-    // if user wants to append instead of replace:
-    if(scriptText && scriptText.value && scriptText.value.trim()){
-      const add = "\n\n" + tmpl;
-      showScriptWith(scriptText.value + add);
-    }else{
-      showScriptWith(tmpl);
-    }
-  });
-})();
-</script>
-
-<!-- ===== Client Dossier (Internal Fullscreen) ===== -->
-<div id="clientDossierModal" class="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="clientDossierTitle">
-  <div class="modalCard">
-    <div class="modalHead">
-      <div>
-        <div id="clientDossierTitle" class="title">תיק לקוח</div>
-        <div id="clientDossierSub" class="sub">פרטי לקוח, משימות, היסטוריה, מסמכים וחתימות</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="btn" id="clientDossierBackBtn">⬅️ חזרה ללידים</button>
-        <button class="btnGhost" id="clientDossierCloseBtn" aria-label="סגור">✕ סגור</button>
-      </div>
-    </div>
-
-    <div class="clientTabs" id="clientTabs">
-      <button class="tabBtn active" data-tab="details">פרטים</button>
-      <button class="tabBtn" data-tab="tasks">משימות</button>
-      <button class="tabBtn" data-tab="history">היסטוריה</button>
-      <button class="tabBtn" data-tab="docs">מסמכים</button>
-      <button class="tabBtn" data-tab="sign">חתימות</button>
-    </div>
-
-    <div class="modalBody">
-      <div id="clientTab_details" class="clientSection show"></div>
-      <div id="clientTab_tasks" class="clientSection"></div>
-      <div id="clientTab_history" class="clientSection"></div>
-      <div id="clientTab_docs" class="clientSection"></div>
-      <div id="clientTab_sign" class="clientSection"></div>
-    </div>
-  </div>
-</div>
-
-
-<script>
-(function(){
-  if(!btn) return;
-
-  function applyTheme(theme){
-    try{
-      document.documentElement.setAttribute("data-theme", theme);
-      localStorage.setItem("leadup_theme", theme);
-    }catch(e){
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-    // nice micro-feedback
-    btn.classList.toggle("goldSoft", theme === "light");
-    btn.classList.toggle("gold", theme === "dark");
-    btn.textContent = (theme === "dark") ? "🌙 מצב כהה" : "☀️ מצב בהיר";
-  }
-
-  // set initial button label based on current attribute
-  const current = document.documentElement.getAttribute("data-theme") || "light";
-  applyTheme(current);
-
-  btn.addEventListener("click", ()=>{
-    const now = document.documentElement.getAttribute("data-theme") || "light";
-    applyTheme(now === "dark" ? "light" : "dark");
-  });
-})();
-</script>
-
-
-<script>
-/* ===== Simple Login Gate Logic =====
-   Default password: 1234
-   You can change it in localStorage key: leadup_password
+/* ===== Login Gate Logic (restored) =====
+   Fix: login buttons were not wired, so entering password couldn't unlock the app.
+   - Default password: 1234  (change DEFAULT_PASSWORD below if you want)
+   - Remembers login per-tab (sessionStorage) so refresh doesn't ask again.
 */
 (function(){
-  const DEFAULT_PASSWORD = "2002";   // <-- change here if you want
-  const PASS_KEY = "leadup_password";
-  const AUTH_KEY = "leadup_authed_session";
+  const DEFAULT_PASSWORD = "1234";            // <-- שנה כאן אם תרצה סיסמה אחרת
+  const PASS_KEY = "leadup_password";         // optional: store custom password
+  const AUTH_KEY = "leadup_auth_ok";          // session flag
 
-  if(!localStorage.getItem(PASS_KEY)){
-    localStorage.setItem(PASS_KEY, DEFAULT_PASSWORD);
-  }
-
-  const gate  = document.getElementById("loginGate");
-  const input = document.getElementById("loginPassword");
-  const btn   = document.getElementById("loginBtn");
-  const err   = document.getElementById("loginError");
-  const tog   = document.getElementById("loginToggle");
-
-  // toggle password visibility
-  if(tog){
-    tog.addEventListener("click", ()=>{
-      input.type = (input.type === "password") ? "text" : "password";
-      tog.textContent = (input.type === "password") ? "👁️" : "🙈";
-      input.focus();
-    });
-  }
+  const $ = (sel)=>document.querySelector(sel);
 
   function unlock(){
-    sessionStorage.setItem(AUTH_KEY, "1");
-    gate.style.display = "none";
     document.documentElement.classList.remove("authPending");
+    const gate = $(".loginGate");
+    if(gate) gate.style.display = "none";
+    try{ sessionStorage.setItem(AUTH_KEY,"1"); }catch(_){}
   }
 
   function lock(){
-    sessionStorage.removeItem(AUTH_KEY);
-    gate.style.display = "flex";
     document.documentElement.classList.add("authPending");
-    input.value = "";
+    const gate = $(".loginGate");
+    if(gate) gate.style.display = "flex";
+    try{ sessionStorage.removeItem(AUTH_KEY); }catch(_){}
   }
 
-  if(sessionStorage.getItem(AUTH_KEY) === "1"){
-    unlock();
+  function getPassword(){
+    try{
+      const stored = localStorage.getItem(PASS_KEY);
+      return (stored && stored.trim()) ? stored.trim() : DEFAULT_PASSWORD;
+    }catch(_){
+      return DEFAULT_PASSWORD;
+    }
   }
 
-  function tryLogin(){
-    const pass = input.value || "";
-    const real = localStorage.getItem(PASS_KEY);
-    if(pass === real){
-      err.textContent = "";
+  function setError(msg){
+    const el = $("#loginError");
+    if(el) el.textContent = msg || "";
+  }
+
+  function attempt(){
+    const inp = $("#loginPassword");
+    const val = (inp?.value || "").trim();
+    if(!val){
+      setError("נא להזין סיסמה");
+      inp?.focus();
+      return;
+    }
+    if(val === getPassword()){
+      setError("");
+      unlock();
+      return;
+    }
+    setError("סיסמה שגויה");
+    if(inp){ inp.value=""; inp.focus(); }
+  }
+
+  // If already authenticated in this tab, unlock immediately
+  try{
+    if(sessionStorage.getItem(AUTH_KEY)==="1"){
       unlock();
     }else{
-      err.textContent = "❌ סיסמה שגויה";
+      lock();
     }
+  }catch(_){
+    lock();
   }
 
-  btn.addEventListener("click", tryLogin);
-  input.addEventListener("keydown", (e)=>{
-    if(e.key === "Enter") tryLogin();
+  // Wire UI
+  window.addEventListener("DOMContentLoaded", ()=>{
+    const btn = $("#loginBtn");
+    const inp = $("#loginPassword");
+    const tog = $("#loginToggle");
+
+    if(btn) btn.addEventListener("click", attempt);
+    if(inp) inp.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){ e.preventDefault(); attempt(); }
+    });
+    if(tog && inp){
+      tog.addEventListener("click", ()=>{
+        inp.type = (inp.type==="password") ? "text" : "password";
+      });
+    }
   });
 
-  window.lockSystem = lock;
-})();
-</script>
-
-<script>
-/* ===== Auto Lock (Idle Timeout) =====
-   Locks the system after X minutes of inactivity.
-   Uses window.lockSystem() that already exists in your code.
-*/
-(function(){
-  const IDLE_MINUTES = 1440; // ⬅️ שנה כאן את הזמן (בדקות)
-  const IDLE_MS = IDLE_MINUTES * 60 * 1000;
-
-  let t = null;
-
-  function resetTimer(){
-    if(t) clearTimeout(t);
-    t = setTimeout(()=>{
-      try{
-        if(sessionStorage.getItem("leadup_authed_session") === "1"){
-          window.lockSystem && window.lockSystem();
-          window.toast && window.toast("המערכת ננעלה עקב חוסר פעילות", "warn");
-        }
-      }catch(e){}
-    }, IDLE_MS);
-  }
-
-  ["mousemove","mousedown","keydown","touchstart","scroll"].forEach(ev=>{
-    document.addEventListener(ev, resetTimer, {passive:true});
-  });
-
-  document.addEventListener("visibilitychange", ()=>{
-    if(!document.hidden) resetTimer();
-  });
-
-  resetTimer();
-})();
-</script>
-
-
-
-
-<script>
-/* ===== Mirror Find Lead (Hotfix Re-bind) =====
-   Fixes frozen TZ/Phone/Name buttons by (re)binding listeners safely
-   even if an earlier script block threw an error.
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-
-  function norm(s){ return String(s||"").trim().toLowerCase(); }
-  function digits(s){ return String(s||"").replace(/\D/g,""); }
-
-  function getLeads(){
+  // Expose simple helpers (optional)
+  window.LEADUP_AUTH = { unlock, lock, setPassword:(p)=>{
     try{
-      if(window.appState && Array.isArray(window.appState.leads)) return window.appState.leads;
-    }catch(e){}
-    try{
-      const raw = localStorage.getItem("leadup_v1");
-      const parsed = raw ? JSON.parse(raw) : null;
-      if(parsed && Array.isArray(parsed.leads)) return parsed.leads;
-    }catch(e){}
-    return [];
-  }
-
-  function toast(msg, type){
-    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
-    try{ alert(msg); }catch(e){}
-  }
-
-  function scoreLead(lead, q, type){
-    const qq = norm(q);
-    const qd = digits(q);
-    if(!qq) return 0;
-
-    if(type === "tz"){
-      const v = digits(lead.tz || lead.idNumber || lead.tzNumber || lead.idnum || lead.idNum || "");
-      if(!qd) return 0;
-      if(v === qd) return 100;
-      if(v.endsWith(qd) || v.includes(qd)) return 70;
-      return 0;
-    }
-
-    if(type === "phone"){
-      const vRaw = digits(lead.phone || lead.phoneNumber || lead.mobile || lead.tel || "");
-      if(!qd) return 0;
-
-      const variants = new Set([qd]);
-      if(qd.startsWith("0") && qd.length >= 9){
-        variants.add(qd.slice(1));
-        variants.add("972"+qd.slice(1));
-      }
-      if(qd.startsWith("972") && qd.length >= 11){
-        variants.add("0"+qd.slice(3));
-      }
-
-      const vVariants = new Set([vRaw]);
-      if(vRaw.startsWith("972") && vRaw.length >= 11){
-        vVariants.add("0"+vRaw.slice(3));
-      }
-      if(vRaw.startsWith("0") && vRaw.length >= 9){
-        vVariants.add("972"+vRaw.slice(1));
-        vVariants.add(vRaw.slice(1));
-      }
-
-      for(const vv of vVariants){
-        for(const qx of variants){
-          if(vv === qx) return 100;
-        }
-      }
-      for(const vv of vVariants){
-        for(const qx of variants){
-          if(vv.endsWith(qx) || vv.includes(qx)) return 70;
-        }
-      }
-      return 0;
-    }
-
-    // name
-    const v = norm(lead.name || "");
-    if(v === qq) return 100;
-    if(v.startsWith(qq)) return 80;
-    if(v.includes(qq)) return 60;
-    return 0;
-  }
-
-  function findLead(q, type){
-    const leads = getLeads();
-    let best=null, bestScore=0;
-    for(const l of leads){
-      const s = scoreLead(l, q, type);
-      if(s > bestScore){ bestScore = s; best = l; }
-    }
-    return (bestScore > 0) ? best : null;
-  }
-
-  onReady(function(){
-    const wrap = document.getElementById("mirrorModal");
-    const findTypeWrap = document.getElementById("mirrorFindType");
-    const findQ = document.getElementById("mirrorFindQ");
-    const findBtn = document.getElementById("mirrorFindBtn");
-    const sel = document.getElementById("mirrorLeadSelect");
-
-    if(!findTypeWrap || !findQ || !findBtn) return;
-
-    let mirrorFindType = (findTypeWrap.querySelector(".segBtn.active")?.dataset?.type) || "tz";
-
-    function setPlaceholder(){
-      findQ.placeholder = mirrorFindType==="tz" ? "הקלד ת.ז…" :
-                          (mirrorFindType==="phone" ? "הקלד טלפון…" : "הקלד שם…");
-    }
-    setPlaceholder();
-
-    // Re-bind type buttons (capture phase to win over any broken listeners)
-    findTypeWrap.addEventListener("click", function(e){
-      const b = e.target.closest(".segBtn");
-      if(!b) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      findTypeWrap.querySelectorAll(".segBtn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      mirrorFindType = b.dataset.type || "tz";
-      setPlaceholder();
-      findQ.focus();
-    }, true);
-
-    function applySelection(lead){
-      if(!lead) return false;
-      if(sel){
-        const id = lead.id || lead._id || lead.uuid || lead.key || "";
-        if(id){
-          if(!sel.querySelector('option[value="'+String(id).replace(/"/g,'&quot;')+'"]')){
-            const opt = document.createElement("option");
-            opt.value = id;
-            opt.textContent = lead.name || "לקוח";
-            sel.appendChild(opt);
-          }
-          sel.value = id;
-          sel.dispatchEvent(new Event("change", {bubbles:true}));
-        }
-      }
-      // advance wizard step if present
-      const pill2 = document.getElementById("mwPill2");
-      const step2 = document.getElementById("mwStep2");
-      const step1 = document.getElementById("mwStep1");
-      if(pill2 && step2 && step1){
-        try{
-          step1.classList.remove("show");
-          step2.classList.add("show");
-          document.querySelectorAll("#mirrorModal .stepItem").forEach(x=>x.classList.remove("active"));
-          pill2.classList.add("active");
-        }catch(e){}
-      }
+      localStorage.setItem(PASS_KEY, String(p||"").trim());
       return true;
-    }
-
-    function doFind(){
-      const q = findQ.value || "";
-      const lead = findLead(q, mirrorFindType);
-      if(!lead){
-        toast("לא נמצא לקוח מתאים. נסה שוב.", "warn");
-        return;
-      }
-      try{
-        if(typeof window.applyLeadSelection === "function"){
-          window.applyLeadSelection(lead);
-        }else{
-          applySelection(lead);
-        }
-      }catch(e){
-        applySelection(lead);
-      }
-      toast("נטען לקוח: " + (lead.name||"—"), "ok");
-    }
-
-    findBtn.addEventListener("click", function(e){ e.preventDefault(); doFind(); });
-    findQ.addEventListener("keydown", function(e){
-      if(e.key === "Enter"){ e.preventDefault(); doFind(); }
-    });
-
-    if(wrap){
-      const obs = new MutationObserver(()=>setPlaceholder());
-      obs.observe(wrap, {attributes:true, attributeFilter:["class"]});
-    }
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Mirror Step 2: Document Preview Fix =====
-   - Fixes frozen "הצג מסמך" by binding listeners in a clean standalone script.
-   - Loads the selected company's associated PDF (from local browser library or URL field)
-   - Renders the PDF fully inside the left/right preview iframe (#mirrorFrame) within the system.
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-
-  const PDF_LIB_KEY = "leadup_pdf_library_v1";
-
-  function loadLib(){
-    try{ return JSON.parse(localStorage.getItem(PDF_LIB_KEY) || "{}") || {}; }
-    catch(e){ return {}; }
-  }
-  function saveLib(lib){
-    try{ localStorage.setItem(PDF_LIB_KEY, JSON.stringify(lib)); }catch(e){}
-  }
-  function toast(msg, type){
-    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
-    try{ alert(msg); }catch(e){}
-  }
-  function normName(s){
-    return (s||"").toString().trim()
-      .replace(/\.(pdf)$/i,"")
-      .replace(/[\s_]+/g," ")
-      .replace(/[–—]/g,"-")
-      .trim();
-  }
-  function matchOptionKey(companySel, baseName){
-    const base = normName(baseName);
-    const opts = Array.from(companySel.options).map(o=>o.value).filter(Boolean);
-    for(const v of opts){
-      const nv = normName(v);
-      if(!nv) continue;
-      if(base.includes(nv) || nv.includes(base)) return v;
-    }
-    return "";
-  }
-
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    if(!modal) return;
-
-    const companySel = document.getElementById("mirrorCompanySelect");
-    const pdfUpload  = document.getElementById("mirrorPdfUpload");
-    const offerName  = document.getElementById("mirrorOfferName");
-    const pdfUrl     = document.getElementById("mirrorPdfUrl");
-
-    const btnApply   = document.getElementById("mirrorApply");
-    const btnCopy    = document.getElementById("mirrorCopyLink");
-    const btnOpen    = document.getElementById("mirrorOpenLink");
-    const openExtA   = document.getElementById("mirrorOpenExternal");
-
-    const frame      = document.getElementById("mirrorFrame");
-    const prevTitle  = document.getElementById("mirrorPrevTitle");
-    const prevMeta   = document.getElementById("mirrorPrevMeta");
-
-    if(!companySel || !pdfUrl || !btnApply || !frame) return;
-
-    let lib = loadLib();
-
-    function setFrame(url){
-      const clean = (url||"").trim();
-      if(!clean){
-        frame.src = "about:blank";
-        if(prevMeta) prevMeta.textContent = "בחר מסמך להצגה";
-        if(openExtA){ openExtA.style.display = "none"; openExtA.href = "#"; }
-        return;
-      }
-
-      // Prefer embedding as-is; if browser blocks, user can open externally.
-      frame.src = clean;
-
-      if(openExtA){
-        openExtA.href = clean;
-        openExtA.style.display = "inline-flex";
-      }
-    }
-
-    function applyFromUI(){
-      const key = (companySel.value || "").trim();
-      const name = (offerName?.value || key || "מסמך").trim();
-      const url = (pdfUrl.value || "").trim();
-
-      if(prevTitle) prevTitle.textContent = name || "מסמך";
-      if(prevMeta)  prevMeta.textContent  = key ? ("חברה/מסמך: " + key) : "מסמך";
-
-      if(!url || url.length < 7){
-        toast("צריך להדביק קישור PDF/מסמך או לבחור מסמך שיש לו שיוך.", "warn");
-        return;
-      }
-
-      setFrame(url);
-      toast("המסמך נטען בתצוגה ✅", "ok");
-    }
-
-    // Bind: show document
-    btnApply.addEventListener("click", function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      applyFromUI();
-    });
-
-    // Bind: copy/open
-    if(btnCopy){
-      btnCopy.addEventListener("click", async function(e){
-        e.preventDefault();
-        const url = (pdfUrl.value || "").trim();
-        if(!url){ toast("אין קישור להעתקה", "warn"); return; }
-        try{
-          await navigator.clipboard.writeText(url);
-          toast("הקישור הועתק 📋", "ok");
-        }catch(err){
-          try{ prompt("העתק קישור:", url); }catch(e2){}
-        }
-      });
-    }
-    if(btnOpen){
-      btnOpen.addEventListener("click", function(e){
-        e.preventDefault();
-        const url = (pdfUrl.value || "").trim();
-        if(!url){ toast("אין קישור לפתיחה", "warn"); return; }
-        window.open(url, "_blank", "noopener");
-      });
-    }
-
-    // Auto-fill from library on company change
-    companySel.addEventListener("change", function(){
-      const key = (companySel.value || "").trim();
-      if(!key) return;
-
-      if(offerName) offerName.value = key;
-
-      lib = loadLib();
-      const libUrl = lib[key] || "";
-      if(libUrl){
-        pdfUrl.value = libUrl;
-      }
-      // Auto-preview immediately to match your request
-      if((pdfUrl.value || "").trim()){
-        applyFromUI();
-      }else{
-        // still update title/meta
-        if(prevTitle) prevTitle.textContent = key;
-        if(prevMeta)  prevMeta.textContent  = "חברה/מסמך: " + key;
-      }
-    });
-
-    // Upload PDFs and bind to selected option (or match by filename)
-    if(pdfUpload){
-      pdfUpload.addEventListener("change", function(){
-        const files = Array.from(pdfUpload.files || []);
-        if(!files.length) return;
-
-        files.forEach(function(file){
-          const maxBytes = 8 * 1024 * 1024; // safer limit (still may fail in some browsers)
-          if(file.size > maxBytes){
-            toast('הקובץ "'+file.name+'" גדול מדי לשמירה מקומית. מומלץ להעלות לריפו ולהדביק URL במקום.', "warn");
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = function(){
-            lib = loadLib();
-            const base = normName(file.name);
-            const matched = matchOptionKey(companySel, base);
-            const key = matched || (companySel.value || base) || base;
-            lib[key] = reader.result;
-            saveLib(lib);
-
-            toast("ה‑PDF נשמר ושויך ל: " + key + " ✅", "ok");
-
-            // If currently selected, load it now
-            if((companySel.value || "").trim() === key){
-              if(offerName) offerName.value = key;
-              pdfUrl.value = reader.result;
-              applyFromUI();
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-      });
-    }
-
-    // Make sure iframe shows full page
-    try{
-      const wrap = frame.closest(".frameWrap");
-      if(wrap){
-        wrap.style.height = "calc(100vh - 260px)";
-      }
-      frame.style.width = "100%";
-      frame.style.height = "100%";
-    }catch(e){}
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Mirror Apply Button (Capture Hotfix) =====
-   Ensures "הצג מסמך" always responds even if other handlers interfere.
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  function toast(msg, type){
-    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
-    try{ alert(msg); }catch(e){}
-  }
-  onReady(function(){
-    const btn = document.getElementById("mirrorApply");
-    const pdfUrl = document.getElementById("mirrorPdfUrl");
-    const frame = document.getElementById("mirrorFrame");
-    const openExtA = document.getElementById("mirrorOpenExternal");
-    if(btn){
-      btn.style.cursor = "pointer";
-      btn.style.pointerEvents = "auto";
-    }
-    function doApply(){
-      const url = (pdfUrl?.value || "").trim();
-      if(!url){
-        toast("אין קישור/מסמך להצגה. בחר מסמך או העלה PDF.", "warn");
-        return;
-      }
-      if(frame) frame.src = url;
-      if(openExtA){
-        openExtA.href = url;
-        openExtA.style.display = "inline-flex";
-      }
-      toast("המסמך נטען ✅", "ok");
-    }
-
-    // Capture-phase global click handler to bypass interference
-    document.addEventListener("click", function(e){
-      const t = e.target && (e.target.closest ? e.target.closest("#mirrorApply") : null);
-      if(!t) return;
-      e.preventDefault();
-      e.stopPropagation();
-      doApply();
-    }, true);
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== DOC ONLY MODE Toggle Logic ===== */
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    if(!modal) return;
-
-    const exitBtn = document.getElementById("mirrorDocOnlyExit");
-    const applyBtn = document.getElementById("mirrorApply");
-    const companySel = document.getElementById("mirrorCompanySelect");
-    const pdfUrl = document.getElementById("mirrorPdfUrl");
-    const frame = document.getElementById("mirrorFrame");
-
-    function enterDocOnly(){
-      modal.classList.add("docOnly");
-    }
-    function exitDocOnly(){
-      modal.classList.remove("docOnly");
-    }
-
-    // Exit handlers
-    exitBtn && exitBtn.addEventListener("click", (e)=>{ e.preventDefault(); exitDocOnly(); });
-    document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && modal.classList.contains("docOnly")) exitDocOnly();
-    });
-
-    // Enter doc-only only after a real document is loaded
-    function maybeEnter(){
-      const url = (pdfUrl?.value || "").trim();
-      if(!url) return;
-      // small delay to let iframe set src
-      setTimeout(()=>enterDocOnly(), 50);
-    }
-
-    // When user clicks "הצג מסמך" -> enter doc-only after load
-    applyBtn && applyBtn.addEventListener("click", ()=>{ maybeEnter(); });
-
-    // If selection auto-loads the doc, also enter
-    companySel && companySel.addEventListener("change", ()=>{ 
-      // if your code auto-loads, we can enter; otherwise wait for apply
-      setTimeout(()=>{
-        const url = (pdfUrl?.value || "").trim();
-        if(url) {
-          // ensure iframe src is set if it wasn't
-          if(frame && frame.src !== url) frame.src = url;
-          enterDocOnly();
-        }
-      }, 150);
-    });
-
-    // Safety: if iframe ends up blank, exit doc-only
-    if(frame){
-      frame.addEventListener("load", ()=>{
-        try{
-          const src = frame.getAttribute("src") || "";
-          if(!src || src === "about:blank") exitDocOnly();
-        }catch(e){}
-      });
-    }
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Fix: "הצג מסמך" must NOT close Mirror modal =====
-   Symptoms: clicking "הצג מסמך" closes the mirror window and returns to main screen.
-   Fix:
-   - Capture click on #mirrorApply, stop propagation (bypass any existing handlers that call hide()).
-   - Ensure the modal stays open and switch to docOnly fullscreen view.
-   - Also prevent overlay click-to-close while in docOnly mode.
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  function toast(msg, type){
-    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
-    try{ alert(msg); }catch(e){}
-  }
-
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    const applyBtn = document.getElementById("mirrorApply");
-    const pdfUrl = document.getElementById("mirrorPdfUrl");
-    const frame = document.getElementById("mirrorFrame");
-    const openExtA = document.getElementById("mirrorOpenExternal");
-
-    if(!modal || !applyBtn || !pdfUrl || !frame) return;
-
-    function enterDocOnly(url){
-      // keep mirror visible (some scripts remove .show / mirrorFS)
-      try{
-        modal.classList.add("show");
-        document.body.classList.add("mirrorFS");
-      }catch(e){}
-      try{
-        modal.classList.add("docOnly");
-      }catch(e){}
-      // set iframe last
-      frame.src = url;
-      if(openExtA){
-        openExtA.href = url;
-        openExtA.style.display = "inline-flex";
-      }
-    }
-
-    // Strong capture handler to override any existing click handlers
-    document.addEventListener("click", function(e){
-      const btn = e.target && e.target.closest ? e.target.closest("#mirrorApply") : null;
-      if(!btn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const url = (pdfUrl.value || "").trim();
-      if(!url){
-        toast("בחר מסמך / העלה PDF כדי להציג.", "warn");
-        return;
-      }
-      enterDocOnly(url);
-      toast("המסמך נפתח על כל המסך ✅", "ok");
-    }, true);
-
-    // Prevent closing on overlay click while in docOnly
-    modal.addEventListener("click", function(e){
-      if(modal.classList.contains("docOnly")){
-        // don't allow any overlay click-to-close logic to run
-        e.stopPropagation();
-      }
-    }, true);
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Auto Open Document On Selection =====
-   Automatically opens the document in fullscreen when a company/document is selected,
-   removing the need to click "הצג מסמך".
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  function toast(msg, type){
-    try{ window.toast && window.toast(msg, type||"ok"); return; }catch(e){}
-    try{ alert(msg); }catch(e){}
-  }
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    const companySel = document.getElementById("mirrorCompanySelect");
-    const pdfUrl = document.getElementById("mirrorPdfUrl");
-    const frame = document.getElementById("mirrorFrame");
-    const openExtA = document.getElementById("mirrorOpenExternal");
-
-    if(!modal || !companySel || !pdfUrl || !frame) return;
-
-    function openDoc(url){
-      if(!url) return;
-      try{
-        modal.classList.add("show");
-        modal.classList.add("docOnly");
-        document.body.classList.add("mirrorFS");
-      }catch(e){}
-      frame.src = url;
-      if(openExtA){
-        openExtA.href = url;
-        openExtA.style.display = "inline-flex";
-      }
-      toast("המסמך נפתח אוטומטית 📄", "ok");
-    }
-
-    companySel.addEventListener("change", function(){
-      // give time for existing code to update pdfUrl
-      setTimeout(function(){
-        const url = (pdfUrl.value || "").trim();
-        if(url){
-          openDoc(url);
-        }
-      }, 150);
-    });
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Quick Document Switcher Logic ===== */
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    const companySel = document.getElementById("mirrorCompanySelect");
-    const pdfUrl = document.getElementById("mirrorPdfUrl");
-    const frame = document.getElementById("mirrorFrame");
-
-    if(!modal || !companySel || !pdfUrl || !frame) return;
-
-    // Create floating controls
-    let panel = document.getElementById("docQuickSwitch");
-    if(!panel){
-      panel = document.createElement("div");
-      panel.id = "docQuickSwitch";
-      panel.innerHTML = `
-        <button id="docPrev">⬅ מסמך קודם</button>
-        <button id="docNext">מסמך הבא ➡</button>
-      `;
-      document.body.appendChild(panel);
-    }
-
-    function getOptions(){
-      return Array.from(companySel.options).filter(o=>o.value);
-    }
-
-    function openByIndex(idx){
-      const opts = getOptions();
-      if(!opts.length) return;
-      if(idx < 0) idx = opts.length-1;
-      if(idx >= opts.length) idx = 0;
-      companySel.selectedIndex = opts[idx].index;
-      companySel.dispatchEvent(new Event("change",{bubbles:true}));
-    }
-
-    function currentIndex(){
-      const opts = getOptions();
-      const cur = companySel.value;
-      return opts.findIndex(o=>o.value === cur);
-    }
-
-    panel.querySelector("#docPrev").addEventListener("click", ()=>{
-      const idx = currentIndex();
-      openByIndex(idx-1);
-    });
-
-    panel.querySelector("#docNext").addEventListener("click", ()=>{
-      const idx = currentIndex();
-      openByIndex(idx+1);
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener("keydown", (e)=>{
-      if(!modal.classList.contains("docOnly")) return;
-      if(e.key === "ArrowLeft"){
-        e.preventDefault();
-        panel.querySelector("#docPrev").click();
-      }
-      if(e.key === "ArrowRight"){
-        e.preventDefault();
-        panel.querySelector("#docNext").click();
-      }
-    });
-  });
-})();
-</script>
-
-
-
-<script>
-/* ===== Mirror: Prevent "throw out" on company selection =====
-   Fixes: selecting an insurance company/document closes the mirror (returns to main screen).
-   Cause: an overlay click-to-close handler catches the click that opens/closes the <select> dropdown.
-   Fix:
-   - Stop propagation for clicks/mouse downs inside the modal card.
-   - Stop propagation specifically for #mirrorCompanySelect.
-   - Keep modal open (force .show + body mirrorFS) on selection change.
-*/
-(function(){
-  function onReady(fn){
-    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
-    else fn();
-  }
-  onReady(function(){
-    const modal = document.getElementById("mirrorModal");
-    const card  = modal ? modal.querySelector(".modalCard") : null;
-    const companySel = document.getElementById("mirrorCompanySelect");
-
-    if(!modal) return;
-
-    // 1) Never let clicks inside the modal card bubble to overlay closers
-    if(card){
-      ["mousedown","mouseup","click","touchstart"].forEach(ev=>{
-        card.addEventListener(ev, (e)=>{
-          e.stopPropagation();
-        }, true); // capture
-      });
-    }
-
-    // 2) Extra protection for the select element (dropdown clicks)
-    if(companySel){
-      ["mousedown","click","touchstart"].forEach(ev=>{
-        companySel.addEventListener(ev, (e)=>{
-          e.stopPropagation();
-        }, true);
-      });
-
-      companySel.addEventListener("change", ()=>{
-        // force mirror to stay open
-        try{
-          modal.classList.add("show");
-          document.body.classList.add("mirrorFS");
-        }catch(e){}
-      }, true);
-    }
-  });
+    }catch(_){ return false; }
+  }};
 })();
 </script>
 
