@@ -6269,5 +6269,197 @@ function setKV(lead){
 </script>
 
 
+
+
+<script>
+/* ===== Mirror Find Lead (Hotfix Re-bind) =====
+   Fixes frozen TZ/Phone/Name buttons by (re)binding listeners safely
+   even if an earlier script block threw an error.
+*/
+(function(){
+  function onReady(fn){
+    if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+    else fn();
+  }
+
+  function norm(s){ return String(s||"").trim().toLowerCase(); }
+  function digits(s){ return String(s||"").replace(/\D/g,""); }
+
+  function getLeads(){
+    try{
+      if(window.appState && Array.isArray(window.appState.leads)) return window.appState.leads;
+    }catch(e){}
+    try{
+      const raw = localStorage.getItem("leadup_v1");
+      const parsed = raw ? JSON.parse(raw) : null;
+      if(parsed && Array.isArray(parsed.leads)) return parsed.leads;
+    }catch(e){}
+    return [];
+  }
+
+  function toast(msg, type){
+    try{ window.toast && window.toast(msg, type||"warn"); return; }catch(e){}
+    try{ alert(msg); }catch(e){}
+  }
+
+  function scoreLead(lead, q, type){
+    const qq = norm(q);
+    const qd = digits(q);
+    if(!qq) return 0;
+
+    if(type === "tz"){
+      const v = digits(lead.tz || lead.idNumber || lead.tzNumber || lead.idnum || lead.idNum || "");
+      if(!qd) return 0;
+      if(v === qd) return 100;
+      if(v.endsWith(qd) || v.includes(qd)) return 70;
+      return 0;
+    }
+
+    if(type === "phone"){
+      const vRaw = digits(lead.phone || lead.phoneNumber || lead.mobile || lead.tel || "");
+      if(!qd) return 0;
+
+      const variants = new Set([qd]);
+      if(qd.startsWith("0") && qd.length >= 9){
+        variants.add(qd.slice(1));
+        variants.add("972"+qd.slice(1));
+      }
+      if(qd.startsWith("972") && qd.length >= 11){
+        variants.add("0"+qd.slice(3));
+      }
+
+      const vVariants = new Set([vRaw]);
+      if(vRaw.startsWith("972") && vRaw.length >= 11){
+        vVariants.add("0"+vRaw.slice(3));
+      }
+      if(vRaw.startsWith("0") && vRaw.length >= 9){
+        vVariants.add("972"+vRaw.slice(1));
+        vVariants.add(vRaw.slice(1));
+      }
+
+      for(const vv of vVariants){
+        for(const qx of variants){
+          if(vv === qx) return 100;
+        }
+      }
+      for(const vv of vVariants){
+        for(const qx of variants){
+          if(vv.endsWith(qx) || vv.includes(qx)) return 70;
+        }
+      }
+      return 0;
+    }
+
+    // name
+    const v = norm(lead.name || "");
+    if(v === qq) return 100;
+    if(v.startsWith(qq)) return 80;
+    if(v.includes(qq)) return 60;
+    return 0;
+  }
+
+  function findLead(q, type){
+    const leads = getLeads();
+    let best=null, bestScore=0;
+    for(const l of leads){
+      const s = scoreLead(l, q, type);
+      if(s > bestScore){ bestScore = s; best = l; }
+    }
+    return (bestScore > 0) ? best : null;
+  }
+
+  onReady(function(){
+    const wrap = document.getElementById("mirrorModal");
+    const findTypeWrap = document.getElementById("mirrorFindType");
+    const findQ = document.getElementById("mirrorFindQ");
+    const findBtn = document.getElementById("mirrorFindBtn");
+    const sel = document.getElementById("mirrorLeadSelect");
+
+    if(!findTypeWrap || !findQ || !findBtn) return;
+
+    let mirrorFindType = (findTypeWrap.querySelector(".segBtn.active")?.dataset?.type) || "tz";
+
+    function setPlaceholder(){
+      findQ.placeholder = mirrorFindType==="tz" ? "הקלד ת.ז…" :
+                          (mirrorFindType==="phone" ? "הקלד טלפון…" : "הקלד שם…");
+    }
+    setPlaceholder();
+
+    // Re-bind type buttons (capture phase to win over any broken listeners)
+    findTypeWrap.addEventListener("click", function(e){
+      const b = e.target.closest(".segBtn");
+      if(!b) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      findTypeWrap.querySelectorAll(".segBtn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      mirrorFindType = b.dataset.type || "tz";
+      setPlaceholder();
+      findQ.focus();
+    }, true);
+
+    function applySelection(lead){
+      if(!lead) return false;
+      if(sel){
+        const id = lead.id || lead._id || lead.uuid || lead.key || "";
+        if(id){
+          if(!sel.querySelector('option[value="'+String(id).replace(/"/g,'&quot;')+'"]')){
+            const opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = lead.name || "לקוח";
+            sel.appendChild(opt);
+          }
+          sel.value = id;
+          sel.dispatchEvent(new Event("change", {bubbles:true}));
+        }
+      }
+      // advance wizard step if present
+      const pill2 = document.getElementById("mwPill2");
+      const step2 = document.getElementById("mwStep2");
+      const step1 = document.getElementById("mwStep1");
+      if(pill2 && step2 && step1){
+        try{
+          step1.classList.remove("show");
+          step2.classList.add("show");
+          document.querySelectorAll("#mirrorModal .stepItem").forEach(x=>x.classList.remove("active"));
+          pill2.classList.add("active");
+        }catch(e){}
+      }
+      return true;
+    }
+
+    function doFind(){
+      const q = findQ.value || "";
+      const lead = findLead(q, mirrorFindType);
+      if(!lead){
+        toast("לא נמצא לקוח מתאים. נסה שוב.", "warn");
+        return;
+      }
+      try{
+        if(typeof window.applyLeadSelection === "function"){
+          window.applyLeadSelection(lead);
+        }else{
+          applySelection(lead);
+        }
+      }catch(e){
+        applySelection(lead);
+      }
+      toast("נטען לקוח: " + (lead.name||"—"), "ok");
+    }
+
+    findBtn.addEventListener("click", function(e){ e.preventDefault(); doFind(); });
+    findQ.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); doFind(); }
+    });
+
+    if(wrap){
+      const obs = new MutationObserver(()=>setPlaceholder());
+      obs.observe(wrap, {attributes:true, attributeFilter:["class"]});
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
