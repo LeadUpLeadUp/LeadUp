@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -5512,8 +5513,18 @@ function getSelectedLead(){
   function digits(s){ return String(s||"").replace(/\D/g,""); }
 
   function getLeadByQuery(q, type){
-    if(!window.appState || !Array.isArray(window.appState.leads)) return null;
-    const leads = window.appState.leads;
+    // Prefer in-memory state, but if for some reason it isn't available yet (e.g. module order),
+    // fall back to localStorage.
+    let state = (window.appState && Array.isArray(window.appState.leads)) ? window.appState : null;
+    if(!state){
+      try{
+        const raw = localStorage.getItem("leadup_v1");
+        const parsed = raw ? JSON.parse(raw) : null;
+        if(parsed && Array.isArray(parsed.leads)) state = parsed;
+      }catch(e){}
+    }
+    if(!state || !Array.isArray(state.leads)) return null;
+    const leads = state.leads;
     const qq = norm(q);
     const qd = digits(q);
 
