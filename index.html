@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -2902,6 +2900,75 @@ input, select, textarea, button{
 
 <style>
 #mirrorApply{pointer-events:auto !important; opacity:1 !important;}
+</style>
+
+<style>
+/* ===== Mirror: Make document preview use all free area ===== */
+#mirrorModal .modalCard.wide.mirrorPro{
+  width: min(1400px, 96vw) !important;
+  height: 92vh !important;
+  max-height: 92vh !important;
+}
+#mirrorModal .mirrorProBody,
+#mirrorModal .mirrorProGrid{
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+/* Stepper side + preview side sizing */
+#mirrorModal .mirrorProLeft{
+  min-height: 0 !important;
+}
+#mirrorModal .mirrorProRight{
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+/* The preview card should stretch fully */
+#mirrorModal .previewCard{
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Split: keep client card narrow, give doc most space */
+#mirrorModal .previewSplit{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: 340px 1fr !important; /* client | document */
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+/* Client and document cards should stretch */
+#mirrorModal .clientCard,
+#mirrorModal .docCard{
+  min-height: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Make the iframe container fill the remaining height */
+#mirrorModal .docCard .frameWrap{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+/* Make iframe truly full */
+#mirrorModal .docCard .frameWrap iframe,
+#mirrorModal #mirrorFrame{
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  border: 0 !important;
+  display: block !important;
+}
 </style>
 </head>
 
