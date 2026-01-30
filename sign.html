@@ -1,1 +1,129 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>חתימה דיגיטלית • LEADUP</title>
+  <style>
+    body{font-family:Arial,"Noto Sans Hebrew",sans-serif;background:#fff7e6;margin:0;padding:18px}
+    .card{max-width:760px;margin:0 auto;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:16px;padding:14px}
+    canvas{width:100%;height:220px;border:2px dashed rgba(214,178,94,.55);border-radius:14px;background:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    input{flex:1;min-width:200px;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,.12)}
+    button{padding:12px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:800}
+    .gold{background:linear-gradient(135deg,#d6b25e,#f2d27c)}
+    .ghost{background:#f3f3f3}
+    .muted{color:rgba(0,0,0,.6);font-size:13px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 style="margin:0 0 6px">חתימה דיגיטלית</h2>
+    <div class="muted" id="info">טוען פרטים…</div>
+
+    <div style="margin-top:10px">
+      <canvas id="sig"></canvas>
+    </div>
+
+    <div class="row">
+      <input id="name" placeholder="שם החותם" />
+      <button class="ghost" id="clear">נקה חתימה</button>
+      <button class="gold" id="send">שמור ושלח</button>
+    </div>
+
+    <div class="muted" id="status"></div>
+  </div>
+
+<script>
+  // ✅ PUT YOUR APPS SCRIPT WEB APP URL:
+  const API = "PASTE_YOUR_WEB_APP_URL_HERE";
+
+  const qs = new URLSearchParams(location.search);
+  const token = qs.get("t");
+
+  const info = document.getElementById("info");
+  const statusEl = document.getElementById("status");
+  const nameEl = document.getElementById("name");
+
+  // Canvas signature
+  const c = document.getElementById("sig");
+  const ctx = c.getContext("2d");
+  function resize(){
+    const r = c.getBoundingClientRect();
+    c.width = Math.floor(r.width * devicePixelRatio);
+    c.height = Math.floor(r.height * devicePixelRatio);
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#111";
+  }
+  resize(); addEventListener("resize", ()=>location.reload());
+
+  let drawing=false, last=null;
+  function pos(e){
+    const r=c.getBoundingClientRect();
+    const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+    return {x,y};
+  }
+  function start(e){ drawing=true; last=pos(e); e.preventDefault(); }
+  function move(e){
+    if(!drawing) return;
+    const p=pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+    last=p; e.preventDefault();
+  }
+  function end(){ drawing=false; last=null; }
+
+  c.addEventListener("mousedown", start);
+  addEventListener("mousemove", move);
+  addEventListener("mouseup", end);
+  c.addEventListener("touchstart", start, {passive:false});
+  c.addEventListener("touchmove", move, {passive:false});
+  c.addEventListener("touchend", end);
+
+  document.getElementById("clear").onclick = ()=>{
+    ctx.clearRect(0,0,c.width,c.height);
+    statusEl.textContent = "";
+  };
+
+  async function api(action, payload){
+    const res = await fetch(API, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({action, ...payload})
+    });
+    return await res.json();
+  }
+
+  (async ()=>{
+    if(!token){
+      info.textContent = "קישור לא תקין (חסר token).";
+      return;
+    }
+    const data = await api("get", {token});
+    if(!data.ok){
+      info.textContent = "הקישור לא תקין / פג תוקף.";
+      return;
+    }
+    info.textContent = `שלום ${data.customerName || ""} — אנא חתום/חתמי ושמור/שמרי.`;
+    if(data.customerName) nameEl.value = data.customerName;
+  })();
+
+  document.getElementById("send").onclick = async ()=>{
+    statusEl.textContent = "שולח…";
+    const signerName = nameEl.value.trim();
+    const png = c.toDataURL("image/png");
+    const out = await api("submit", {token, signerName, signaturePngBase64: png});
+    if(out.ok){
+      statusEl.textContent = "✅ נשלח בהצלחה. תודה!";
+      // optional: show link
+      // statusEl.innerHTML = `✅ נשלח. <a href="${out.signedUrl}" target="_blank">צפייה במסמך החתום</a>`;
+    }else{
+      statusEl.textContent = "❌ שגיאה בשליחה. נסה שוב.";
+    }
+  };
+</script>
+</body>
+</html>
 
