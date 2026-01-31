@@ -1,0 +1,6 @@
+
+body{font-family:Arial,Helvetica,sans-serif;background:#f6f4ef;margin:0}
+.topbar{display:flex;justify-content:space-between;padding:16px;background:#fff}
+.primary{background:#c9a24d;border:none;padding:10px 16px;border-radius:10px}
+.login{display:flex;justify-content:center;align-items:center;height:100vh}
+.login-card{background:#fff;padding:32px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.1);text-align:center}
