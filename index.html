@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LEADUP • לידים</title>
+  <meta name="theme-color" content="#fbf7ef"/>
+  <link rel="stylesheet" href="assets/css/app.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>LEADUP <span class="badge">Premium CRM</span></h1>
+          <small id="connectionBadge">טוען מצב…</small>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      
+    <nav class="nav" aria-label="ניווט">
+      <a href="index.html" class="active">לידים</a>
+      <a href="lead.html" class="">תיק לקוח</a>
+      <a href="documents.html" class="">מסמכים</a>
+      <a href="settings.html" class="">הגדרות</a>
+    </nav>
+    
+    </div>
+  </header>
+
+  <main class="container">
+    
+<div class="grid">
+  <section class="card">
+    <div class="head">
+      <div>
+        <h2>רשימת לידים</h2>
+        <small>חיפוש, פתיחה, וניהול מסודר. הכל כאן — בלי לערבב מסכים אחרים.</small>
+      </div>
+      <div class="row">
+        <button class="btn" id="newLead">+ ליד חדש</button>
+        <button class="btn" id="seed" title="רק במצב Local">צור ליד דוגמה</button>
+        <button class="btn danger" id="clearAll" title="רק במצב Local">נקה הכל</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="row" style="margin-bottom:10px">
+        <input class="input" id="search" placeholder="חיפוש מהיר (שם/טלפון/סטטוס/נציג/ID)"/>
+      </div>
+      <table class="table" aria-label="לידים">
+        <thead>
+          <tr>
+            <th>שם</th>
+            <th>טלפון</th>
+            <th>סטטוס</th>
+            <th>נציג</th>
+            <th>פעולות</th>
+          </tr>
+        </thead>
+        <tbody id="leadsTbody">
+          <tr><td colspan="5"><small>טוען…</small></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="card">
+    <div class="head">
+      <h2>מה מצב המערכת?</h2>
+      <span class="pill">שלב 1</span>
+    </div>
+    <div class="body">
+      <p style="margin-top:0">המטרה כרגע: <strong>יציבות 100%</strong> בלידים ושמירה.</p>
+      <div class="hr"></div>
+      <ul style="margin:0; padding-right:18px; color:rgba(27,27,34,.82)">
+        <li>הפרדה לדפים (אין יותר "קובץ אחד ענק")</li>
+        <li>שמירה יציבה: Local או Google Sheets</li>
+        <li>כל דף אחראי על עצמו</li>
+      </ul>
+      <div class="hr"></div>
+      <small>טיפ: אם אתה רוצה Sheets — כנס ל״הגדרות״ ותדביק את ה-URL של Apps Script WebApp.</small>
+    </div>
+  </aside>
+</div>
+
+    <footer>LeadUp Scaffold • בנוי בצורה מפוצלת (דפים + JS מודולרי) • מצב ברירת מחדל: Local</footer>
+  </main>
+
+  <div class="toast" id="toast" hidden>
+    <div class="msg" role="status" aria-live="polite">
+      <div>
+        <div class="title" id="toastTitle">הודעה</div>
+        <div class="text" id="toastText">...</div>
+      </div>
+      <button class="x" id="toastClose" aria-label="סגור">×</button>
+    </div>
+  </div>
+
+  <script src="assets/js/core.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/leadsPage.js"></script>
+</body>
+</html>
