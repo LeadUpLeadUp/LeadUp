@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LEADUP • Action Bar Smart</title>
+  <meta name="theme-color" content="#fbf7ef"/>
+  <link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="brand">
+        <div class="logo">L</div>
+        <div>
+          <h1>LEADUP</h1>
+          <div class="sub">premium crm</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="active" id="navDashboard">
+          <span class="k">📊 דשבורד</span>
+          <span class="pill gold" id="pillToday">היום</span>
+        </button>
+
+        <button id="navLeads">
+          <span class="k">👥 לידים</span>
+          <span class="pill" id="pillLeads">0</span>
+        </button>
+
+        <button id="navMyFlows">
+          <span class="k">⚙️ התהליכים שלי</span>
+          <span class="pill">Flow</span>
+        </button>
+
+        <button id="navSettings">
+          <span class="k">🛠️ הגדרות</span>
+          <span class="pill">Pro</span>
+        </button>
+      </div>
+
+      <div class="sideFooter">
+        <div>גרסה: Action Bar Pack</div>
+        <div class="hint">לחץ על כרטיס פעולה למעלה כדי לסנן את הלידים.</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="left">
+          <span class="badge"><span class="dot"></span> סטטוס מערכת: פעילה</span>
+          <div class="title">
+            <b id="pageTitle">דשבורד</b>
+            <span id="pageSub">פעולות חכמות שמקדמות עבודה</span>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="seg" aria-label="theme toggle">
+            <button class="segBtn active" id="themeLight">בהיר</button>
+            <button class="segBtn" id="themeDark">כהה</button>
+          </div>
+          <button class="btn goldSoft" id="btnAddLead">הקמת ליד חדש</button>
+          <button class="btn" id="btnSeed">דמו: הוסף נתונים</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- SMART ACTION BAR (Option 1) -->
+        <section class="actionBar" id="actionBar">
+          <!-- injected by JS -->
+        </section>
+
+        <!-- Leads area -->
+        <div class="card" id="viewLeads">
+          <div class="head">
+            <h2>רשימת לידים</h2>
+            <div class="actions">
+              <span class="tag cold" id="activeFilterTag">ללא סינון</span>
+              <button class="btn" id="btnClearFilter">נקה סינון</button>
+            </div>
+          </div>
+          <div class="body">
+            <div class="filterBar">
+              <div class="left">
+                <button class="filterPill" data-quick="all">הכל</button>
+                <button class="filterPill" data-quick="hot">חמים</button>
+                <button class="filterPill" data-quick="overdue">איחור</button>
+                <button class="filterPill" data-quick="sign">מחכה לחתימה</button>
+              </div>
+              <div class="smallNote" id="leadsMeta">0 תוצאות</div>
+            </div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>שם</th>
+                    <th>טלפון</th>
+                    <th>סטטוס</th>
+                    <th>ציון</th>
+                    <th>חזרה הבאה</th>
+                    <th>חתימה</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="leadsTbody">
+                  <!-- injected by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <p class="help">הדמו הזה שומר נתונים ב־LocalStorage. כשתרצה לחבר ל־Google Sheets / Server — מחליפים רק את שכבת ה־save/load.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Simple modal for add lead -->
+  <div class="modalBack" id="leadModalBack">
+    <div class="modal">
+      <div class="modalHeader">
+        <b>הקמת ליד חדש</b>
+        <button class="closeX" id="leadModalClose">✕</button>
+      </div>
+      <div class="modalBody" id="modalBody">
+        <form id="leadForm">
+          <div class="row">
+            <div>
+              <label>שם לקוח</label>
+              <input id="name" placeholder="לדוגמה: ישראל ישראלי" required />
+            </div>
+            <div>
+              <label>טלפון</label>
+              <input id="phone" placeholder="05XXXXXXXX" required />
+            </div>
+            <div>
+              <label>סטטוס</label>
+              <select id="status">
+                <option value="חדש">חדש</option>
+                <option value="בטיפול">בטיפול</option>
+                <option value="מחכה">מחכה</option>
+                <option value="סגור">סגור</option>
+              </select>
+            </div>
+            <div>
+              <label>ציון ליד</label>
+              <select id="score">
+                <option value="חם">חם</option>
+                <option value="בינוני">בינוני</option>
+                <option value="קר">קר</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label>חזרה הבאה</label>
+              <input id="nextFollowup" type="datetime-local" />
+              <div class="help">אם הזמן עבר — הליד ייכנס ל"איחור" אוטומטית.</div>
+            </div>
+            <div>
+              <label>ממתין לחתימה?</label>
+              <select id="needSign">
+                <option value="לא">לא</option>
+                <option value="כן">כן</option>
+              </select>
+              <div class="help">אם "כן" — יופיע בכרטיס "מחכה לחתימה".</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="actions" style="justify-content:flex-end">
+            <button type="button" class="btn" id="leadModalCancel">בטל</button>
+            <button type="submit" class="btn goldSoft">שמור ליד</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
