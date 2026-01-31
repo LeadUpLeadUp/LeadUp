@@ -197,7 +197,9 @@
       font-weight:650;
     }
     /* Fix: keep 'הקמת ליד חדש' button on one line */
-.btn:hover{transform:translateY(-1px); border-color:rgba(214,178,94,.25)}
+    #btnAddLead{white-space:nowrap; flex-shrink:0; min-width:120px; justify-content:center;}
+
+    .btn:hover{transform:translateY(-1px); border-color:rgba(214,178,94,.25)}
     .btn:focus{outline:none; box-shadow:var(--focus)}
     .btn.gold{
       background:linear-gradient(180deg, rgba(214,178,94,.26), rgba(255,255,255,.05));
