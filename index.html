@@ -45,7 +45,7 @@
 
 
 
-<link href="app.css?v=20260131_140026" rel="stylesheet"/><script defer="True" src="app.js?v=20260131_140026"></script></head>
+<link href="app.css?v=20260131_141130" rel="stylesheet"/><script defer="True" src="app.js?v=20260131_141130"></script></head>
 <body>
 <!-- ===== Simple Login Gate ===== -->
 <div class="loginGate" id="loginGate">
@@ -656,6 +656,58 @@
 
 
 
+
+
+<script>
+/* ===== Inline Login Fallback (always-on) ===== */
+(function(){
+  const DEFAULT_PASSWORD = "1234";
+  const PASS_KEY = "leadup_password";
+  const AUTH_KEY = "leadup_auth_ok";
+  const $ = (id)=>document.getElementById(id);
+
+  function getPassword(){
+    try{
+      const s = localStorage.getItem(PASS_KEY);
+      return (s && s.trim()) ? s.trim() : DEFAULT_PASSWORD;
+    }catch(e){
+      return DEFAULT_PASSWORD;
+    }
+  }
+  function setErr(msg){
+    const e = $("loginError");
+    if(e) e.textContent = msg || "";
+  }
+  function unlock(){
+    document.documentElement.classList.remove("authPending");
+    const gate = $("loginGate");
+    if(gate) gate.style.display = "none";
+    try{ sessionStorage.setItem(AUTH_KEY,"1"); }catch(e){}
+  }
+  function attempt(){
+    const inp = $("loginPassword");
+    const val = (inp && inp.value ? inp.value : "").trim();
+    if(!val){ setErr("נא להזין סיסמה"); inp && inp.focus(); return; }
+    if(val === getPassword()){
+      setErr("");
+      unlock();
+      return;
+    }
+    setErr("סיסמה שגויה");
+    if(inp){ inp.value=""; inp.focus(); }
+  }
+
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const btn = $("loginBtn");
+    const inp = $("loginPassword");
+    const tog = $("loginToggle");
+    if(btn) btn.addEventListener("click", attempt);
+    if(inp) inp.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); attempt(); } });
+    if(tog && inp) tog.addEventListener("click", ()=>{ inp.type = (inp.type==="password") ? "text" : "password"; });
+    try{ if(sessionStorage.getItem(AUTH_KEY)==="1") unlock(); }catch(e){}
+  });
+})();
+</script>
 
 </body>
 </html>
