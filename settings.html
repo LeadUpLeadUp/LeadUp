@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-needsAuth="1">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#fffdf8"/>
+  <title>LEAD UP • הגדרות</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/ui.css"/>
+  <script defer src="assets/js/ui.js"></script>
+</head>
+<body>
+  <div class="appShell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logoMark" aria-hidden="true"></div>
+        <div>
+          <h1>LEAD UP</h1>
+          <div class="tag">Premium CRM</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="leads.html"><span class="k">📌 לידים</span><span class="pill gold">4</span></a>
+        <a href="customer.html"><span class="k">👤 תיק לקוח</span><span class="pill">חדש</span></a>
+        <a href="tasks.html"><span class="k">⏰ משימות</span><span class="pill">2</span></a>
+        <a href="settings.html"><span class="k">⚙️ הגדרות</span><span class="pill">Local</span></a>
+      </nav>
+
+      <div class="sideFoot">
+        טיפ: זה עיצוב חדש נקי. בשלב הבא נחבר את הדפים למנוע הנתונים (Google Sheets) מבלי לשבור את ה-UI.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="pageTitle">
+          <b>הגדרות</b>
+          <span>חיבור Google Sheets + משתמשים + הרשאות</span>
+        </div>
+        <div class="toolbar">
+          <button class="btn btnPrimary">➕ הקמת ליד חדש</button>
+          <input class="inp" id="q" placeholder="חיפוש לקוח מהיר…" autocomplete="off"/>
+          <button class="btn">👥 הלקוחות שלי</button>
+        </div>
+      </div>
+
+      <div class="content">
+        
+<div class="card">
+  <div class="head">
+    <h2>הגדרות</h2>
+    <span class="pill gold">Local</span>
+  </div>
+  <div class="body">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <input class="inp" style="min-width:min(520px, 92vw)" placeholder="הדבק כאן את Web App URL של Google Sheets…"/>
+      <button class="btn">🔎 בדיקת חיבור</button>
+      <button class="btn btnPrimary">🔁 מצב: Google Sheets</button>
+    </div>
+    <div style="margin-top:12px;color:rgba(20,20,27,.62);font-weight:800;line-height:1.6">
+      כאן נחבר את ה־UI החדש למנוע הנתונים שלך (Google Apps Script + Sheets) בצורה בטוחה – בלי ש״כפתורים ימותו״ ובלי איבוד נתונים.
+    </div>
+  </div>
+</div>
+
+      </div>
+    </main>
+  </div>
+</body>
+</html>

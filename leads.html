@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-needsAuth="1">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="theme-color" content="#fffdf8"/>
+  <title>LEAD UP • לידים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/ui.css"/>
+  <script defer src="assets/js/ui.js"></script>
+</head>
+<body>
+  <div class="appShell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logoMark" aria-hidden="true"></div>
+        <div>
+          <h1>LEAD UP</h1>
+          <div class="tag">Premium CRM</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="leads.html"><span class="k">📌 לידים</span><span class="pill gold">4</span></a>
+        <a href="customer.html"><span class="k">👤 תיק לקוח</span><span class="pill">חדש</span></a>
+        <a href="tasks.html"><span class="k">⏰ משימות</span><span class="pill">2</span></a>
+        <a href="settings.html"><span class="k">⚙️ הגדרות</span><span class="pill">Local</span></a>
+      </nav>
+
+      <div class="sideFoot">
+        טיפ: זה עיצוב חדש נקי. בשלב הבא נחבר את הדפים למנוע הנתונים (Google Sheets) מבלי לשבור את ה-UI.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="pageTitle">
+          <b>לידים</b>
+          <span>ניהול לידים, סטטוסים, פעולות ומעקב</span>
+        </div>
+        <div class="toolbar">
+          <button class="btn btnPrimary">➕ הקמת ליד חדש</button>
+          <input class="inp" id="q" placeholder="חיפוש לקוח מהיר…" autocomplete="off"/>
+          <button class="btn">👥 הלקוחות שלי</button>
+        </div>
+      </div>
+
+      <div class="content">
+        
+<div class="card">
+  <div class="head">
+    <h2>דשבורד</h2>
+    <span class="pill">סטטוס מערכת: פעיל</span>
+  </div>
+  <div class="body">
+    <div class="kpis">
+      <div class="kpi"><div><div class="k">סה״כ לידים</div><div class="v" id="kpiTotal">0</div><div class="hint">במאגר</div></div><span class="pill gold">LIVE</span></div>
+      <div class="kpi"><div><div class="k">חמים</div><div class="v" id="kpiHot">0</div><div class="hint">Lead Score</div></div><span class="pill">🔥</span></div>
+      <div class="kpi"><div><div class="k">מעקב היום</div><div class="v" id="kpiToday">0</div><div class="hint">Follow-up</div></div><span class="pill">📅</span></div>
+      <div class="kpi"><div><div class="k">משימות פתוחות</div><div class="v" id="kpiTasks">0</div><div class="hint">תזכורות</div></div><span class="pill">⏰</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="head" style="align-items:flex-start;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap">
+      <h2 style="margin:0">רשימת לידים</h2>
+      <span class="pill">כל הפעולות פנימיות (CRM)</span>
+    </div>
+    <div class="filters">
+      <select class="sel" aria-label="סטטוס">
+        <option>כל הסטטוסים</option><option>חדש</option><option>נוצר קשר</option><option>מתעניין</option><option>הצעת מחיר</option><option>נסגר</option>
+      </select>
+      <select class="sel" aria-label="מקור">
+        <option>כל המקורות</option><option>פייסבוק</option><option>גוגל</option><option>הפניה</option><option>טלפון</option><option>אתר</option><option>אחר</option>
+      </select>
+      <select class="sel" aria-label="מיון">
+        <option>מיון: הכי חם</option><option>מיון: הכי חדש</option><option>מיון: תאריך מעקב</option>
+      </select>
+    </div>
+  </div>
+  <div class="body">
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>שם</th><th>טלפון</th><th>סטטוס</th><th>מקור</th><th>Score</th><th>מעקב</th><th>פעולות</th>
+          </tr>
+        </thead>
+        <tbody id="leadsTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+      </div>
+    </main>
+  </div>
+</body>
+</html>
