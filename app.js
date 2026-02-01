@@ -240,7 +240,12 @@ function seedDemoDataOnce(){
     try{
       localStorage.setItem(LS_KEY, JSON.stringify(appState));
       renderAll();
-    
+  function renderAll(){
+  try{ renderLeads && renderLeads(); }catch(e){}
+  try{ renderTasks && renderTasks(); }catch(e){}
+  try{ renderTimeline && renderTimeline(); }catch(e){}
+}
+  
   // Auto-seed demo in empty environment
   try{ seedDemoDataOnce(); }catch(e){}
 }catch(e2){}
