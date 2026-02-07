@@ -18,7 +18,8 @@
   </div>
 
   <div class="topActions">
-    <span class="pill" id="stageBadge">פרטים</span>
+    <span class="pill" id="stageBadge">דשבורד</span>
+    <button class="btn primary hidden" id="btnTopPrimary" type="button">פעולה</button>
     <button class="btn ghost" id="btnLoadDraft" type="button">טען טיוטה</button>
     <button class="btn ghost" id="btnSaveDraft" type="button">שמור טיוטה</button>
     <button class="btn primary" id="btnGoFinish" type="button">סיום</button>
@@ -27,14 +28,27 @@
 
 <div class="shell">
   <aside class="sidebar">
-    <div class="sideTitle">ניווט</div>
-    <button class="navItem active" data-nav="case"><span class="dot"></span><span>תיק פעיל</span></button>
+    <div class="sideTitle">CRM</div>
+    <button class="navItem active" data-nav="dashboard"><span class="dot"></span><span>דשבורד</span></button>
+    <button class="navItem" data-nav="case"><span class="dot"></span><span>תיק פעיל</span></button>
     <button class="navItem" data-nav="saved"><span class="dot"></span><span>תיקים שמורים</span></button>
+
+    <div class="sideTitle" style="margin-top:14px">תפעול</div>
+    <button class="navItem" data-nav="tasks">
+      <span class="dot"></span><span>משימות / תזמונים</span><span class="navCount hidden" data-count="tasks"></span>
+    </button>
+    <button class="navItem" data-nav="processes">
+      <span class="dot"></span><span>התהליכים שלי</span><span class="navCount hidden" data-count="processes"></span>
+    </button>
+    <button class="navItem" data-nav="documents"><span class="dot"></span><span>מסמכי לקוח</span></button>
+
+    <div class="sideTitle" style="margin-top:14px">ניהול</div>
+    <button class="navItem" data-nav="reports"><span class="dot"></span><span>דוחות</span></button>
     <button class="navItem" data-nav="settings"><span class="dot"></span><span>הגדרות</span></button>
 
     <div class="sideFooter">
-      <div class="mini">ערכת צבע: <span class="mono">לבן • סגול</span></div>
-      <div class="mini muted">מוכן לתשתית CRM (DB/PDF/Users)</div>
+      <div class="mini">ערכת צבע: <span class="mono">לבן • כחול</span></div>
+      <div class="mini muted">GEMEL INVEST CRM • תיקים, משימות, מסמכים, דוחות</div>
     </div>
   </aside>
 
