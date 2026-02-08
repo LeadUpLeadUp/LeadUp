@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>GEMEL INVEST CRM</title>
+<link href="app.css" rel="stylesheet"/>
+</head>
+<body><div class="appFrame"><header class="topbar">
+<div class="brand">
+<div class="brandMark logoPremium" aria-label="GEMEL INVEST">GI</div>
+<div class="brandText">
+<div class="brandTitle brandTitlePremium">GEMEL INVEST CRM</div>
+<div class="brandSub">תיק רפואי • חיתום • תשלום • סיכום</div>
+</div>
+</div><div class="topCenterTitle">Insurance Client Onboarding</div>
+<div class="topActions"><!-- ניקוי אזור כפתורים עליונים לפי בקשת המשתמש --></div>
+</header><div class="shell">
+<aside class="sidebar">
+<div class="sideTitle">ניווט</div>
+<button class="navItem active" data-nav="case"><span class="dot"></span><span>הקמת לקוח חדש</span></button>
+<button class="navItem" data-nav="saved"><span class="dot"></span><span>לקוחות</span></button>
+<button class="navItem" data-nav="settings"><span class="dot"></span><span>הגדרות</span></button>
+<div class="sideFooter">
+<div class="mini">ערכת צבע: <span class="mono">לבן • סגול</span></div>
+<div class="mini muted">מוכן לתשתית CRM (DB/PDF/Users)</div>
+</div>
+</aside>
+<main class="workspace">
+<section class="caseHeader" id="caseHeader">
+<div class="caseMetaLeft">
+<div class="caseTitle" id="caseTitle">תיק חדש</div>
+<div class="chips">
+<span class="chip mono" id="caseIdChip">—</span>
+<span class="chip" id="caseStatusChip">טיוטה</span>
+</div>
+</div>
+<div class="stepper" id="stepper">
+<button class="step active" data-step="details">פרטים</button>
+<button class="step" data-step="cancellations">ביטול פוליסות</button>
+<button class="step" data-step="products">מוצרים</button>
+<button class="step" data-step="questionnaires">שאלונים</button>
+<button class="step" data-step="payment">תשלום</button>
+<button class="step" data-step="summary">סיום</button>
+</div>
+</section>
+<section class="grid">
+<section class="panel main">
+<div class="panelHead">
+  <div class="smartHeader">
+    <div class="smartTitle">
+      <div class="smartKicker">תהליך קליטת מבוטח</div>
+      <div class="smartH1" id="smartCaseTitle">הקמת לקוח חדש</div>
+      <div class="stepRail" aria-label="שלבי התהליך">
+    <div class="stepDot active" data-step="0"><span>פרטים אישיים</span></div>
+    <div class="stepDot" data-step="1"><span>ביטוחים קיימים</span></div>
+    <div class="stepDot" data-step="2"><span>פוליסה חדשה</span></div>
+    <div class="stepDot" data-step="3"><span>שאלון רפואי</span></div>
+    <div class="stepDot" data-step="4"><span>תשלום</span></div>
+  </div>
+</div>
+    <div class="smartMeta">
+      <span class="chip" id="caseStatusChip">טיוטה</span>
+    </div>
+  </div>
+
+<div>
+<div class="h2" id="panelTitle">פרטים אישיים</div>
+<div class="hint" id="panelHint">מלא פרטים של המבוטח הראשי + אופציונלי משני/ילדים.</div>
+</div>
+<div class="panelActions" id="panelActions"></div>
+</div>
+<div class="panelBody" id="app"></div>
+</section>
+</section>
+</main>
+</div><div aria-live="polite" class="toast" id="toast"></div><script src="app.js"></script></div>
+<!-- Sticky Actions Bar -->
+<div class="stickyActions">
+  
+  <div class="saveStatus" id="saveStatus" aria-live="polite">מוכן</div>
+  <div class="stickySpacer"></div>
+  <button class="btn ghost" id="stickySave" type="button">שמור</button>
+  <button class="btn primary" id="stickyNext" type="button">המשך</button>
+</div>
+
+
+<!-- Fullscreen: Clients (placeholder for future) -->
+<div class="fsModal" id="clientsModal" aria-hidden="true">
+  <div class="fsBackdrop" data-close="clients"></div>
+  <div class="fsPanel" role="dialog" aria-modal="true" aria-label="לקוחות">
+    <div class="fsTop">
+      <div class="fsTitle">
+        <div class="fsKicker">אזור עבודה</div>
+        <div class="fsH1">לקוחות</div>
+      </div>
+      <div class="fsActions">
+        <button class="btn ghost" type="button" id="clientsCloseBtn">סגור</button>
+      </div>
+    </div>
+
+    <div class="fsBody">
+      <div class="fsEmpty">
+        <div class="fsIcon">👥</div>
+        <div class="fsText">
+          <div class="fsBig">מסך “לקוחות” בבנייה</div>
+          <div class="fsSmall">כאן נבנה בהמשך: חיפוש, פתיחה, עריכה וסטטוסים של לקוחות.</div>
+        </div>
+      </div>
+      <div class="fsHintRow">
+        <span class="chip">בקרוב</span>
+        <span class="fsSmall">בינתיים אפשר להמשיך בתהליך הקמת לקוח חדש.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
