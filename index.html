@@ -1,104 +1,104 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>GEMEL INVEST CRM</title>
-  <link rel="stylesheet" href="app.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Insurance CRM – Onboarding</title>
+  <link rel="stylesheet" href="app.css" />
 </head>
 <body>
-
-<header class="topbar">
-  <div class="brand">
-    <div class="brandMark">GI</div>
-    <div class="brandText">
-      <div class="brandTitle">GEMEL INVEST CRM</div>
-      <div class="brandSub">תיק רפואי • חיתום • תשלום • סיכום</div>
-    </div>
-  </div>
-
-  <div class="topActions">
-    <span class="pill" id="stageBadge">פרטים</span>
-    <button class="btn ghost" id="btnLoadDraft" type="button">טען טיוטה</button>
-    <button class="btn ghost" id="btnSaveDraft" type="button">שמור טיוטה</button>
-    <button class="btn ghost" id="btnToggleFocus" type="button" aria-pressed="true">הצג בקרה</button>
-    <button class="btn primary" id="btnGoFinish" type="button">סיום</button>
-  </div>
-</header>
-
-<div class="shell">
-  <aside class="sidebar">
-    <div class="sideTitle">ניווט</div>
-    <button class="navItem active" data-nav="case"><span class="dot"></span><span>תיק פעיל</span></button>
-    <button class="navItem" data-nav="saved"><span class="dot"></span><span>תיקים שמורים</span></button>
-    <button class="navItem" data-nav="settings"><span class="dot"></span><span>הגדרות</span></button>
-
-    <div class="sideFooter">
-      <div class="mini">ערכת צבע: <span class="mono">לבן • כחול</span></div>
-      <div class="mini muted">מוכן לתשתית CRM (DB/PDF/Users)</div>
-    </div>
-  </aside>
-
-  <main class="workspace">
-    <section class="caseHeader" id="caseHeader">
-      <div class="caseMetaLeft">
-        <div class="caseTitle" id="caseTitle">תיק חדש</div>
-        <div class="chips">
-          <span class="chip mono" id="caseIdChip">—</span>
-          <span class="chip" id="caseStatusChip">טיוטה</span>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar glass">
+      <div class="brand">
+        <div class="brandMark">CRM</div>
+        <div class="brandText">
+          <div class="brandTitle">Insurance CRM</div>
+          <div class="brandSub">Client Onboarding</div>
         </div>
       </div>
 
-      <div class="stepper" id="stepper">
-        <button class="step active" data-step="details">פרטים</button>
-        <button class="step" data-step="cancellations">ביטול פוליסות</button>
-        <button class="step" data-step="products">מוצרים</button>
-        <button class="step" data-step="questionnaires">שאלונים</button>
-        <button class="step" data-step="payment">תשלום</button>
-        <button class="step" data-step="summary">סיום</button>
-      </div>
-    </section>
+      <nav class="nav">
+        <button class="navItem active">
+          <span class="navIcon">🏠</span><span>Dashboard</span>
+        </button>
+        <button class="navItem">
+          <span class="navIcon">👤</span><span>Clients</span>
+        </button>
+        <button class="navItem">
+          <span class="navIcon">🧾</span><span>Policies</span>
+        </button>
+        <button class="navItem">
+          <span class="navIcon">📊</span><span>Reports</span>
+        </button>
+        <button class="navItem">
+          <span class="navIcon">✅</span><span>Tasks</span>
+        </button>
+      </nav>
 
-    <section class="grid">
-      <section class="panel main">
-        <div class="panelHead">
-          <div>
-            <div class="h2" id="panelTitle">פרטים אישיים</div>
-            <div class="hint" id="panelHint">מלא פרטים של המבוטח הראשי + אופציונלי משני/ילדים.</div>
+      <div class="sidebarFooter">
+        <div class="chip chipLive">
+          <span class="dotLive"></span>
+          <span>מחובר</span>
+        </div>
+        <div class="miniHelp">v1 • UI Premium Glass</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Topbar -->
+      <header class="topbar glass">
+        <div class="pageTitle">
+          <div class="h1">Insurance Client Onboarding</div>
+          <div class="sub">קליטה מלאה ללקוח חדש – פרטים, מסמכים, שאלון רפואי ותשלום</div>
+        </div>
+
+        <div class="topActions">
+          <button id="btnReset" class="btn btnGhost" type="button">איפוס</button>
+          <button id="btnExport" class="btn btnGhost" type="button">הורדת סיכום (JSON)</button>
+          <button id="btnPrimary" class="btn btnPrimary" type="button">Save & Submit</button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <section class="content">
+        <!-- Tabs -->
+        <div class="tabs glass">
+          <button class="tab active" data-step="0">פרטי לקוח</button>
+          <button class="tab" data-step="1">ביטוחים קיימים</button>
+          <button class="tab" data-step="2">פוליסה חדשה</button>
+          <button class="tab" data-step="3">שאלון רפואי</button>
+          <button class="tab" data-step="4">אמצעי תשלום</button>
+          <button class="tab" data-step="5">סיכום</button>
+        </div>
+
+        <!-- Step Container -->
+        <div class="panel glass" id="stepHost">
+          <!-- Filled by JS -->
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="footerActions">
+          <button id="btnPrev" class="btn btnGhost" type="button">הקודם</button>
+          <div class="progressWrap">
+            <div class="progressMeta">
+              <span id="progressLabel">שלב 1 מתוך 6</span>
+              <span class="muted" id="progressHint">מילוי פרטים בסיסיים של הלקוח</span>
+            </div>
+            <div class="progressBar glass">
+              <div class="progressFill" id="progressFill"></div>
+            </div>
           </div>
-          <div class="panelActions" id="panelActions"></div>
+          <button id="btnNext" class="btn btnPrimary" type="button">הבא</button>
         </div>
-        <div class="panelBody" id="app"></div>
       </section>
+    </main>
+  </div>
 
-      <aside class="panel side">
-        <div class="panelHead compact">
-          <div>
-            <div class="h2">בקרה</div>
-            <div class="hint">סטטוס תיק וסיכומים</div>
-          </div>
-        </div>
-        <div class="panelBody">
-          <div class="kv"><div class="k">שלב</div><div class="v pill" id="badgeStage">פרטים</div></div>
-          <div class="kv"><div class="k">מוצרים</div><div class="v chip" id="badgeProducts">0</div></div>
-          <div class="kv"><div class="k">סה״כ אחרי</div><div class="v chip mono" id="badgeTotal">0</div></div>
-          <div class="kv"><div class="k">מבוטח משני</div><div class="v chip" id="badgeSecondary">לא</div></div>
-          <div class="kv"><div class="k">ילדים</div><div class="v chip" id="badgeChildren">0</div></div>
+  <!-- Toast -->
+  <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
 
-          <div class="divider"></div>
-          <div class="healthTitle">חסרים קריטיים</div>
-          <div class="healthList" id="missingList"></div>
-
-          <div class="divider"></div>
-          <div class="mini muted">בהמשך: PDF רשמי + חיבור ל־Sheets/DB + הרשאות משתמשים.</div>
-        </div>
-      </aside>
-    </section>
-  </main>
-</div>
-
-<div class="toast" id="toast" aria-live="polite"></div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
