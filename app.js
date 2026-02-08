@@ -1,1154 +1,1241 @@
-(() => {
-  const $ = (id) => document.getElementById(id);
+/* Insurance CRM Onboarding – Single-file JS (no frameworks) */
 
-  const app = $("app");
-  const stepper = $("stepper");
-  const caseHeader = $("caseHeader");
-  const stageBadge = $("stageBadge");
-  const panelTitle = $("panelTitle");
-  const panelHint  = $("panelHint");
-  const panelActions = $("panelActions");
+const STEPS = [
+  { key: "client", title: "פרטי לקוח", hint: "מילוי פרטי מבוטחים ומסמכים בסיסיים" },
+  { key: "existing", title: "ביטוחים קיימים", hint: "היסטוריית ביטוחים/פרמיות בחברות קודמות" },
+  { key: "newPolicy", title: "פוליסה חדשה", hint: "מה נרכש בפוליסה החדשה לכל מבוטח" },
+  { key: "medical", title: "שאלון רפואי", hint: "תשאול רפואי נפרד לכל מבוטח" },
+  { key: "payment", title: "אמצעי תשלום", hint: "חיוב/אמצעי תשלום ואישור" },
+  { key: "summary", title: "סיכום", hint: "צפייה, בדיקה והפקת סיכום" },
+];
 
-  const caseTitle = $("caseTitle");
-  const caseIdChip = $("caseIdChip");
-  const caseStatusChip = $("caseStatusChip");
+const TASK_COVERS = [
+  "בריאות",
+  "חיים",
+  "תאונות אישיות",
+  "אובדן כושר עבודה",
+  "חיסכון/פנסיה",
+  "סיעוד"
+];
 
-  const badgeStage = $("badgeStage");
-  const badgeProducts = $("badgeProducts");
-  const badgeTotal = $("badgeTotal");
-  const badgeSecondary = $("badgeSecondary");
-  const badgeChildren = $("badgeChildren");
-  const missingList = $("missingList");
+const MED_QUESTIONS = [
+  { id: "q1", text: "האם קיימות מחלות כרוניות / מצב רפואי מתמשך?" },
+  { id: "q2", text: "האם בוצע ניתוח / אשפוז ב-5 השנים האחרונות?" },
+  { id: "q3", text: "האם קיימת נטילת תרופות קבועה?" },
+  { id: "q4", text: "עישון?" },
+  { id: "q5", text: "האם קיימת מגבלה רפואית משמעותית בעבודה/תפקוד?" }
+];
 
-  const btnSaveDraft = $("btnSaveDraft");
-  const btnLoadDraft = $("btnLoadDraft");
-  const btnGoFinish  = $("btnGoFinish");
-  const btnToggleFocus = $("btnToggleFocus");
+const state = {
+  step: 0,
+  client: {
+    dealOwner: "",
+    leadSource: "",
+    notes: "",
+    insured: [
+      mkInsured("primary", "מבוטח ראשי"),
+      // spouse / child added dynamically
+    ],
+    documents: [
+      // {name,type,urlOrName,date}
+    ]
+  },
+  existingPolicies: [
+    // {company, policyType, premiumMonthly, premiumTotal, status, notes}
+  ],
+  newPolicy: {
+    company: "",
+    product: "",
+    startDate: "",
+    coveragesByInsured: {
+      // insuredId: [ {coverage, sumInsured, premiumMonthly, notes} ]
+    }
+  },
+  medical: {
+    answersByInsured: {
+      // insuredId: { q1:{answer,details}, ... }
+    }
+  },
+  payment: {
+    method: "credit",
+    payerName: "",
+    payerId: "",
+    cardLast4: "",
+    installments: "1",
+    billingDate: "",
+    consent: false
+  }
+};
 
-  const COMPANIES = [
-    "הפניקס","מגדל","הראל","כלל","מנורה","הכשרה","מדיקר","איילון","ישיר","אחר"
-  ];
+/* ---------- helpers ---------- */
 
-  // Default questionnaires (placeholder - ready to map per company|product)
-  const QUESTION_SET_DEFAULT = [
-    { id:"q_bg",   title:"מחלות רקע", desc:"האם קיימות מחלות רקע?", follow:"פרט מחלות רקע / תאריך אבחנה / טיפול" },
-    { id:"q_hosp", title:"אשפוזים", desc:"האם בוצעו אשפוזים בשנים האחרונות?", follow:"פרט אשפוזים / תאריכים / סיבה" },
-    { id:"q_meds", title:"תרופות קבועות", desc:"האם נוטל תרופות קבועות?", follow:"פרט שמות תרופות + מינון" },
-    { id:"q_fam",  title:"היסטוריה משפחתית", desc:"האם קיימת היסטוריה רפואית משפחתית?",
-      follow:"פרט היסטוריה רפואית משפחתית" },
-  ];
+function uid(prefix="id"){
+  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+}
 
-  // Extended questionnaire blocks (added automatically for higher premiums / "heavy" products)
-  const QUESTION_SET_LONG_EXTRA = [
-    { id:"q_cancer", title:"סרטן/גידולים", desc:"האם הייתה אבחנה של סרטן/גידולים?", follow:"פרט סוג/תאריך/טיפול/מצב נוכחי" },
-    { id:"q_heart",  title:"לב וכלי דם", desc:"האם קיימת מחלת לב/אירוע לבבי/צנתור?", follow:"פרט תאריך/הליך/תרופות/מעקב" },
-    { id:"q_resp",   title:"מערכת נשימה", desc:"האם יש אסטמה/מחלת ריאות/קוצר נשימה כרוני?", follow:"פרט מצב/טיפול/אשפוזים" },
-    { id:"q_mental", title:"בריאות הנפש", desc:"האם קיימת אבחנה/טיפול בתחום בריאות הנפש?", follow:"פרט אבחנה/טיפול/תרופות/משך" },
-    { id:"q_back",   title:"גב/אורתופדיה", desc:"האם קיימות בעיות גב/פריצות דיסק/כאבים כרוניים?", follow:"פרט אבחנה/טיפול/מגבלות" },
-    { id:"q_preg",   title:"הריון/לידה", desc:"לנשים: האם קיימים סיבוכי הריון/לידה בעבר?", follow:"פרט תאריכים/סיבוכים/טיפולים" },
-    { id:"q_bmi",    title:"גובה/משקל", desc:"האם קיימת השמנה משמעותית/ירידה חריגה במשקל?", follow:"פרט משקל/גובה/מועד/בירור" },
-  ];
+function mkInsured(role, label){
+  return {
+    id: uid("insured"),
+    role, // primary|spouse|child
+    label,
+    firstName: "",
+    lastName: "",
+    idNumber: "",
+    dob: "",
+    phone: "",
+    email: "",
+    address: "",
+    occupation: "",
+    relation: role === "primary" ? "עצמי" : (role === "spouse" ? "בן/בת זוג" : "ילד/ה")
+  };
+}
 
-  const blankPerson = () => ({
-    firstName:"", lastName:"", idNumber:"", birthDate:"",
-    age:"", gender:"", smoker:"",
-    phone:"", email:"",
-    address:"", city:"",
-    heightCm:"", weightKg:""
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+
+function toast(msg){
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> el.classList.remove("show"), 2200);
+}
+
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+function currency(n){
+  const x = Number(n || 0);
+  return x.toLocaleString("he-IL", { style:"currency", currency:"ILS", maximumFractionDigits:0 });
+}
+
+/* ---------- init ---------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  bindTop();
+  bindTabs();
+  render();
+});
+
+function bindTop(){
+  $("#btnPrev").addEventListener("click", () => gotoStep(state.step - 1));
+  $("#btnNext").addEventListener("click", () => {
+    if (!validateStep(state.step)) return;
+    gotoStep(state.step + 1);
   });
 
-  const blankPayment = () => ({
-    method:"",
-    payerName:"",
-    payerId:"",
-    cardLast4:"",
-    notes:""
+  $("#btnPrimary").addEventListener("click", () => {
+    if (!validateAll()) return;
+    toast("נשמר (דמו). השלב הבא: חיבור לשרת/שיטס.");
+    // פה בעתיד עושים POST לשרת שלך (Sheets Web App / API)
+    // fetch(SERVER_URL, {method:'POST', body: JSON.stringify(state) ...})
   });
 
-  const STORAGE_MODE_KEY = "GICRM_STORAGE_MODE"; // "local" | "server"
-  const SERVER_URL_KEY   = "GICRM_SERVER_URL";   // future Apps Script Web App URL
+  $("#btnExport").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `client_onboarding_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("הורד סיכום JSON");
+  });
 
-  function getStorageMode(){
-    const v = localStorage.getItem(STORAGE_MODE_KEY);
-    return (v === "server") ? "server" : "local";
-  }
-  function getServerUrl(){
-    return String(localStorage.getItem(SERVER_URL_KEY) || "").trim();
-  }
+  $("#btnReset").addEventListener("click", () => {
+    if (!confirm("לאפס את כל הנתונים?")) return;
+    location.reload();
+  });
+}
 
-  const FOCUS_MODE_KEY = "GICRM_FOCUS_MODE"; // "1" | "0"
+function bindTabs(){
+  $all(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const s = Number(btn.dataset.step);
+      if (s === state.step) return;
+      // allow jump only if current is valid or backward
+      if (s > state.step && !validateStep(state.step)) return;
+      gotoStep(s);
+    });
+  });
+}
 
-  function getFocusMode(){
-    const v = localStorage.getItem(FOCUS_MODE_KEY);
-    // default: focus ON (full-width CRM filling)
-    return v === null ? true : (v === "1");
-  }
-  function setFocusMode(on){
-    state.ui.focusMode = !!on;
-    localStorage.setItem(FOCUS_MODE_KEY, state.ui.focusMode ? "1" : "0");
-    applyLayout();
-  }
+function gotoStep(n){
+  state.step = clamp(n, 0, STEPS.length - 1);
+  render();
+}
 
-  const state = {
-    case: freshCase(),
-    view: "case",
-    settings: {
-      storageMode: getStorageMode(),
-      serverUrl: getServerUrl()
-    },
-    ui: {
-      focusMode: getFocusMode()
-    },
-    savedQuery: ""
+/* ---------- validation ---------- */
+
+function validateStep(step){
+  if (step === 0){
+    const primary = state.client.insured.find(x => x.role === "primary");
+    if (!primary.firstName || !primary.lastName || !primary.idNumber){
+      toast("חסר: שם פרטי/משפחה/ת״ז למבוטח הראשי");
+      return false;
+    }
+  }
+  if (step === 4){
+    if (!state.payment.consent){
+      toast("חסר: אישור תשלום/הרשאה");
+      return false;
+    }
+  }
+  return true;
+}
+
+function validateAll(){
+  for (let i=0;i<STEPS.length;i++){
+    if (!validateStep(i)) {
+      gotoStep(i);
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ---------- render ---------- */
+
+function render(){
+  // tabs state
+  $all(".tab").forEach(t => t.classList.toggle("active", Number(t.dataset.step) === state.step));
+
+  // progress
+  $("#progressLabel").textContent = `שלב ${state.step + 1} מתוך ${STEPS.length}`;
+  $("#progressHint").textContent = STEPS[state.step].hint;
+  $("#progressFill").style.width = `${((state.step + 1) / STEPS.length) * 100}%`;
+
+  // prev/next
+  $("#btnPrev").disabled = state.step === 0;
+  $("#btnNext").disabled = state.step === STEPS.length - 1;
+
+  // main step
+  const host = $("#stepHost");
+  host.innerHTML = "";
+  host.appendChild(renderKPIs());
+
+  const stepKey = STEPS[state.step].key;
+  if (stepKey === "client") host.appendChild(renderStepClient());
+  if (stepKey === "existing") host.appendChild(renderStepExisting());
+  if (stepKey === "newPolicy") host.appendChild(renderStepNewPolicy());
+  if (stepKey === "medical") host.appendChild(renderStepMedical());
+  if (stepKey === "payment") host.appendChild(renderStepPayment());
+  if (stepKey === "summary") host.appendChild(renderStepSummary());
+}
+
+function renderKPIs(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols3";
+  wrap.style.marginBottom = "12px";
+
+  const totalExistingMonthly = state.existingPolicies.reduce((s,p)=> s + Number(p.premiumMonthly||0), 0);
+  const totalNewMonthly = calcNewMonthly();
+
+  wrap.appendChild(kpi("פרמיה חודשית קיימת", currency(totalExistingMonthly), "סך כל הביטוחים הקיימים"));
+  wrap.appendChild(kpi("פרמיה חודשית חדשה", currency(totalNewMonthly), "מה שנרכש בפוליסה החדשה"));
+  wrap.appendChild(kpi("מס׳ מבוטחים", String(state.client.insured.length), "ראשי + בני משפחה (אם הוספת)"));
+  return wrap;
+}
+
+function kpi(title, value, sub){
+  const el = document.createElement("div");
+  el.className = "kpi";
+  el.innerHTML = `
+    <div class="k">${escapeHtml(title)}</div>
+    <div class="v">${escapeHtml(value)}</div>
+    <div class="s">${escapeHtml(sub)}</div>
+  `;
+  return el;
+}
+
+function renderStepClient(){
+  const box = document.createElement("div");
+  box.className = "grid cols2";
+
+  // left: insured cards
+  const left = document.createElement("div");
+  left.className = "card";
+
+  left.appendChild(sectionHeader("מבוטחים", "ראשי / בן-בת זוג / ילד", [
+    { text: "הוסף בן/בת זוג", onClick: addSpouse },
+    { text: "הוסף ילד", onClick: addChild }
+  ]));
+
+  const insuredWrap = document.createElement("div");
+  insuredWrap.className = "grid";
+  insuredWrap.style.gap = "12px";
+
+  state.client.insured.forEach((ins, idx) => {
+    insuredWrap.appendChild(renderInsuredCard(ins, idx));
+  });
+
+  left.appendChild(insuredWrap);
+
+  // right: documents + meta
+  const right = document.createElement("div");
+  right.className = "card";
+
+  right.appendChild(sectionHeader("מסמכים ומידע כללי", "אפשר קובץ/קישור (דמו)", []));
+
+  const meta = document.createElement("div");
+  meta.className = "grid cols2";
+  meta.innerHTML = `
+    <div class="field">
+      <label>נציג/סוכן סוגר</label>
+      <input class="input" id="dealOwner" placeholder="לדוגמה: דוד לוי" value="${escapeAttr(state.client.dealOwner)}"/>
+    </div>
+    <div class="field">
+      <label>מקור ליד</label>
+      <input class="input" id="leadSource" placeholder="פייסבוק / הפניה / אתר..." value="${escapeAttr(state.client.leadSource)}"/>
+    </div>
+    <div class="field" style="grid-column:1/-1">
+      <label>הערות כלליות</label>
+      <textarea id="clientNotes" placeholder="כל דבר חשוב לעסקה...">${escapeHtml(state.client.notes || "")}</textarea>
+      <small class="help">בשלבים הבאים נבנה גם שמירה לשרת/שיטס.</small>
+    </div>
+  `;
+  right.appendChild(meta);
+
+  right.appendChild(divHr());
+  right.appendChild(renderDocuments());
+
+  // wire meta
+  setTimeout(() => {
+    $("#dealOwner").addEventListener("input", e => state.client.dealOwner = e.target.value);
+    $("#leadSource").addEventListener("input", e => state.client.leadSource = e.target.value);
+    $("#clientNotes").addEventListener("input", e => state.client.notes = e.target.value);
+  });
+
+  box.appendChild(left);
+  box.appendChild(right);
+  return box;
+}
+
+function renderInsuredCard(insured){
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const canRemove = insured.role !== "primary";
+  const badge = insured.role === "primary" ? "badgeOk" : (insured.role === "spouse" ? "badgeWarn" : "");
+
+  const header = document.createElement("div");
+  header.className = "sectionTitle";
+  header.innerHTML = `
+    <div>
+      <h3>${escapeHtml(insured.label)}</h3>
+      <div class="hint">${escapeHtml(insured.relation)} • ID: <span class="muted">${escapeHtml(insured.id.slice(-8))}</span></div>
+    </div>
+    <div class="rowActions">
+      <span class="badge ${badge}">${escapeHtml(insured.role === "primary" ? "PRIMARY" : "FAMILY")}</span>
+      ${canRemove ? `<button class="btn btnGhost" type="button" data-remove="${insured.id}">הסר</button>` : ""}
+    </div>
+  `;
+  card.appendChild(header);
+
+  const grid = document.createElement("div");
+  grid.className = "grid cols3";
+  grid.innerHTML = `
+    <div class="field">
+      <label>שם פרטי</label>
+      <input class="input" data-k="firstName" data-id="${insured.id}" value="${escapeAttr(insured.firstName)}" />
+    </div>
+    <div class="field">
+      <label>שם משפחה</label>
+      <input class="input" data-k="lastName" data-id="${insured.id}" value="${escapeAttr(insured.lastName)}" />
+    </div>
+    <div class="field">
+      <label>תעודת זהות</label>
+      <input class="input" data-k="idNumber" data-id="${insured.id}" placeholder="9 ספרות" value="${escapeAttr(insured.idNumber)}" />
+    </div>
+
+    <div class="field">
+      <label>תאריך לידה</label>
+      <input class="input" type="date" data-k="dob" data-id="${insured.id}" value="${escapeAttr(insured.dob)}" />
+    </div>
+    <div class="field">
+      <label>טלפון</label>
+      <input class="input" data-k="phone" data-id="${insured.id}" placeholder="+972..." value="${escapeAttr(insured.phone)}" />
+    </div>
+    <div class="field">
+      <label>אימייל</label>
+      <input class="input" type="email" data-k="email" data-id="${insured.id}" placeholder="name@email.com" value="${escapeAttr(insured.email)}" />
+    </div>
+
+    <div class="field" style="grid-column:1/-1">
+      <label>כתובת</label>
+      <input class="input" data-k="address" data-id="${insured.id}" value="${escapeAttr(insured.address)}" />
+    </div>
+    <div class="field" style="grid-column:1/-1">
+      <label>עיסוק</label>
+      <input class="input" data-k="occupation" data-id="${insured.id}" value="${escapeAttr(insured.occupation)}" />
+    </div>
+  `;
+  card.appendChild(grid);
+
+  // bind inputs + remove
+  setTimeout(() => {
+    card.querySelectorAll("input[data-id]").forEach(inp => {
+      inp.addEventListener("input", (e) => {
+        const id = e.target.dataset.id;
+        const k = e.target.dataset.k;
+        const obj = state.client.insured.find(x => x.id === id);
+        if (!obj) return;
+        obj[k] = e.target.value;
+        // ensure medical/newPolicy containers exist
+        ensureContainersForInsured(id);
+        renderKPIsOnly();
+      });
+    });
+
+    const rm = card.querySelector(`[data-remove="${insured.id}"]`);
+    if (rm){
+      rm.addEventListener("click", () => {
+        if (!confirm("להסיר מבוטח זה?")) return;
+        removeInsured(insured.id);
+      });
+    }
+  });
+
+  return card;
+}
+
+function renderDocuments(){
+  const wrap = document.createElement("div");
+  wrap.className = "card";
+  wrap.style.marginTop = "12px";
+
+  const header = sectionHeader("מסמכים", "העלאת קובץ/קישור (דמו UI)", [
+    { text: "הוסף מסמך", onClick: () => addDocumentRow() }
+  ]);
+  wrap.appendChild(header);
+
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>שם מסמך</th>
+        <th>סוג</th>
+        <th>קישור/שם קובץ</th>
+        <th>תאריך</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${state.client.documents.map(d => `
+        <tr>
+          <td><input class="input" data-doc="${d.id}" data-k="name" value="${escapeAttr(d.name)}"/></td>
+          <td>
+            <select data-doc="${d.id}" data-k="type">
+              ${["ת״ז","שאלון/הצהרה","מסמך רפואי","אישור בנק","אחר"].map(x => `<option ${d.type===x?"selected":""}>${x}</option>`).join("")}
+            </select>
+          </td>
+          <td><input class="input" data-doc="${d.id}" data-k="ref" placeholder="URL או שם קובץ" value="${escapeAttr(d.ref)}"/></td>
+          <td><input class="input" type="date" data-doc="${d.id}" data-k="date" value="${escapeAttr(d.date)}"/></td>
+          <td><button class="btn btnGhost" type="button" data-doc-del="${d.id}">מחיקה</button></td>
+        </tr>
+      `).join("")}
+      ${state.client.documents.length === 0 ? `
+        <tr><td colspan="5" class="muted">אין מסמכים עדיין. לחץ “הוסף מסמך”.</td></tr>
+      ` : ""}
+    </tbody>
+  `;
+  wrap.appendChild(table);
+
+  setTimeout(() => {
+    wrap.querySelectorAll("[data-doc][data-k]").forEach(el => {
+      el.addEventListener("input", (e) => {
+        const id = e.target.dataset.doc;
+        const k = e.target.dataset.k;
+        const row = state.client.documents.find(x => x.id === id);
+        if (!row) return;
+        row[k] = e.target.value;
+      });
+      el.addEventListener("change", (e) => {
+        const id = e.target.dataset.doc;
+        const k = e.target.dataset.k;
+        const row = state.client.documents.find(x => x.id === id);
+        if (!row) return;
+        row[k] = e.target.value;
+      });
+    });
+
+    wrap.querySelectorAll("[data-doc-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.docDel;
+        state.client.documents = state.client.documents.filter(x => x.id !== id);
+        render();
+      });
+    });
+  });
+
+  return wrap;
+}
+
+function renderStepExisting(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols2";
+
+  const left = document.createElement("div");
+  left.className = "card";
+  left.appendChild(sectionHeader("הוספת ביטוח קיים", "הכנס ביטוחים מהעבר לפי חברות/פוליסות", []));
+
+  left.appendChild(existingForm());
+
+  const right = document.createElement("div");
+  right.className = "card";
+  right.appendChild(sectionHeader("רשימת ביטוחים קיימים", "אפשר לערוך/למחוק", []));
+
+  right.appendChild(existingTable());
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+
+  return wrap;
+}
+
+function existingForm(){
+  const el = document.createElement("div");
+  el.className = "grid cols2";
+
+  const draft = {
+    company: "",
+    policyType: "",
+    premiumMonthly: "",
+    premiumTotal: "",
+    status: "פעיל",
+    notes: ""
   };
 
-  function freshCase(){
-    return {
-      id: `CASE-${Date.now()}`,
-      status: "טיוטה",
-      step: "details",
+  el.innerHTML = `
+    <div class="field">
+      <label>חברת ביטוח</label>
+      <input class="input" id="ex_company" placeholder="מגדל / הראל / כלל..." />
+    </div>
+    <div class="field">
+      <label>סוג פוליסה</label>
+      <input class="input" id="ex_type" placeholder="בריאות / חיים / פנסיה..." />
+    </div>
+    <div class="field">
+      <label>פרמיה חודשית</label>
+      <input class="input" id="ex_pm" type="number" min="0" placeholder="₪" />
+    </div>
+    <div class="field">
+      <label>סה״כ ששולם (אופציונלי)</label>
+      <input class="input" id="ex_pt" type="number" min="0" placeholder="₪" />
+    </div>
+    <div class="field">
+      <label>סטטוס</label>
+      <select id="ex_status">
+        <option>פעיל</option>
+        <option>מבוטל</option>
+        <option>מוקפא</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>הערות</label>
+      <input class="input" id="ex_notes" placeholder="למשל: סיום בעוד 3 חודשים..." />
+    </div>
+    <div class="rowActions" style="grid-column:1/-1; justify-content:flex-start;">
+      <button class="btn btnPrimary" id="ex_add" type="button">הוסף ביטוח</button>
+      <span class="muted">טיפ: תוסיף את כולם ואז נתקדם לפוליסה החדשה</span>
+    </div>
+  `;
 
-      primary: blankPerson(),
-      hasSecondary: false,
-      secondary: blankPerson(),
-      children: [],
+  setTimeout(() => {
+    $("#ex_add").addEventListener("click", () => {
+      draft.company = $("#ex_company").value.trim();
+      draft.policyType = $("#ex_type").value.trim();
+      draft.premiumMonthly = $("#ex_pm").value;
+      draft.premiumTotal = $("#ex_pt").value;
+      draft.status = $("#ex_status").value;
+      draft.notes = $("#ex_notes").value.trim();
 
-      // cancellations per insured
-      cancellations: {
-        primary: [],
-        secondary: [],
-        children: [] // array per child index
-      },
-
-      products: [], // {id, company, productName, premiumBefore, premiumAfter, insuredFor}
-      medical: {},  // productId -> { qid: "yes|no|", followText }
-      payment: blankPayment(),
-
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-  }
-
-  // Helpers
-  function esc(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function num(v){
-    const n = Number(String(v ?? "").replace(/[^\d.]/g,""));
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function fmtMoney(v){
-    const n = num(v);
-    return n.toLocaleString("he-IL");
-  }
-
-  function toast(msg){
-    const t = $("toast");
-    if (!t) return;
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=> t.classList.remove("show"), 2600);
-  }
-
-  function insuredLabelFromCode(code){
-    if (code === "primary") return "מבוטח ראשי";
-    if (code === "secondary") return "מבוטח משני";
-    if (String(code||"").startsWith("child:")){
-      const idx = Number(String(code).split(":")[1] || "0");
-      return `ילד ${idx+1}`;
-    }
-    return "—";
-  }
-
-  // View + Step
-  function setView(view){
-    state.view = view;
-    document.querySelectorAll(".navItem").forEach(x=>x.classList.toggle("active", x.dataset.nav === view));
-    if (view === "case"){
-      caseHeader?.classList.remove("hidden");
-      stepper?.classList.remove("hidden");
-    } else {
-      caseHeader?.classList.remove("hidden");
-      stepper?.classList.add("hidden");
-    }
-    applyLayout();
-    render();
-  }
-
-  function applyLayout(){
-    const grid = document.querySelector(".grid");
-    if (!grid) return;
-    const inCase = (state.view === "case");
-    const focus = inCase && !!state.ui.focusMode;
-    grid.classList.toggle("focus", focus);
-
-    if (btnToggleFocus){
-      btnToggleFocus.textContent = focus ? "הצג בקרה" : "מסך מלא";
-      btnToggleFocus.setAttribute("aria-pressed", focus ? "true" : "false");
-    }
-  }
-
-  function setStep(step){
-    state.case.step = step;
-    state.case.updatedAt = new Date().toISOString();
-    render();
-  }
-
-  // Router render
-  function render(){
-    applyLayout();
-
-    if (state.view === "saved") { renderSaved(); return; }
-    if (state.view === "settings") { renderSettings(); return; }
-
-    stepper.classList.remove("hidden");
-
-    // header chips
-    caseTitle.textContent = (state.case.id ? "תיק פעיל" : "תיק חדש");
-    caseIdChip.textContent = state.case.id || "—";
-    caseStatusChip.textContent = state.case.status || "טיוטה";
-
-    // stepper active
-    document.querySelectorAll(".step").forEach(btn=>{
-      btn.classList.toggle("active", btn.dataset.step === state.case.step);
-    });
-
-    // stage badges
-    const stepLabel = {
-      details:"פרטים",
-      cancellations:"ביטול פוליסות",
-      products:"מוצרים",
-      questionnaires:"שאלונים",
-      payment:"תשלום",
-      summary:"סיום"
-    }[state.case.step] || "פרטים";
-
-    stageBadge.textContent = stepLabel;
-    badgeStage.textContent = stepLabel;
-
-    badgeProducts.textContent = String(state.case.products.length || 0);
-
-    const totalAfter = (state.case.products||[]).reduce((a,p)=> a + num(p.premiumAfter), 0);
-    badgeTotal.textContent = fmtMoney(totalAfter);
-
-    badgeSecondary.textContent = state.case.hasSecondary ? "כן" : "לא";
-    badgeChildren.textContent = String((state.case.children||[]).length);
-
-    // missing list
-    renderMissing();
-
-    // step body
-    switch (state.case.step){
-      case "details":
-        panelTitle.textContent = "פרטים אישיים";
-        panelHint.textContent = "מלא פרטים של המבוטח הראשי + אופציונלי משני/ילדים.";
-        renderDetailsActions();
-        renderDetails();
-        break;
-      case "cancellations":
-        panelTitle.textContent = "ביטול פוליסות קיימות";
-        panelHint.textContent = "תיעוד פוליסות קיימות + פרמיות קודמות לפי מבוטח.";
-        renderCancellationsActions();
-        renderCancellations();
-        break;
-      case "products":
-        panelTitle.textContent = "מוצרים בפוליסה החדשה";
-        panelHint.textContent = "הוסף מוצרים חדשים ושייך לכל מבוטח (ראשי/משני/ילדים).";
-        renderProductsActions();
-        renderProducts();
-        break;
-      case "questionnaires":
-        panelTitle.textContent = "שאלון רפואי לפי מוצר";
-        panelHint.textContent = "ככל שהפרמיה גבוהה/מוצר כבד – השאלון מתרחב אוטומטית.";
-        renderQuestionnairesActions();
-        renderQuestionnaires();
-        break;
-      case "payment":
-        panelTitle.textContent = "אמצעי תשלום";
-        panelHint.textContent = "שמור רק פרטים מינימליים (למשל 4 ספרות אחרונות) + הערות.";
-        renderPaymentActions();
-        renderPayment();
-        break;
-      case "summary":
-        panelTitle.textContent = "סיכום תיק";
-        panelHint.textContent = "בדיקה אחרונה + ייצוא/שמירה.";
-        renderSummaryActions();
-        renderSummary();
-        break;
-      default:
-        setStep("details");
-    }
-  }
-
-  /* ========= Missing ========= */
-  function renderMissing(){
-    const missing = [];
-    const p = state.case.primary || {};
-    if (!p.firstName || !p.lastName) missing.push("מבוטח ראשי: שם מלא חסר");
-    if (!p.idNumber) missing.push("מבוטח ראשי: ת״ז חסרה");
-
-    if (state.case.products.length === 0) missing.push("לא הוספת מוצרים לפוליסה החדשה");
-
-    // questionnaires: require yes/no answered for all questions shown
-    if (state.case.step === "summary" || state.case.step === "payment" || state.case.step === "questionnaires"){
-      state.case.products.forEach(prod=>{
-        const qset = getQuestionnaireFor(prod);
-        const ansObj = state.case.medical[prod.id] || {};
-        qset.forEach(q=>{
-          const ans = ansObj[q.id] || "";
-          if (!ans) missing.push(`שאלון: חסרה תשובה (${prod.company || "—"} / ${prod.productName || "—"} / ${insuredLabelFromCode(prod.insuredFor)})`);
-          if (ans === "yes" && !String(ansObj[`${q.id}__follow`] || "").trim()){
-            missing.push(`שאלון: חסר פירוט ב-"${q.title}" (${prod.productName || "—"})`);
-          }
-        });
-      });
-    }
-
-    missingList.innerHTML = missing.length
-      ? missing.map(x => `<div class="notice">${esc(x)}</div>`).join("")
-      : `<div class="notice">הכל נראה תקין ✅</div>`;
-  }
-
-  /* ========= Details ========= */
-  function renderDetailsActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnAddChild" type="button">הוסף ילד</button>
-      <button class="btn" id="btnToggleSecondary" type="button">${state.case.hasSecondary ? "הסר משני" : "הוסף משני"}</button>
-      <button class="btn primary" id="btnNextToC" type="button">המשך לביטולים</button>
-    `;
-    panelActions.querySelector("#btnAddChild").addEventListener("click", ()=>{
-      state.case.children.push(blankPerson());
-      toast("ילד נוסף ✅");
-      render();
-    });
-    panelActions.querySelector("#btnToggleSecondary").addEventListener("click", ()=>{
-      state.case.hasSecondary = !state.case.hasSecondary;
-      toast(state.case.hasSecondary ? "מבוטח משני נוסף ✅" : "מבוטח משני הוסר");
-      render();
-    });
-    panelActions.querySelector("#btnNextToC").addEventListener("click", ()=> setStep("cancellations"));
-  }
-
-  function personForm(prefix, person){
-    const f = (k) => `${prefix}.${k}`;
-    return `
-      <div class="card">
-        <div class="cardTitle">${esc(prefix)}</div>
-        <div class="formGrid3">
-          ${fieldText("שם פרטי", f("firstName"), person.firstName)}
-          ${fieldText("שם משפחה", f("lastName"), person.lastName)}
-          ${fieldText("ת״ז", f("idNumber"), person.idNumber)}
-          ${fieldText("תאריך לידה", f("birthDate"), person.birthDate, "date")}
-          ${fieldText("גיל", f("age"), person.age, "number")}
-          ${fieldSelect("מגדר", f("gender"), person.gender, ["","זכר","נקבה","אחר"])}
-          ${fieldSelect("מעשן", f("smoker"), person.smoker, ["","לא","כן","לשעבר"])}
-          ${fieldText("טלפון", f("phone"), person.phone)}
-          ${fieldText("אימייל", f("email"), person.email, "email")}
-          ${fieldText("עיר", f("city"), person.city)}
-          ${fieldText("כתובת", f("address"), person.address)}
-          ${fieldText("גובה (ס״מ)", f("heightCm"), person.heightCm, "number")}
-          ${fieldText("משקל (ק״ג)", f("weightKg"), person.weightKg, "number")}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderDetails(){
-    const out = [];
-    out.push(personForm("מבוטח ראשי", state.case.primary));
-
-    if (state.case.hasSecondary){
-      out.push(personForm("מבוטח משני", state.case.secondary));
-    }
-
-    (state.case.children||[]).forEach((ch, i)=>{
-      out.push(`
-        <div class="card">
-          <div class="cardTop">
-            <div>
-              <div class="cardTitle">ילד ${i+1}</div>
-              <div class="cardMeta">פרטי הילד</div>
-            </div>
-            <button class="smallBtn" data-del-child="${i}" type="button">מחק</button>
-          </div>
-          <div class="formGrid3">
-            ${fieldText("שם פרטי", `child.${i}.firstName`, ch.firstName)}
-            ${fieldText("שם משפחה", `child.${i}.lastName`, ch.lastName)}
-            ${fieldText("ת״ז", `child.${i}.idNumber`, ch.idNumber)}
-            ${fieldText("תאריך לידה", `child.${i}.birthDate`, ch.birthDate, "date")}
-            ${fieldText("גיל", `child.${i}.age`, ch.age, "number")}
-            ${fieldSelect("מגדר", `child.${i}.gender`, ch.gender, ["","זכר","נקבה","אחר"])}
-          </div>
-        </div>
-      `);
-    });
-
-    app.innerHTML = out.join("");
-
-    document.querySelectorAll("[data-del-child]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const i = Number(btn.dataset.delChild);
-        state.case.children.splice(i,1);
-        toast("ילד הוסר");
-        render();
-      });
-    });
-
-    wireDetailsInputs();
-  }
-
-  function wireDetailsInputs(){
-    app.querySelectorAll("input,select,textarea").forEach(el=>{
-      el.addEventListener("input", ()=>{
-        const key = el.dataset.key;
-        if (!key) return;
-        const v = el.value;
-
-        if (key.startsWith("מבוטח ראשי.")){
-          setPersonField(state.case.primary, key.split(".")[1], v);
-        } else if (key.startsWith("מבוטח משני.")){
-          setPersonField(state.case.secondary, key.split(".")[1], v);
-        } else if (key.startsWith("child.")){
-          const parts = key.split(".");
-          const idx = Number(parts[1]);
-          const field = parts[2];
-          if (state.case.children[idx]) setPersonField(state.case.children[idx], field, v);
-        }
-        state.case.updatedAt = new Date().toISOString();
-      });
-    });
-  }
-
-  function setPersonField(obj, field, value){
-    obj[field] = value;
-  }
-
-  /* ========= Cancellations ========= */
-  function renderCancellationsActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnAddCancel" type="button">הוסף פוליסה לביטול</button>
-      <button class="btn primary" id="btnNextToP" type="button">המשך למוצרים</button>
-    `;
-    panelActions.querySelector("#btnAddCancel").addEventListener("click", ()=>{
-      addCancellation();
-      toast("פוליסה נוספה ✅");
-      render();
-    });
-    panelActions.querySelector("#btnNextToP").addEventListener("click", ()=> setStep("products"));
-  }
-
-  function addCancellation(){
-    const target = "primary";
-    if (!state.case.cancellations[target]) state.case.cancellations[target] = [];
-    state.case.cancellations[target].push({
-      company:"",
-      product:"",
-      premium:"",
-      cancelType:"מלא",
-      notes:""
-    });
-  }
-
-  function getInsuredOptions(){
-    const opts = [ {value:"", label:"בחר..."} , {value:"primary", label:"מבוטח ראשי"} ];
-    if (state.case.hasSecondary) opts.push({value:"secondary", label:"מבוטח משני"});
-    (state.case.children||[]).forEach((ch, i)=>{
-      opts.push({value:`child:${i}`, label:`ילד ${i+1}`});
-    });
-    return opts;
-  }
-
-  function renderCancellations(){
-    app.innerHTML = `
-      <div class="notice">טיפ: הוסף כאן פוליסות קיימות + פרמיות ששולמו לפני העסקה.</div>
-      ${renderInsuredComparisonSummary()}
-      ${renderCancellationsLists()}
-    `;
-    wireCancellations();
-  }
-
-  function renderInsuredComparisonSummary(){
-    return `
-      <div class="card">
-        <div class="cardTitle">מבוטחים בתיק</div>
-        <div class="cardMeta">ראשי/משני/ילדים + מצב הפוליסות לביטול</div>
-      </div>
-    `;
-  }
-
-  function renderCancellationsLists(){
-    const sections = [];
-
-    const buildList = (label, list, insuredCode) => {
-      const items = (list||[]).map((c, idx)=>`
-        <div class="card">
-          <div class="cardTop">
-            <div>
-              <div class="cardTitle">${esc(label)} • פוליסה ${idx+1}</div>
-              <div class="cardMeta">ביטול/העברה • פרמיות לפני העסקה</div>
-            </div>
-            <button class="smallBtn" data-del-cancel="${insuredCode}:${idx}" type="button">מחק</button>
-          </div>
-
-          <div class="formGrid4">
-            ${fieldSelect("חברה", `cancel.${insuredCode}.${idx}.company`, c.company, ["",...COMPANIES])}
-            ${fieldText("מוצר", `cancel.${insuredCode}.${idx}.product`, c.product)}
-            ${fieldText("פרמיה", `cancel.${insuredCode}.${idx}.premium`, c.premium, "number")}
-            ${fieldSelect("סוג ביטול", `cancel.${insuredCode}.${idx}.cancelType`, c.cancelType, ["מלא","חלקי","הקפאה","אחר"])}
-          </div>
-          ${fieldText("הערות", `cancel.${insuredCode}.${idx}.notes`, c.notes)}
-        </div>
-      `).join("");
-
-      return `
-        <div class="card">
-          <div class="cardTitle">${esc(label)}</div>
-          <div class="cardMeta">${items ? "רשימת פוליסות לביטול" : "אין פוליסות עדיין"}</div>
-        </div>
-        ${items || `<div class="notice">אין עדיין פוליסות לביטול עבור ${esc(label)}.</div>`}
-      `;
-    };
-
-    sections.push(buildList("מבוטח ראשי", state.case.cancellations.primary || [], "primary"));
-
-    if (state.case.hasSecondary){
-      sections.push(buildList("מבוטח משני", state.case.cancellations.secondary || [], "secondary"));
-    }
-
-    (state.case.children||[]).forEach((ch, i)=>{
-      if (!state.case.cancellations.children[i]) state.case.cancellations.children[i] = [];
-      sections.push(buildList(`ילד ${i+1}`, state.case.cancellations.children[i], `child:${i}`));
-    });
-
-    return sections.join("");
-  }
-
-  function wireCancellations(){
-    app.querySelectorAll("input,select,textarea").forEach(el=>{
-      el.addEventListener("input", ()=>{
-        const key = el.dataset.key;
-        if (!key) return;
-        const v = el.value;
-
-        if (key.startsWith("cancel.")){
-          const parts = key.split(".");
-          const insuredCode = parts[1];
-          const idx = Number(parts[2]);
-          const field = parts[3];
-
-          const target = insuredCode === "primary" ? state.case.cancellations.primary
-                      : insuredCode === "secondary" ? (state.case.cancellations.secondary || (state.case.cancellations.secondary = []))
-                      : insuredCode.startsWith("child:") ? (state.case.cancellations.children[Number(insuredCode.split(":")[1])] || (state.case.cancellations.children[Number(insuredCode.split(":")[1])] = []))
-                      : null;
-
-          if (target && target[idx]) target[idx][field] = v;
-        }
-
-        state.case.updatedAt = new Date().toISOString();
-      });
-    });
-
-    document.querySelectorAll("[data-del-cancel]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const [code, idxStr] = String(btn.dataset.delCancel).split(":");
-        const idx = Number(idxStr);
-
-        if (code === "primary"){
-          state.case.cancellations.primary.splice(idx,1);
-        } else if (code === "secondary"){
-          (state.case.cancellations.secondary||[]).splice(idx,1);
-        } else if (code === "child"){
-          // handled below
-        } else if (String(btn.dataset.delCancel).startsWith("child:")){
-          const childIdx = Number(String(btn.dataset.delCancel).split(":")[1]);
-          const itemIdx = Number(String(btn.dataset.delCancel).split(":")[2]);
-          (state.case.cancellations.children[childIdx]||[]).splice(itemIdx,1);
-        }
-        toast("נמחק ✅");
-        render();
-      });
-    });
-  }
-
-  /* ========= Products ========= */
-  function renderProductsActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnAddProduct" type="button">הוסף מוצר</button>
-      <button class="btn primary" id="btnNextToQ" type="button">המשך לשאלונים</button>
-    `;
-    panelActions.querySelector("#btnAddProduct").addEventListener("click", ()=>{
-      addProduct();
-      toast("מוצר נוסף ✅");
-      render();
-    });
-    panelActions.querySelector("#btnNextToQ").addEventListener("click", ()=>{
-      if (state.case.products.length === 0){
-        toast("צריך להוסיף לפחות מוצר אחד.");
+      if (!draft.company || !draft.policyType){
+        toast("חסר: חברת ביטוח + סוג פוליסה");
         return;
       }
-      for (let i=0;i<state.case.products.length;i++){
-        const p = state.case.products[i];
-        if (!p.company || !p.productName || !p.premiumBefore || !p.premiumAfter){
-          toast(`יש חוסרים במוצר ${i+1}.`);
-          return;
-        }
-      }
-      setStep("questionnaires");
+
+      state.existingPolicies.push({ id: uid("ex"), ...draft });
+      $("#ex_company").value = "";
+      $("#ex_type").value = "";
+      $("#ex_pm").value = "";
+      $("#ex_pt").value = "";
+      $("#ex_status").value = "פעיל";
+      $("#ex_notes").value = "";
+      toast("נוסף ביטוח קיים");
+      render();
     });
-  }
+  });
 
-  function addProduct(){
-    const p = {
-      id: `PRD-${Date.now()}-${Math.floor(Math.random()*1e6)}`,
-      company:"",
-      productName:"",
-      premiumBefore:"",
-      premiumAfter:"",
-      insuredFor:"primary"
-    };
-    state.case.products.push(p);
-    if (!state.case.medical[p.id]) state.case.medical[p.id] = {};
-  }
+  return el;
+}
 
-  function renderProducts(){
-    app.innerHTML = state.case.products.map((p, idx)=>`
-      <div class="card">
-        <div class="cardTop">
-          <div>
-            <div class="cardTitle">מוצר ${idx+1}</div>
-            <div class="cardMeta">${esc(insuredLabelFromCode(p.insuredFor))}</div>
-          </div>
-          <button class="smallBtn" data-del-prod="${idx}" type="button">מחק</button>
-        </div>
+function existingTable(){
+  const box = document.createElement("div");
 
-        <div class="formGrid3">
-          ${fieldSelect("חברה", `prod.${idx}.company`, p.company, ["",...COMPANIES])}
-          ${fieldText("שם מוצר", `prod.${idx}.productName`, p.productName)}
-          ${fieldSelect("למי שייך", `prod.${idx}.insuredFor`, p.insuredFor, getInsuredOptions().map(x=>x.value))}
-        </div>
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>חברה</th>
+        <th>סוג</th>
+        <th>חודשי</th>
+        <th>סה״כ</th>
+        <th>סטטוס</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${state.existingPolicies.map(p => `
+        <tr>
+          <td><input class="input" data-ex="${p.id}" data-k="company" value="${escapeAttr(p.company)}"/></td>
+          <td><input class="input" data-ex="${p.id}" data-k="policyType" value="${escapeAttr(p.policyType)}"/></td>
+          <td><input class="input" data-ex="${p.id}" data-k="premiumMonthly" type="number" min="0" value="${escapeAttr(p.premiumMonthly)}"/></td>
+          <td><input class="input" data-ex="${p.id}" data-k="premiumTotal" type="number" min="0" value="${escapeAttr(p.premiumTotal)}"/></td>
+          <td>
+            <select data-ex="${p.id}" data-k="status">
+              ${["פעיל","מבוטל","מוקפא"].map(x => `<option ${p.status===x?"selected":""}>${x}</option>`).join("")}
+            </select>
+          </td>
+          <td><button class="btn btnGhost" type="button" data-ex-del="${p.id}">מחיקה</button></td>
+        </tr>
+      `).join("")}
+      ${state.existingPolicies.length === 0 ? `
+        <tr><td colspan="6" class="muted">אין ביטוחים קיימים עדיין.</td></tr>
+      ` : ""}
+    </tbody>
+  `;
+  box.appendChild(table);
 
-        <div class="formGrid3">
-          ${fieldText("פרמיה לפני", `prod.${idx}.premiumBefore`, p.premiumBefore, "number")}
-          ${fieldText("פרמיה אחרי", `prod.${idx}.premiumAfter`, p.premiumAfter, "number")}
-          <div class="field">
-            <div class="label">רמז שאלון</div>
-            <div class="notice">${getQuestionnaireHint(p)}</div>
-          </div>
-        </div>
+  setTimeout(() => {
+    box.querySelectorAll("[data-ex][data-k]").forEach(el => {
+      const handler = (e) => {
+        const id = e.target.dataset.ex;
+        const k = e.target.dataset.k;
+        const row = state.existingPolicies.find(x => x.id === id);
+        if (!row) return;
+        row[k] = e.target.value;
+        renderKPIsOnly();
+      };
+      el.addEventListener("input", handler);
+      el.addEventListener("change", handler);
+    });
+
+    box.querySelectorAll("[data-ex-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.exDel;
+        state.existingPolicies = state.existingPolicies.filter(x => x.id !== id);
+        render();
+      });
+    });
+  });
+
+  return box;
+}
+
+function renderStepNewPolicy(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols2";
+
+  const left = document.createElement("div");
+  left.className = "card";
+  left.appendChild(sectionHeader("פרטי פוליסה חדשה", "חברה/מוצר ותאריך התחלה", []));
+
+  left.appendChild(newPolicyHeaderForm());
+
+  const right = document.createElement("div");
+  right.className = "card";
+  right.appendChild(sectionHeader("כיסויים לפי מבוטח", "מוסיף כיסוי + סכום + פרמיה", []));
+
+  right.appendChild(renderCoveragesByInsured());
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+function newPolicyHeaderForm(){
+  const el = document.createElement("div");
+  el.className = "grid cols2";
+  el.innerHTML = `
+    <div class="field">
+      <label>חברת ביטוח (חדשה)</label>
+      <input class="input" id="np_company" placeholder="לדוגמה: הראל" value="${escapeAttr(state.newPolicy.company)}"/>
+    </div>
+    <div class="field">
+      <label>מוצר / מסלול</label>
+      <input class="input" id="np_product" placeholder="לדוגמה: בריאות פרימיום" value="${escapeAttr(state.newPolicy.product)}"/>
+    </div>
+    <div class="field">
+      <label>תאריך התחלה</label>
+      <input class="input" type="date" id="np_start" value="${escapeAttr(state.newPolicy.startDate)}"/>
+    </div>
+    <div class="field">
+      <label>הערה</label>
+      <input class="input" id="np_note" placeholder="אופציונלי (לא נשמר כרגע)" />
+    </div>
+  `;
+
+  setTimeout(() => {
+    $("#np_company").addEventListener("input", e => state.newPolicy.company = e.target.value);
+    $("#np_product").addEventListener("input", e => state.newPolicy.product = e.target.value);
+    $("#np_start").addEventListener("input", e => state.newPolicy.startDate = e.target.value);
+  });
+
+  return el;
+}
+
+function renderCoveragesByInsured(){
+  const box = document.createElement("div");
+  box.className = "grid";
+  box.style.gap = "12px";
+
+  state.client.insured.forEach(ins => {
+    ensureContainersForInsured(ins.id);
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const header = document.createElement("div");
+    header.className = "sectionTitle";
+    header.innerHTML = `
+      <div>
+        <h3>${escapeHtml(ins.label)} • ${escapeHtml(ins.firstName || "—")} ${escapeHtml(ins.lastName || "")}</h3>
+        <div class="hint">כיסויים שנרכשו בפוליסה החדשה</div>
       </div>
-    `).join("");
+      <div class="rowActions">
+        <button class="btn btnGhost" type="button" data-addcov="${ins.id}">הוסף כיסוי</button>
+      </div>
+    `;
+    card.appendChild(header);
 
-    app.querySelectorAll("[data-del-prod]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const idx = Number(btn.dataset.delProd);
-        const pid = state.case.products[idx]?.id;
-        state.case.products.splice(idx,1);
-        if (pid) delete state.case.medical[pid];
-        toast("מוצר נמחק");
+    const rows = state.newPolicy.coveragesByInsured[ins.id];
+    const table = document.createElement("table");
+    table.className = "table";
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>כיסוי</th>
+          <th>סכום ביטוח</th>
+          <th>פרמיה חודשית</th>
+          <th>הערות</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td>
+              <select data-cov="${r.id}" data-k="coverage">
+                ${TASK_COVERS.map(x => `<option ${r.coverage===x?"selected":""}>${x}</option>`).join("")}
+              </select>
+            </td>
+            <td><input class="input" data-cov="${r.id}" data-k="sumInsured" type="number" min="0" value="${escapeAttr(r.sumInsured)}"/></td>
+            <td><input class="input" data-cov="${r.id}" data-k="premiumMonthly" type="number" min="0" value="${escapeAttr(r.premiumMonthly)}"/></td>
+            <td><input class="input" data-cov="${r.id}" data-k="notes" value="${escapeAttr(r.notes)}"/></td>
+            <td><button class="btn btnGhost" type="button" data-cov-del="${r.id}" data-owner="${ins.id}">מחיקה</button></td>
+          </tr>
+        `).join("")}
+        ${rows.length === 0 ? `<tr><td colspan="5" class="muted">אין כיסויים עדיין למבוטח זה.</td></tr>` : ""}
+      </tbody>
+    `;
+    card.appendChild(table);
+
+    box.appendChild(card);
+  });
+
+  setTimeout(() => {
+    // add coverage
+    $all("[data-addcov]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const insuredId = btn.dataset.addcov;
+        const row = { id: uid("cov"), coverage: TASK_COVERS[0], sumInsured:"", premiumMonthly:"", notes:"" };
+        state.newPolicy.coveragesByInsured[insuredId].push(row);
         render();
       });
     });
 
-    app.querySelectorAll("input,select").forEach(el=>{
-      el.addEventListener("input", ()=>{
-        const key = el.dataset.key;
-        if (!key) return;
-        const v = el.value;
+    // edit coverage
+    $all("[data-cov][data-k]").forEach(el => {
+      const handler = (e) => {
+        const id = e.target.dataset.cov;
+        const k = e.target.dataset.k;
+        const { ownerRow } = findCoverageById(id);
+        if (!ownerRow) return;
+        ownerRow[k] = e.target.value;
+        renderKPIsOnly();
+      };
+      el.addEventListener("input", handler);
+      el.addEventListener("change", handler);
+    });
 
-        if (key.startsWith("prod.")){
-          const parts = key.split(".");
-          const idx = Number(parts[1]);
-          const field = parts[2];
-          if (state.case.products[idx]) state.case.products[idx][field] = v;
-          // ensure medical bucket exists
-          const pid = state.case.products[idx]?.id;
-          if (pid && !state.case.medical[pid]) state.case.medical[pid] = {};
-        }
-        state.case.updatedAt = new Date().toISOString();
-        renderMissing();
+    // delete coverage
+    $all("[data-cov-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const covId = btn.dataset.covDel;
+        const owner = btn.dataset.owner;
+        state.newPolicy.coveragesByInsured[owner] =
+          state.newPolicy.coveragesByInsured[owner].filter(x => x.id !== covId);
+        render();
       });
-    });
-  }
-
-  function getQuestionnaireHint(product){
-    const premAfter  = num(product.premiumAfter);
-    const premBefore = num(product.premiumBefore);
-    const pname = String(product.productName||"");
-    const heavyKw = ["בריאות","חיים","אכ״ע","אכע","סיעוד","משכנתא","מנהלים"];
-    const isHeavy = heavyKw.some(k => pname.includes(k));
-    const wantsLong = isHeavy || premAfter >= 250 || (premAfter - premBefore) >= 150;
-    return wantsLong ? "שאלון מורחב (פרמיה/מוצר כבד)" : "שאלון קצר";
-  }
-
-  /* ========= Questionnaires ========= */
-  function renderQuestionnairesActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnBackToP" type="button">חזרה למוצרים</button>
-      <button class="btn primary" id="btnNextToPay" type="button">המשך לתשלום</button>
-    `;
-    panelActions.querySelector("#btnBackToP").addEventListener("click", ()=> setStep("products"));
-    panelActions.querySelector("#btnNextToPay").addEventListener("click", ()=>{
-      // validate questionnaire: all answered + follow text when yes
-      for (const p of state.case.products){
-        const qset = getQuestionnaireFor(p);
-        const ansObj = state.case.medical[p.id] || {};
-        for (const q of qset){
-          const ans = ansObj[q.id] || "";
-          if (!ans){
-            toast(`חסרה תשובה בשאלון (${p.productName || "מוצר"}).`);
-            return;
-          }
-          if (ans === "yes" && !String(ansObj[`${q.id}__follow`] || "").trim()){
-            toast(`חסר פירוט ב-"${q.title}" (${p.productName || "מוצר"}).`);
-            return;
-          }
-        }
-      }
-      setStep("payment");
-    });
-  }
-
-  function renderQuestionnaires(){
-    if (state.case.products.length === 0){
-      app.innerHTML = `
-        <div class="card">
-          <div class="cardTitle">אין מוצרים — אין שאלונים</div>
-          <div class="cardMeta">קודם הוסף מוצרים ואז נפתח שאלונים לכל מוצר.</div>
-        </div>
-      `;
-      return;
-    }
-
-    app.innerHTML = state.case.products.map((p, idx)=>{
-      const qset = getQuestionnaireFor(p);
-      return `
-        <div class="card">
-          <div class="cardTop">
-            <div>
-              <div class="cardTitle">שאלון למוצר ${idx+1}</div>
-              <div class="cardMeta">${esc(insuredLabelFromCode(p.insuredFor))} • ${esc(p.company || "—")} • ${esc(p.productName || "—")}</div>
-            </div>
-            <span class="chip mono">${esc(p.id)}</span>
-          </div>
-          <div class="notice">${esc(getQuestionnaireHint(p))} • ${qset.length} שאלות</div>
-        </div>
-
-        ${qset.map(q => questionnaireCard(p.id, q)).join("")}
-      `;
-    }).join("");
-
-    wireQuestionnaire();
-  }
-
-  // Questionnaire mapping bank
-  const QUESTION_BANK = {
-    "*|*": QUESTION_SET_DEFAULT,
-
-    "הפניקס|בריאות": [
-      { id:"ph1", title:"סוכרת", desc:"האם קיימת סוכרת/טרום סוכרת?", follow:"פרט סוג/תאריך אבחנה/טיפול/בדיקות" },
-      { id:"ph2", title:"לחץ דם", desc:"האם יש לחץ דם גבוה?", follow:"פרט תרופות/מדידות/ביקורות" },
-      { id:"ph3", title:"כולסטרול", desc:"האם יש כולסטרול גבוה?", follow:"פרט תרופות/בדיקות" },
-      ...QUESTION_SET_DEFAULT,
-    ],
-    "הראל|חיים": [
-      { id:"hr1", title:"עישון", desc:"האם המבוטח מעשן כיום?", follow:"כמות/משך/הפסקות" },
-      { id:"hr2", title:"ניתוחים", desc:"האם בוצעו ניתוחים בעבר?", follow:"פרט ניתוח/תאריך/סיבה" },
-      ...QUESTION_SET_DEFAULT,
-    ],
-    "מנורה|אכ״ע": [
-      { id:"mn1", title:"פגיעה/תאונה", desc:"האם הייתה תאונה/פגיעה משמעותית?", follow:"פרט תאונה/תאריך/השלכות" },
-      { id:"mn2", title:"מגבלות עבודה", desc:"האם קיימת מגבלה תפקודית/רפואית?", follow:"פרט מגבלה/מסמכים" },
-      ...QUESTION_SET_DEFAULT,
-    ],
-
-    "מנורה|*": QUESTION_SET_DEFAULT,
-    "כלל|*": QUESTION_SET_DEFAULT,
-    "הפניקס|*": QUESTION_SET_DEFAULT,
-    "מגדל|*": QUESTION_SET_DEFAULT,
-    "הראל|*": QUESTION_SET_DEFAULT,
-    "הכשרה|*": QUESTION_SET_DEFAULT,
-    "מדיקר|*": QUESTION_SET_DEFAULT,
-  };
-
-  function normKey(s){
-    return String(s || "").trim();
-  }
-
-  function getQuestionnaireFor(product){
-    const company = normKey(product.company);
-    const pname   = normKey(product.productName);
-
-    const baseName = (() => {
-      const known = ["בריאות","חיים","אכ״ע","אכע","סיעוד","משכנתא","תאונות","נסיעות","שיניים","ריסק","מנהלים","גמל","פנסיה"];
-      const hit = known.find(k => pname.includes(k));
-      return hit || pname;
-    })();
-
-    const exact = `${company}|${baseName}`;
-    const companyDefault = `${company}|*`;
-
-    const bank =
-      QUESTION_BANK[exact]
-      || QUESTION_BANK[`${company}|${pname}`]
-      || QUESTION_BANK[companyDefault]
-      || QUESTION_BANK["*|*"]
-      || QUESTION_SET_DEFAULT;
-
-    const premAfter  = num(product.premiumAfter);
-    const premBefore = num(product.premiumBefore);
-    const heavyKw = ["בריאות","חיים","אכ״ע","אכע","סיעוד","משכנתא","מנהלים"];
-    const isHeavy = heavyKw.some(k => (baseName||"").includes(k) || (pname||"").includes(k));
-
-    const wantsLong = isHeavy || premAfter >= 250 || (premAfter - premBefore) >= 150;
-
-    if (!wantsLong) return bank;
-
-    const seen = new Set();
-    const merged = [];
-    [...bank, ...QUESTION_SET_LONG_EXTRA].forEach(q=>{
-      if (!q || !q.id) return;
-      if (seen.has(q.id)) return;
-      seen.add(q.id);
-      merged.push(q);
-    });
-    return merged;
-  }
-
-  function questionnaireCard(productId, q){
-    const ans = (state.case.medical[productId] || {})[q.id] || "";
-    const yesActive = ans === "yes";
-    const noActive  = ans === "no";
-    const followVal = (state.case.medical[productId] || {})[`${q.id}__follow`] || "";
-
-    return `
-      <div class="card">
-        <div class="cardTitle">${esc(q.title)}</div>
-        <div class="cardMeta">${esc(q.desc || "")}</div>
-
-        <div class="formGrid">
-          <div class="field">
-            <div class="label">תשובה</div>
-            <select class="select" data-q="${esc(q.id)}" data-p="${esc(productId)}">
-              <option value="">בחר...</option>
-              <option value="yes" ${yesActive ? "selected":""}>כן</option>
-              <option value="no"  ${noActive ? "selected":""}>לא</option>
-            </select>
-          </div>
-          <div class="field">
-            <div class="label">פירוט (נדרש אם כן)</div>
-            <input class="input" data-follow="${esc(q.id)}" data-p="${esc(productId)}" value="${esc(followVal)}" placeholder="${esc(q.follow || "פרט...")}" />
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function wireQuestionnaire(){
-    app.querySelectorAll("[data-q]").forEach(sel=>{
-      sel.addEventListener("change", ()=>{
-        const qid = sel.dataset.q;
-        const pid = sel.dataset.p;
-        if (!qid || !pid) return;
-        if (!state.case.medical[pid]) state.case.medical[pid] = {};
-        state.case.medical[pid][qid] = sel.value;
-        state.case.updatedAt = new Date().toISOString();
-        renderMissing();
-      });
-    });
-
-    app.querySelectorAll("[data-follow]").forEach(inp=>{
-      inp.addEventListener("input", ()=>{
-        const qid = inp.dataset.follow;
-        const pid = inp.dataset.p;
-        if (!qid || !pid) return;
-        if (!state.case.medical[pid]) state.case.medical[pid] = {};
-        state.case.medical[pid][`${qid}__follow`] = inp.value;
-        state.case.updatedAt = new Date().toISOString();
-        renderMissing();
-      });
-    });
-  }
-
-  /* ========= Payment ========= */
-  function renderPaymentActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnBackToQ" type="button">חזרה לשאלונים</button>
-      <button class="btn primary" id="btnNextToS" type="button">המשך לסיכום</button>
-    `;
-    panelActions.querySelector("#btnBackToQ").addEventListener("click", ()=> setStep("questionnaires"));
-    panelActions.querySelector("#btnNextToS").addEventListener("click", ()=> setStep("summary"));
-  }
-
-  function renderPayment(){
-    const p = state.case.payment || blankPayment();
-    state.case.payment = p;
-
-    app.innerHTML = `
-      <div class="card">
-        <div class="cardTitle">פרטי תשלום</div>
-        <div class="cardMeta">לא שומרים פרטי כרטיס מלאים. רק מינימום נדרש.</div>
-
-        <div class="formGrid3">
-          ${fieldSelect("שיטה", "pay.method", p.method, ["","אשראי","הוראת קבע","העברה","צ׳ק","אחר"])}
-          ${fieldText("שם משלם", "pay.payerName", p.payerName)}
-          ${fieldText("ת״ז משלם", "pay.payerId", p.payerId)}
-        </div>
-
-        <div class="formGrid3">
-          ${fieldText("4 ספרות אחרונות", "pay.cardLast4", p.cardLast4, "text")}
-          ${fieldText("הערות", "pay.notes", p.notes)}
-          <div class="field"><div class="label"> </div><div class="notice">אפשר להמשיך לסיכום גם אם חסר חלק — אבל מומלץ להשלים.</div></div>
-        </div>
-      </div>
-    `;
-
-    app.querySelectorAll("input,select,textarea").forEach(el=>{
-      el.addEventListener("input", ()=>{
-        const key = el.dataset.key;
-        if (!key) return;
-        const v = el.value;
-        if (key.startsWith("pay.")){
-          const field = key.split(".")[1];
-          state.case.payment[field] = v;
-        }
-        state.case.updatedAt = new Date().toISOString();
-      });
-    });
-  }
-
-  /* ========= Summary ========= */
-  function renderSummaryActions(){
-    panelActions.innerHTML = `
-      <button class="btn" id="btnBackToPay" type="button">חזרה לתשלום</button>
-      <button class="btn primary" id="btnSaveCase" type="button">שמור תיק</button>
-    `;
-    panelActions.querySelector("#btnBackToPay").addEventListener("click", ()=> setStep("payment"));
-    panelActions.querySelector("#btnSaveCase").addEventListener("click", saveDraft);
-  }
-
-  function renderSummary(){
-    const totalAfter = (state.case.products||[]).reduce((a,p)=> a + num(p.premiumAfter), 0);
-
-    app.innerHTML = `
-      <div class="card">
-        <div class="cardTitle">סיכום</div>
-        <div class="cardMeta">בדיקה אחרונה לפני שמירה / ייצוא.</div>
-      </div>
-
-      <div class="card">
-        <div class="cardTitle">סה״כ פרמיה אחרי</div>
-        <div class="notice">${fmtMoney(totalAfter)} ₪</div>
-      </div>
-
-      ${renderSummaryProducts()}
-      ${renderSummaryQuestionnaires()}
-    `;
-  }
-
-  function renderSummaryProducts(){
-    if (!state.case.products.length){
-      return `<div class="notice">אין מוצרים.</div>`;
-    }
-    return state.case.products.map((p, idx)=>`
-      <div class="card">
-        <div class="cardTitle">מוצר ${idx+1}: ${esc(p.company || "—")} • ${esc(p.productName || "—")}</div>
-        <div class="cardMeta">${esc(insuredLabelFromCode(p.insuredFor))}</div>
-        <div class="formGrid3">
-          <div class="notice">לפני: ${fmtMoney(p.premiumBefore)} ₪</div>
-          <div class="notice">אחרי: ${fmtMoney(p.premiumAfter)} ₪</div>
-          <div class="notice">${esc(getQuestionnaireHint(p))}</div>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  function renderSummaryQuestionnaires(){
-    const blocks = [];
-    for (const p of state.case.products){
-      const qset = getQuestionnaireFor(p);
-      const ans = state.case.medical[p.id] || {};
-      blocks.push(`
-        <div class="card">
-          <div class="cardTitle">שאלון: ${esc(p.productName || "—")} (${esc(insuredLabelFromCode(p.insuredFor))})</div>
-          <div class="cardMeta">${esc(p.company || "—")} • ${qset.length} שאלות</div>
-          ${qset.map(q=>{
-            const a = ans[q.id] || "—";
-            const follow = ans[`${q.id}__follow`] || "";
-            return `<div class="notice"><b>${esc(q.title)}:</b> ${esc(a)} ${a==="yes" ? `— <span class="mono">${esc(follow || "חסר פירוט")}</span>`:""}</div>`;
-          }).join("")}
-        </div>
-      `);
-    }
-    return blocks.join("");
-  }
-
-  /* ========= Saved / Settings ========= */
-  function loadAllSaved(){
-    try{
-      const raw = localStorage.getItem("GICRM_SAVED_CASES") || "[]";
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    }catch{ return []; }
-  }
-  function saveAllSaved(arr){
-    localStorage.setItem("GICRM_SAVED_CASES", JSON.stringify(arr || []));
-  }
-
-  function saveDraft(){
-    const all = loadAllSaved();
-    const copy = JSON.parse(JSON.stringify(state.case));
-    copy.updatedAt = new Date().toISOString();
-    const idx = all.findIndex(x=>x.id === copy.id);
-    if (idx >= 0) all[idx] = copy; else all.unshift(copy);
-    saveAllSaved(all);
-    toast("נשמר ✅");
-  }
-
-  function loadDraft(){
-    const all = loadAllSaved();
-    if (!all.length){
-      toast("אין תיקים שמורים.");
-      return;
-    }
-    state.case = all[0];
-    toast("טעינה ✅");
-    setView("case");
-    setStep(state.case.step || "details");
-  }
-
-  function renderSaved(){
-    const all = loadAllSaved();
-    app.innerHTML = `
-      <div class="card">
-        <div class="cardTitle">תיקים שמורים</div>
-        <div class="cardMeta">ניהול תיקים שנשמרו בדפדפן</div>
-      </div>
-      ${all.length ? all.map((c)=>`
-        <div class="card">
-          <div class="cardTop">
-            <div>
-              <div class="cardTitle">${esc(c.id)}</div>
-              <div class="cardMeta">${esc(c.status || "טיוטה")} • עודכן: ${esc(String(c.updatedAt||"").slice(0,19).replace("T"," "))}</div>
-            </div>
-            <button class="smallBtn" data-open="${esc(c.id)}" type="button">פתח</button>
-          </div>
-        </div>
-      `).join("") : `<div class="notice">אין תיקים.</div>`}
-    `;
-
-    app.querySelectorAll("[data-open]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.dataset.open;
-        const all = loadAllSaved();
-        const found = all.find(x=>x.id === id);
-        if (!found){ toast("לא נמצא"); return; }
-        state.case = found;
-        toast("נפתח ✅");
-        setView("case");
-        setStep(state.case.step || "details");
-      });
-    });
-
-    panelActions.innerHTML = "";
-    panelTitle.textContent = "תיקים שמורים";
-    panelHint.textContent = "פתח תיק קיים או חזור לתיק הפעיל.";
-  }
-
-  function renderSettings(){
-    const s = state.settings;
-    app.innerHTML = `
-      <div class="card">
-        <div class="cardTitle">הגדרות</div>
-        <div class="cardMeta">מצב שמירה מקומי / שרת (בהמשך Apps Script)</div>
-      </div>
-
-      <div class="card">
-        <div class="formGrid3">
-          ${fieldSelect("Storage", "set.storageMode", s.storageMode, ["local","server"])}
-          ${fieldText("Server URL", "set.serverUrl", s.serverUrl)}
-          <div class="field"><div class="label"> </div><div class="notice">כרגע נשמר מקומית. שרת יופעל כשנחבר Web App.</div></div>
-        </div>
-      </div>
-    `;
-
-    app.querySelectorAll("input,select").forEach(el=>{
-      el.addEventListener("input", ()=>{
-        const key = el.dataset.key;
-        const v = el.value;
-        if (key === "set.storageMode"){
-          state.settings.storageMode = v === "server" ? "server" : "local";
-          localStorage.setItem(STORAGE_MODE_KEY, state.settings.storageMode);
-        }
-        if (key === "set.serverUrl"){
-          state.settings.serverUrl = v;
-          localStorage.setItem(SERVER_URL_KEY, state.settings.serverUrl);
-        }
-        toast("עודכן ✅");
-      });
-    });
-
-    panelActions.innerHTML = "";
-    panelTitle.textContent = "הגדרות";
-    panelHint.textContent = "כאן נקשור בהמשך שרת (Sheets/DB).";
-  }
-
-  /* ========= Small UI Helpers ========= */
-  function fieldText(label, key, val, type="text"){
-    return `
-      <div class="field">
-        <div class="label">${esc(label)}</div>
-        <input class="input" type="${esc(type)}" data-key="${esc(key)}" value="${esc(val||"")}" />
-      </div>
-    `;
-  }
-  function fieldSelect(label, key, val, options){
-    const opts = (options||[]).map(o=>{
-      const ov = typeof o === "string" ? o : (o.value ?? "");
-      const ol = typeof o === "string" ? o : (o.label ?? o.value ?? "");
-      return `<option value="${esc(ov)}" ${(String(val||"")===String(ov))?"selected":""}>${esc(ol||ov||"")}</option>`;
-    }).join("");
-    return `
-      <div class="field">
-        <div class="label">${esc(label)}</div>
-        <select class="select" data-key="${esc(key)}">${opts}</select>
-      </div>
-    `;
-  }
-
-  /* ========= Init ========= */
-  document.querySelectorAll(".step").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const s = btn.dataset.step;
-      if (s) setStep(s);
     });
   });
 
-  btnSaveDraft.addEventListener("click", saveDraft);
-  btnLoadDraft.addEventListener("click", loadDraft);
-  btnGoFinish.addEventListener("click", ()=> setStep("summary"));
+  return box;
+}
 
-  if (btnToggleFocus){
-    btnToggleFocus.addEventListener("click", ()=>{
-      setFocusMode(!state.ui.focusMode);
-    });
+function renderStepMedical(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols2";
+
+  const left = document.createElement("div");
+  left.className = "card";
+  left.appendChild(sectionHeader("בחר מבוטח לתשאול", "שאלון רפואי לפי מבוטח", []));
+
+  left.appendChild(renderInsuredSelector());
+
+  const right = document.createElement("div");
+  right.className = "card";
+  right.appendChild(sectionHeader("שאלון רפואי", "מלא תשובות + פירוט", []));
+
+  right.appendChild(renderMedicalForm());
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+let medicalActiveInsuredId = null;
+
+function renderInsuredSelector(){
+  const box = document.createElement("div");
+  box.className = "grid";
+  box.style.gap = "10px";
+
+  if (!medicalActiveInsuredId){
+    medicalActiveInsuredId = state.client.insured[0]?.id || null;
   }
 
-  // Sidebar nav
-  document.querySelectorAll(".navItem").forEach(item=>{
-    item.addEventListener("click", ()=>{
-      const nav = item.dataset.nav;
-      if (!nav) return;
-      setView(nav);
+  state.client.insured.forEach(ins => {
+    const pill = document.createElement("div");
+    pill.className = "pill" + (ins.id === medicalActiveInsuredId ? " active" : "");
+    pill.innerHTML = `👤 ${escapeHtml(ins.label)} • ${escapeHtml(ins.firstName || "—")} ${escapeHtml(ins.lastName || "")}`;
+    pill.addEventListener("click", () => {
+      medicalActiveInsuredId = ins.id;
+      render();
+    });
+    box.appendChild(pill);
+  });
+
+  box.appendChild(divHr());
+  const hint = document.createElement("div");
+  hint.className = "muted";
+  hint.style.fontSize = "12px";
+  hint.textContent = "טיפ: עבור כל מבוטח עונים בנפרד. הנתונים נשמרים לתוך ה-state.";
+  box.appendChild(hint);
+
+  return box;
+}
+
+function renderMedicalForm(){
+  const insuredId = medicalActiveInsuredId;
+  if (!insuredId){
+    const empty = document.createElement("div");
+    empty.className = "muted";
+    empty.textContent = "אין מבוטחים.";
+    return empty;
+  }
+
+  ensureContainersForInsured(insuredId);
+
+  const answers = state.medical.answersByInsured[insuredId];
+  const box = document.createElement("div");
+  box.className = "grid";
+  box.style.gap = "12px";
+
+  MED_QUESTIONS.forEach(q => {
+    const a = answers[q.id] || { answer:"לא", details:"" };
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="sectionTitle">
+        <h3>${escapeHtml(q.text)}</h3>
+        <div class="rowActions">
+          <span class="badge ${a.answer==="כן" ? "badgeWarn" : "badgeOk"}">${escapeHtml(a.answer)}</span>
+        </div>
+      </div>
+      <div class="grid cols2">
+        <div class="field">
+          <label>תשובה</label>
+          <select data-medq="${q.id}" data-medk="answer">
+            <option ${a.answer==="לא"?"selected":""}>לא</option>
+            <option ${a.answer==="כן"?"selected":""}>כן</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>פירוט (אם כן)</label>
+          <input class="input" data-medq="${q.id}" data-medk="details" placeholder="תיאור קצר..." value="${escapeAttr(a.details)}" />
+        </div>
+      </div>
+    `;
+
+    box.appendChild(card);
+  });
+
+  setTimeout(() => {
+    box.querySelectorAll("[data-medq][data-medk]").forEach(el => {
+      const handler = (e) => {
+        const qid = e.target.dataset.medq;
+        const k = e.target.dataset.medk;
+        const answers = state.medical.answersByInsured[insuredId];
+        answers[qid] = answers[qid] || { answer:"לא", details:"" };
+        answers[qid][k] = e.target.value;
+        render();
+      };
+      el.addEventListener("change", handler);
+      el.addEventListener("input", handler);
     });
   });
 
+  return box;
+}
+
+function renderStepPayment(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols2";
+
+  const left = document.createElement("div");
+  left.className = "card";
+  left.appendChild(sectionHeader("אמצעי תשלום", "איסוף תשלום בצורה מסודרת", []));
+
+  const form = document.createElement("div");
+  form.className = "grid cols2";
+  form.innerHTML = `
+    <div class="field">
+      <label>שיטת תשלום</label>
+      <select id="pay_method">
+        <option value="credit" ${state.payment.method==="credit"?"selected":""}>אשראי</option>
+        <option value="bank" ${state.payment.method==="bank"?"selected":""}>הוראת קבע</option>
+        <option value="transfer" ${state.payment.method==="transfer"?"selected":""}>העברה בנקאית</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>מס׳ תשלומים</label>
+      <select id="pay_inst">
+        ${["1","2","3","6","12"].map(x => `<option ${state.payment.installments===x?"selected":""}>${x}</option>`).join("")}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>שם משלם</label>
+      <input class="input" id="pay_name" value="${escapeAttr(state.payment.payerName)}" />
+    </div>
+    <div class="field">
+      <label>ת״ז משלם</label>
+      <input class="input" id="pay_id" value="${escapeAttr(state.payment.payerId)}" />
+    </div>
+
+    <div class="field">
+      <label>אשראי – 4 ספרות אחרונות (דמו)</label>
+      <input class="input" id="pay_last4" maxlength="4" value="${escapeAttr(state.payment.cardLast4)}" />
+    </div>
+    <div class="field">
+      <label>תאריך חיוב ראשון</label>
+      <input class="input" type="date" id="pay_date" value="${escapeAttr(state.payment.billingDate)}" />
+    </div>
+
+    <div class="field" style="grid-column:1/-1">
+      <label>אישור</label>
+      <div class="card" style="display:flex;gap:10px;align-items:center;">
+        <input id="pay_consent" type="checkbox" ${state.payment.consent ? "checked":""} />
+        <div>
+          <div style="font-weight:900">אני מאשר/ת חיוב בהתאם לפרטים שנמסרו</div>
+          <div class="muted" style="font-size:12px">בלי סימון אישור – לא ניתן להתקדם ל־Save & Submit.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  left.appendChild(form);
+
+  const right = document.createElement("div");
+  right.className = "card";
+  right.appendChild(sectionHeader("סיכום חיוב מהיר", "מחשב מהנתונים שהוזנו", []));
+
+  const summary = document.createElement("div");
+  summary.className = "grid cols2";
+  const newMonthly = calcNewMonthly();
+  const oldMonthly = state.existingPolicies.reduce((s,p)=> s + Number(p.premiumMonthly||0), 0);
+  summary.innerHTML = `
+    <div class="kpi">
+      <div class="k">פרמיה חודשית חדשה</div>
+      <div class="v">${escapeHtml(currency(newMonthly))}</div>
+      <div class="s">מבוסס על הכיסויים שהכנסת</div>
+    </div>
+    <div class="kpi">
+      <div class="k">פרמיה חודשית קיימת</div>
+      <div class="v">${escapeHtml(currency(oldMonthly))}</div>
+      <div class="s">סך ביטוחים קיימים</div>
+    </div>
+    <div class="kpi" style="grid-column:1/-1">
+      <div class="k">פער חודשי</div>
+      <div class="v">${escapeHtml(currency(newMonthly - oldMonthly))}</div>
+      <div class="s">להשוואה מול מצב קודם</div>
+    </div>
+  `;
+  right.appendChild(summary);
+
+  setTimeout(() => {
+    $("#pay_method").addEventListener("change", e => { state.payment.method = e.target.value; render(); });
+    $("#pay_inst").addEventListener("change", e => state.payment.installments = e.target.value);
+    $("#pay_name").addEventListener("input", e => state.payment.payerName = e.target.value);
+    $("#pay_id").addEventListener("input", e => state.payment.payerId = e.target.value);
+    $("#pay_last4").addEventListener("input", e => state.payment.cardLast4 = e.target.value);
+    $("#pay_date").addEventListener("input", e => state.payment.billingDate = e.target.value);
+    $("#pay_consent").addEventListener("change", e => state.payment.consent = e.target.checked);
+  });
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+function renderStepSummary(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid cols2";
+
+  const left = document.createElement("div");
+  left.className = "card";
+  left.appendChild(sectionHeader("סיכום עסקה", "תצוגה מסודרת לפני שמירה לשרת", []));
+
+  const primary = state.client.insured.find(x => x.role === "primary");
+  const title = document.createElement("div");
+  title.className = "card";
+  title.innerHTML = `
+    <div class="sectionTitle">
+      <h3>לקוח: ${escapeHtml(primary?.firstName || "—")} ${escapeHtml(primary?.lastName || "")}</h3>
+      <div class="rowActions">
+        <span class="badge badgeOk">READY</span>
+        <span class="badge">${escapeHtml(state.newPolicy.company || "חברה חדשה לא נבחרה")}</span>
+      </div>
+    </div>
+    <div class="muted" style="font-size:12px">
+      נציג סוגר: ${escapeHtml(state.client.dealOwner || "—")} • מקור: ${escapeHtml(state.client.leadSource || "—")}
+    </div>
+  `;
+  left.appendChild(title);
+
+  left.appendChild(divHr());
+  left.appendChild(summaryInsuredList());
+  left.appendChild(divHr());
+  left.appendChild(summaryCoverages());
+
+  const right = document.createElement("div");
+  right.className = "card";
+  right.appendChild(sectionHeader("תצוגת JSON (דמו)", "ככה זה יישלח לשיטס/שרת", []));
+
+  const pre = document.createElement("pre");
+  pre.style.margin = "0";
+  pre.style.whiteSpace = "pre-wrap";
+  pre.style.color = "rgba(234,244,255,.88)";
+  pre.textContent = JSON.stringify(state, null, 2);
+  right.appendChild(pre);
+
+  wrap.appendChild(left);
+  wrap.appendChild(right);
+  return wrap;
+}
+
+function summaryInsuredList(){
+  const box = document.createElement("div");
+  box.className = "card";
+  box.innerHTML = `<div class="sectionTitle"><h3>מבוטחים</h3><div class="hint">פרטי בסיס</div></div>`;
+
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>סוג</th>
+        <th>שם</th>
+        <th>ת״ז</th>
+        <th>טלפון</th>
+        <th>אימייל</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${state.client.insured.map(i => `
+        <tr>
+          <td>${escapeHtml(i.label)}</td>
+          <td>${escapeHtml((i.firstName||"") + " " + (i.lastName||""))}</td>
+          <td>${escapeHtml(i.idNumber||"")}</td>
+          <td>${escapeHtml(i.phone||"")}</td>
+          <td>${escapeHtml(i.email||"")}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+  box.appendChild(table);
+  return box;
+}
+
+function summaryCoverages(){
+  const box = document.createElement("div");
+  box.className = "card";
+  box.innerHTML = `<div class="sectionTitle"><h3>כיסויים שנרכשו</h3><div class="hint">לפי מבוטח</div></div>`;
+
+  const rows = [];
+  state.client.insured.forEach(ins => {
+    const covs = state.newPolicy.coveragesByInsured[ins.id] || [];
+    covs.forEach(c => {
+      rows.push({
+        insured: `${ins.label} • ${ins.firstName||"—"} ${ins.lastName||""}`,
+        coverage: c.coverage,
+        sumInsured: c.sumInsured,
+        premiumMonthly: c.premiumMonthly
+      });
+    });
+  });
+
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>מבוטח</th>
+        <th>כיסוי</th>
+        <th>סכום</th>
+        <th>פרמיה חודשית</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows.map(r => `
+        <tr>
+          <td>${escapeHtml(r.insured)}</td>
+          <td>${escapeHtml(r.coverage)}</td>
+          <td>${escapeHtml(r.sumInsured || "")}</td>
+          <td>${escapeHtml(currency(r.premiumMonthly || 0))}</td>
+        </tr>
+      `).join("")}
+      ${rows.length===0 ? `<tr><td colspan="4" class="muted">אין כיסויים עדיין.</td></tr>` : ""}
+    </tbody>
+  `;
+  box.appendChild(table);
+  return box;
+}
+
+/* ---------- insured add/remove ---------- */
+
+function addSpouse(){
+  const exists = state.client.insured.some(x => x.role === "spouse");
+  if (exists){ toast("בן/בת זוג כבר קיים"); return; }
+  state.client.insured.push(mkInsured("spouse", "בן/בת זוג"));
+  toast("נוסף בן/בת זוג");
   render();
-})();
+}
+function addChild(){
+  const count = state.client.insured.filter(x => x.role === "child").length + 1;
+  state.client.insured.push(mkInsured("child", `ילד/ה ${count}`));
+  toast("נוסף ילד/ה");
+  render();
+}
+function removeInsured(id){
+  state.client.insured = state.client.insured.filter(x => x.id !== id);
+  delete state.newPolicy.coveragesByInsured[id];
+  delete state.medical.answersByInsured[id];
+  if (medicalActiveInsuredId === id){
+    medicalActiveInsuredId = state.client.insured[0]?.id || null;
+  }
+  toast("הוסר מבוטח");
+  render();
+}
+
+/* ---------- docs ---------- */
+
+function addDocumentRow(){
+  state.client.documents.push({
+    id: uid("doc"),
+    name: "",
+    type: "ת״ז",
+    ref: "",
+    date: ""
+  });
+  render();
+}
+
+/* ---------- coverage helpers ---------- */
+
+function ensureContainersForInsured(insuredId){
+  if (!state.newPolicy.coveragesByInsured[insuredId]) state.newPolicy.coveragesByInsured[insuredId] = [];
+  if (!state.medical.answersByInsured[insuredId]) {
+    state.medical.answersByInsured[insuredId] = {};
+    MED_QUESTIONS.forEach(q => state.medical.answersByInsured[insuredId][q.id] = { answer:"לא", details:"" });
+  }
+}
+
+function findCoverageById(covId){
+  for (const insuredId of Object.keys(state.newPolicy.coveragesByInsured)){
+    const arr = state.newPolicy.coveragesByInsured[insuredId];
+    const ownerRow = arr.find(x => x.id === covId);
+    if (ownerRow) return { insuredId, ownerRow };
+  }
+  return { insuredId:null, ownerRow:null };
+}
+
+function calcNewMonthly(){
+  let sum = 0;
+  Object.values(state.newPolicy.coveragesByInsured).forEach(arr => {
+    arr.forEach(c => sum += Number(c.premiumMonthly || 0));
+  });
+  return sum;
+}
+
+/* ---------- UI small helpers ---------- */
+
+function sectionHeader(title, hint, actions){
+  const wrap = document.createElement("div");
+  wrap.className = "sectionTitle";
+  const actionsHtml = (actions || []).map((a, i) =>
+    `<button class="btn btnGhost" type="button" data-act="${i}">${escapeHtml(a.text)}</button>`
+  ).join("");
+
+  wrap.innerHTML = `
+    <div>
+      <h3>${escapeHtml(title)}</h3>
+      <div class="hint">${escapeHtml(hint || "")}</div>
+    </div>
+    <div class="rowActions">${actionsHtml}</div>
+  `;
+
+  setTimeout(() => {
+    (actions || []).forEach((a, i) => {
+      const btn = wrap.querySelector(`[data-act="${i}"]`);
+      if (btn) btn.addEventListener("click", a.onClick);
+    });
+  });
+
+  return wrap;
+}
+
+function divHr(){
+  const hr = document.createElement("div");
+  hr.className = "hr";
+  return hr;
+}
+
+function renderKPIsOnly(){
+  // update KPI blocks quickly by rerendering full view (simple & safe)
+  // אם תרצה אופטימיזציה — נפריד לשכבה, אבל כרגע זה “נקי”.
+  render();
+}
+
+/* ---------- escaping ---------- */
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+function escapeAttr(s){ return escapeHtml(s).replaceAll("\n"," "); }
