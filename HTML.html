@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>GEMEL INVEST CRM</title>
+  <link rel="stylesheet" href="app.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brandMark">GI</div>
+    <div class="brandText">
+      <div class="brandTitle">GEMEL INVEST CRM</div>
+      <div class="brandSub">תיק רפואי • חיתום • תשלום • סיכום</div>
+    </div>
+  </div>
+
+  <div class="controlBar" id="controlBar">
+    <div class="cbRight">
+      <span class="cbUser" id="cbUser">נציג: —</span>
+      <span class="cbDot" id="cbDot" aria-hidden="true"></span>
+      <span class="cbStatus" id="cbStatus">מוכן</span>
+      <span class="cbChip" id="cbMode">מקומי</span>
+      <span class="cbMeta" id="cbSavedAt">עודכן: —</span>
+    </div>
+
+    <div class="cbLeft">
+      <button class="cbBtn primary" id="tbNewCase" type="button" title="תיק חדש">
+        <span class="cbIco" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+        </span>
+        <span class="cbLbl">תיק חדש</span>
+      </button>
+
+      <button class="cbBtn" id="tbSaved" type="button" title="תיקים שמורים">
+        <span class="cbIco" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 5H4V5h16v3z"/></svg>
+        </span>
+        <span class="cbLbl">תיקים</span>
+      </button>
+
+      <button class="cbBtn" id="tbSettings" type="button" title="הגדרות">
+        <span class="cbIco" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.4-3.5c0-.34-.03-.67-.1-1l2-1.6-2-3.5-2.4 1c-.52-.4-1.09-.73-1.7-1l-.4-2.6h-4l-.4 2.6c-.61.27-1.18.6-1.7 1l-2.4-1-2 3.5 2 1.6a5.7 5.7 0 0 0 0 2l-2 1.6 2 3.5 2.4-1c.52.4 1.09.73 1.7 1l.4 2.6h4l.4-2.6c.61-.27 1.18-.6 1.7-1l2.4 1 2-3.5-2-1.6c.07-.33.1-.66.1-1z"/></svg>
+        </span>
+        <span class="cbLbl">הגדרות</span>
+      </button>
+    </div>
+  </div>
+
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sideHead">
+      <div class="sideTitle">ניווט</div>
+      <button class="sideToggle" id="sidebarToggle" type="button" aria-label="כווץ/הרחב תפריט" title="כווץ/הרחב">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 6l-6 6 6 6-1.4 1.4L6.7 12l7.4-7.4L15.5 6z"/></svg>
+      </button>
+    </div>
+
+    <button class="navItem active" data-nav="case">
+      <span class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 4l2 2h8a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h5zM4 9v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9H4z"/></svg></span>
+      <span class="navLabel">תיק פעיל</span>
+    </button>
+
+    <button class="navItem" data-nav="saved">
+      <span class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 3H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 5H4V5h16v3zm-4 4h-8v-2h8v2z"/></svg></span>
+      <span class="navLabel">תיקים שמורים</span>
+    </button>
+
+    <button class="navItem" data-nav="settings">
+      <span class="navIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7.4-3.5c0-.34-.03-.67-.1-1l2-1.6-2-3.5-2.4 1c-.52-.4-1.09-.73-1.7-1l-.4-2.6h-4l-.4 2.6c-.61.27-1.18.6-1.7 1l-2.4-1-2 3.5 2 1.6a5.7 5.7 0 0 0 0 2l-2 1.6 2 3.5 2.4-1c.52.4 1.09.73 1.7 1l.4 2.6h4l.4-2.6c.61-.27 1.18-.6 1.7-1l2.4 1 2-3.5-2-1.6c.07-.33.1-.66.1-1z"/></svg></span>
+      <span class="navLabel">הגדרות</span>
+    </button>
+
+    <div class="sideFooter">
+      <div class="mini">ערכת צבע: <span class="mono">לבן • סגול</span></div>
+      <div class="mini muted">מוכן לתשתית CRM (DB/PDF/Users)</div>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <section class="caseHeader" id="caseHeader">
+      <div class="caseMetaLeft">
+        <div class="caseTitle" id="caseTitle">תיק חדש</div>
+        <div class="chips">
+          <span class="chip mono" id="caseIdChip">—</span>
+          <span class="chip" id="caseStatusChip">טיוטה</span>
+        </div>
+      </div>
+
+      <div class="stepper" id="stepper">
+        <button class="step active" data-step="details">פרטים</button>
+        <button class="step" data-step="cancellations">ביטול פוליסות</button>
+        <button class="step" data-step="products">מוצרים</button>
+        <button class="step" data-step="questionnaires">שאלונים</button>
+        <button class="step" data-step="payment">תשלום</button>
+        <button class="step" data-step="summary">סיום</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <section class="panel main">
+        <div class="panelHead">
+          <div>
+            <div class="h2" id="panelTitle">פרטים אישיים</div>
+            <div class="hint" id="panelHint">מלא פרטים של המבוטח הראשי + אופציונלי משני/ילדים.</div>
+          </div>
+          <div class="panelActions" id="panelActions"></div>
+        </div>
+        <div class="panelBody" id="app"></div>
+      </section>
+</section>
+  </main>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
