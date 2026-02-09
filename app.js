@@ -908,7 +908,7 @@ function renderKpisSettings(){
     };
 
     $('#wizardTitle').textContent = proposal.customerName ? `הצעה – ${proposal.customerName}` : 'הצעה חדשה';
-    $('#wizardSub').textContent = 'מסך מלא • לבן/קרם/זהב חלש • שאלון דינמי לפי חברה+מוצר';
+    $('#wizardSub').textContent = '';
     // Status dropdown
     if(statusSelect){
       statusSelect.innerHTML = STATUS_OPTIONS.map(s => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
