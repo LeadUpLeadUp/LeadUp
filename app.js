@@ -2904,3 +2904,27 @@ window.saveState = function(){
 };
 
 })();
+// ===== בדיקת חיבור לגוגל =====
+async function testGoogleConnection(){
+  try{
+    const r = await fetch(GOOGLE_SCRIPT_URL + "?action=ping");
+    const j = await r.json();
+
+    if(j.ok){
+      alert("מחובר לגוגל שיטס");
+    }else{
+      alert("אין חיבור");
+    }
+  }catch(e){
+    alert("שגיאת חיבור");
+    console.log(e);
+  }
+}
+
+// חיבור לכפתור
+window.addEventListener("load", ()=>{
+  const btn = document.querySelector("#testGoogle");
+  if(btn){
+    btn.addEventListener("click", testGoogleConnection);
+  }
+});
