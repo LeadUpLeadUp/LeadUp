@@ -5,7 +5,8 @@
   // 1) Publish your Apps Script as Web App (Anyone with the link).
   // 2) Paste the /exec URL here. Example:
   // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/XXXX/exec';
- const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznkLG4jzYBbJ29PF4MO2zopC4azqCWTN7LInPUQoA74rwOWwgBDNUrerWxsfC4zwaSfA/exec";
+ const API_URL = "https://script.google.com/macros/s/AKfycbznkLG4jzYBbJ29PF4MO2zopC4azqCWTN7LInPUQoA74rwOWwgBDNUrerWxsfC4zwaSfA/exec";
+
 
 
 
