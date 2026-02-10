@@ -8,7 +8,7 @@
  *    - Who has access: Anyone
  * 5) Copy the /exec URL and paste into app.js (GOOGLE_SCRIPT_URL).
  */
-const SPREADSHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
+const SPREADSHEET_ID = 'https://docs.google.com/spreadsheets/d/1Wn2iu9WyghUn_UNyy1sjeFuHCNdNVh6Xv-fsxWZexKs/edit?gid=0#gid=0';
 
 // Sheet tabs
 const SHEET_CUSTOMERS = 'Customers';
