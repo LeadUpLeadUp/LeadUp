@@ -2866,5 +2866,42 @@ function openPolicyDiscountsModal(policy, onSave){
       render();
     }
   })();
+// ================= CLOUD SYNC =================
+
+async function cloudLoadStart(){
+  try{
+    const res = await apiCall("loadAll");
+    if(res && res.data){
+      state = res.data;
+      if(typeof renderAll === "function") renderAll();
+      console.log("Cloud loaded");
+    }
+  }catch(e){
+    console.log("Cloud load error", e);
+  }
+}
+
+async function cloudSave(){
+  try{
+    await apiCall("saveAll", state);
+    console.log("Cloud saved");
+  }catch(e){
+    console.log("Cloud save error", e);
+  }
+}
+
+// הפעלה בכניסה למערכת
+if(AUTO_CONNECT){
+  window.addEventListener("load", ()=>{
+    setTimeout(cloudLoadStart, 800);
+  });
+}
+
+// חיבור לשמירה קיימת במערכת
+const _origSave = window.saveState || function(){};
+window.saveState = function(){
+  _origSave();
+  cloudSave();
+};
 
 })();
