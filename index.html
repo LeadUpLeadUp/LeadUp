@@ -164,31 +164,54 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 
-  const installBtn = document.createElement("button");
-  installBtn.innerText = "התקן מערכת";
-  installBtn.style.position = "fixed";
-  installBtn.style.bottom = "20px";
-  installBtn.style.left = "20px";
-  installBtn.style.padding = "12px 18px";
-  installBtn.style.background = "#caa74a";
-  installBtn.style.color = "#fff";
-  installBtn.style.border = "none";
-  installBtn.style.borderRadius = "12px";
-  installBtn.style.fontSize = "15px";
-  installBtn.style.zIndex = "9999";
-  installBtn.style.cursor = "pointer";
+  const box = document.createElement("div");
+  box.style.position = "fixed";
+  box.style.bottom = "25px";
+  box.style.left = "25px";
+  box.style.background = "linear-gradient(145deg,#111,#1c1c1c)";
+  box.style.padding = "18px 22px";
+  box.style.borderRadius = "16px";
+  box.style.boxShadow = "0 0 30px rgba(212,175,55,0.35)";
+  box.style.border = "1px solid rgba(212,175,55,0.4)";
+  box.style.zIndex = "9999";
+  box.style.color = "#fff";
+  box.style.fontFamily = "Arial";
+  box.style.maxWidth = "260px";
+  box.style.animation = "fadeIn .6s ease";
 
-  document.body.appendChild(installBtn);
+  box.innerHTML = `
+    <div style="font-size:14px;opacity:.7;margin-bottom:6px">
+      Gemel Invest CRM
+    </div>
 
-  installBtn.addEventListener("click", () => {
-    installBtn.remove();
+    <button id="installBtnPremium" style="
+      width:100%;
+      background:linear-gradient(135deg,#d4af37,#f5d77a);
+      border:none;
+      color:#000;
+      padding:12px;
+      font-size:15px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow:0 0 15px rgba(212,175,55,0.6);
+    ">
+      התקן מערכת
+    </button>
+  `;
+
+  document.body.appendChild(box);
+
+  document.getElementById("installBtnPremium").onclick = () => {
+    box.remove();
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => {
       deferredPrompt = null;
     });
-  });
+  };
 });
 </script>
+
  
 </body>
 </html>
