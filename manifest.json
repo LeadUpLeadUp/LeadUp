@@ -1,0 +1,15 @@
+{
+  "name": "Gemel Invest CRM",
+  "short_name": "Gemel CRM",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#caa74a",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
