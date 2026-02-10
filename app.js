@@ -1,5 +1,5 @@
 /* GEMEL INVEST • Demo CRM (No backend) */
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznkLG4jzYBbJ29PF4MO2zopC4azqCWTN7LInPUQoA74rwOWwgBDNUrerWxsfC4zwaSfA/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycb....../exec";
 (() => {
   'use strict';
   // ---------- CONFIG (Google Sheets via Apps Script Web App) ----------
