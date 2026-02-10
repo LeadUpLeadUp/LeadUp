@@ -4,7 +4,7 @@
   // ---------- CONFIG (Google Sheets via Apps Script Web App) ----------
   // 1) Publish your Apps Script as Web App (Anyone with the link).
   // 2) Paste the /exec URL here. Example:
-  // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/XXXX/exec';
+  // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhj4z2KPlhG0eMvFW3CL9aogdxq02oQgwVZkmVcXIjgzLkyw7lYzIfdJlB7Hi8ogmWZg/exec';
   const GOOGLE_SCRIPT_URL = ''; // <-- set me (leave empty to stay in demo mode)
 
   // If true, the app will try to auto-connect on load (ping).
