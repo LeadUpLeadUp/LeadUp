@@ -157,5 +157,38 @@
 
   <div class="toastHost" id="toastHost" aria-live="polite"></div>
   <script src="app.js"></script>
+<script>
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const installBtn = document.createElement("button");
+  installBtn.innerText = "התקן מערכת";
+  installBtn.style.position = "fixed";
+  installBtn.style.bottom = "20px";
+  installBtn.style.left = "20px";
+  installBtn.style.padding = "12px 18px";
+  installBtn.style.background = "#caa74a";
+  installBtn.style.color = "#fff";
+  installBtn.style.border = "none";
+  installBtn.style.borderRadius = "12px";
+  installBtn.style.fontSize = "15px";
+  installBtn.style.zIndex = "9999";
+  installBtn.style.cursor = "pointer";
+
+  document.body.appendChild(installBtn);
+
+  installBtn.addEventListener("click", () => {
+    installBtn.remove();
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+    });
+  });
+});
+</script>
+ 
 </body>
 </html>
