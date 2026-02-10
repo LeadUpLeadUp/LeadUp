@@ -1,3 +1,61 @@
+/* ===== GOOGLE SHEETS CONNECTION ===== */
+
+const GOOGLE_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbznkLG4jzYBbJ29PF4MO2zopC4azqCWTN7LInPUQoA74rwOWwgBDNUrerWxsfC4zwaSfA/exec";
+
+console.log("Sheets URL:", GOOGLE_SCRIPT_URL);
+
+/* ===== API CALL ===== */
+async function api(action, payload = {}) {
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=${action}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload })
+    });
+
+    const data = await res.json();
+    return data;
+
+  } catch (err) {
+    console.error("API ERROR:", err);
+    alert("אין חיבור לשרת Google Sheets");
+    return { ok:false };
+  }
+}
+
+/* ===== PING ===== */
+async function testConnection(){
+  try{
+    const r = await fetch(`${GOOGLE_SCRIPT_URL}?action=ping`);
+    const j = await r.json();
+
+    if(j.ok){
+      alert("🟢 מחובר לגוגל שיטס");
+    }else{
+      alert("🔴 אין חיבור");
+    }
+  }catch(e){
+    alert("🔴 שגיאת חיבור");
+    console.error(e);
+  }
+}
+
+/* ===== BUTTON CONNECT ===== */
+window.addEventListener("load", ()=>{
+  const btn =
+    document.querySelector('[data-test="google"]') ||
+    document.querySelector('#testGoogle') ||
+    document.querySelector('.test-connection');
+
+  if(btn){
+    btn.addEventListener("click", testConnection);
+    console.log("button connected");
+  } else {
+    console.log("no test button found");
+  }
+});
+
 console.log("APP JS LOADED");
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznkLG4jzYBbJ29PF4MO2zopC4azqCWTN7LInPUQoA74rwOWwgBDNUrerWxsfC4zwaSfA/exec";
 /* GEMEL INVEST • Demo CRM (No backend) */
