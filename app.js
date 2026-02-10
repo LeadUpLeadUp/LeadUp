@@ -5,7 +5,8 @@
   // 1) Publish your Apps Script as Web App (Anyone with the link).
   // 2) Paste the /exec URL here. Example:
   // const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/XXXX/exec';
-  const GOOGLE_SCRIPT_URL = ''; // <-- set me (leave empty to stay in demo mode)
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFLUS4K2zSjVC-3TvLOOeRb6JyiwNmlUcG6d753qfAncLlbEgtKUgGsfS3iGoJJMNxMw/exec';
+
 
   // If true, the app will try to auto-connect on load (ping).
   const AUTO_CONNECT = true;
