@@ -1,3 +1,30 @@
+const GOOGLE_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbyhj4z2KPlhG0eMvFW3CL9aogdxq02oQgwVZkmVcXIjgzLkyw7lYzIfdJlB7Hi8ogmWZg/exec";
+
+async function apiCall(action, payload = {}) {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL + "?action=" + action, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload })
+    });
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return { ok:false };
+  }
+}
+
+async function apiPing(){
+  try{
+    const res = await fetch(GOOGLE_SCRIPT_URL + "?action=ping");
+    const data = await res.json();
+    return data.ok;
+  }catch{
+    return false;
+  }
+}
+
 /* ===== GOOGLE SHEETS CONNECTION ===== */
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhj4z2KPlhG0eMvFW3CL9aogdxq02oQgwVZkmVcXIjgzLkyw7lYzIfdJlB7Hi8ogmWZg/exec";
 console.log("Sheets URL:", GOOGLE_SCRIPT_URL);
