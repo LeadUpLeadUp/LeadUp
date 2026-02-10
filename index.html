@@ -151,5 +151,65 @@
 
   <div class="toastHost" id="toastHost" aria-live="polite"></div>
   <script src="app.js"></script>
+  <!-- INSTALL PREMIUM POPUP -->
+<div id="installPremium" style="
+position:fixed;
+bottom:30px;
+left:30px;
+background:linear-gradient(145deg,#0f172a,#020617);
+color:white;
+padding:24px;
+border-radius:18px;
+box-shadow:0 0 40px rgba(212,175,55,0.25);
+border:1px solid rgba(212,175,55,0.3);
+z-index:9999;
+font-family:Arial;
+display:none;
+max-width:260px;
+">
+
+<div style="font-size:14px;opacity:.6;margin-bottom:6px">
+מערכת CRM
+</div>
+
+<div style="font-size:20px;font-weight:bold;margin-bottom:12px">
+GEMEL INVEST
+</div>
+
+<button id="installBtnReal" style="
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:linear-gradient(135deg,#d4af37,#f6e27a);
+color:black;
+font-weight:bold;
+font-size:15px;
+cursor:pointer;
+box-shadow:0 0 20px rgba(212,175,55,0.5);
+">
+התקן תוכנה למחשב
+</button>
+
+</div>
+
+<script>
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("installPremium").style.display = "block";
+});
+
+document.getElementById("installBtnReal").addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById("installPremium").style.display = "none";
+});
+</script>
+
 </body>
 </html>
