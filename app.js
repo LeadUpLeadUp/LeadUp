@@ -1832,7 +1832,7 @@ $$('[data-del-new]').forEach(b => b.addEventListener('click', () => {
 
     wizardMain.innerHTML = `
       <div class="sectionTitle">פרטי משלם</div>
-      <div class="hint">פבחר/י שיטת תשלום ומלאי את פרטי המשלם</div>
+      <div class="hint">בחר/י שיטת תשלום ומלא/י את פרטי המשלם</div>
 
       <div class="payOverride" style="margin-top:12px;padding:12px;border:1px solid rgba(15,15,20,.08);border-radius:16px;background:rgba(255,255,255,.75)">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
