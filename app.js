@@ -1878,7 +1878,7 @@ $$('[data-del-new]').forEach(b => b.addEventListener('click', () => {
             ${field('ת״ז בעל הכרטיס', 'payer_card_tz', p.payer.card.tz || '')}
             ${field('שם בעל הכרטיס', 'payer_card_name', p.payer.card.name || '')}
             <div class="field">
-              <div class="label">מספר כרטיס (לשימוש פנימי בלבד)</div>
+              <div class="label">מספר כרטיס</div>
               <div class="value inlineInput">
                 <input id="payer_card_number" inputmode="numeric" autocomplete="off" placeholder="מספר כרטיס" type="password"/>
                 <button class="btn btnSoft btnTiny" id="toggleCard" type="button">הצג</button>
