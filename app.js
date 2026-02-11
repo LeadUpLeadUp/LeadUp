@@ -622,7 +622,7 @@
 
 function renderKpisSettings(){
     kpisEl.innerHTML = [
-      kpiCard('מצב', 'דמו', 'ללא שרת'),
+      kpiCard('בקרוב', 'בתהליך', 'הקמה'),
       kpiCard('ערכת צבע', 'Cream + Gold', 'זהב חלש'),
       kpiCard('תצוגה', 'CRM', 'Sidebar + Table'),
     ].join('');
