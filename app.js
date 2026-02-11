@@ -1857,7 +1857,7 @@ $$('[data-del-new]').forEach(b => b.addEventListener('click', () => {
             </div>
           </div>
         ` : `
-          <div class="miniNote" style="margin-top:8px">אם המשלם הוא אבא/אמא/אחר — סמני “משלם חריג” ומלאי את פרטיו.</div>
+          <div class="miniNote" style="margin-top:8px">אם המשלם הוא אבא/אמא/אחר — סמן “משלם חריג” ומלא/י את פרטיו.</div>
         `}
       </div>
 
