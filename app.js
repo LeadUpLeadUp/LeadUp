@@ -564,6 +564,7 @@
 
   // Set your GOFI module URL (GitHub Pages) here when ready
   // Example: const GOFI_URL = 'https://oriasomech-jpg.github.io/TalkMe/';
+
   const GOFI_URL = window.GOFI_URL || '';
 
 
