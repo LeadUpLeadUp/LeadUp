@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>מפרט הנחות – חברות הביטוח</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="header">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <span class="dot"></span>
+          <div>
+            <div>מפרט הנחות עדכני – חברות הביטוח</div>
+            <small>תצוגה מסודרת לפי חלוקה: ריסק / בריאות / מחלות קשות / משכנתא</small>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="search" title="חיפוש בתוך הקטגוריה הנוכחית">
+            <span>🔎</span>
+            <input id="q" type="search" placeholder="חפש מסמך / קוד / שם מוצר..." />
+          </div>
+        </div>
+      </div>
+
+      <div id="companyPills" class="pills"></div>
+    </div>
+  </div>
+
+  <div class="wrap main">
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <h3 id="companyTitle">—</h3>
+          <div class="muted" id="companyMeta"></div>
+        </div>
+        <div class="card-b">
+          <div class="notice">
+            בחר חברה ואז קטגוריה. כל פריט נפתח בתצוגה מלאה (PDF/תמונה).
+          </div>
+          <div class="hr"></div>
+          <div class="cat-list" id="catList"></div>
+
+          <div class="hr"></div>
+          <h3 style="margin:0 0 10px 0;font-size:15px">מסמכים בקטגוריה: <span id="catTitle"></span></h3>
+          <div id="items"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>תצוגה</h3>
+          <div class="muted">PDF / תמונה</div>
+        </div>
+        <div class="card-b">
+          <div id="viewer" class="viewer">
+            <div class="notice">בחר פריט כדי לצפות בו.</div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="card" style="box-shadow:none;background:transparent">
+            <div class="card-h" style="border:0;padding:0 0 10px 0">
+              <h3 style="margin:0">הנחות שנשלחו מהמערכת <span id="inboxCount"></span></h3>
+              <div class="muted">אופציונלי</div>
+            </div>
+            <div id="inbox"></div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="small">
+            טיפ: אפשר לפתוח קישור ישיר לחברה/קטגוריה ע״י כתובת עם ‎#company=...&cat=...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
