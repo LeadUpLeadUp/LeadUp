@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INVEST Executive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=20260507-static-ready-v1" />
+</head>
+<body>
+  <div class="appShell">
+    <div class="bgGlow bgGlow1"></div>
+    <div class="bgGlow bgGlow2"></div>
+
+    <aside class="sidebar">
+      <div class="logoWrap">
+        <img src="./logo-login-clean.png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" alt="INVEST" />
+        <div class="logoFallback">INVEST</div>
+      </div>
+
+      <nav class="navMenu">
+        <button class="navBtn active">דשבורד</button>
+        <button class="navBtn">נציגים</button>
+        <button class="navBtn">מכירות</button>
+        <button class="navBtn">לקוחות</button>
+        <button class="navBtn">דוחות</button>
+        <button class="navBtn">התראות</button>
+      </nav>
+    </aside>
+
+    <main class="mainContent">
+      <header class="topbar glass">
+        <div>
+          <div class="hello">שלום מנהל</div>
+          <div class="title">INVEST Executive Control Center</div>
+          <div class="subtitle">מרכז הבקרה של הסוכנות</div>
+        </div>
+
+        <div class="topStats">
+          <div class="status online"><span class="dot"></span><span id="serverStatus">מתחבר ל־Supabase...</span></div>
+          <div class="status"><span>👥</span><span id="agentsCount">0 נציגים</span></div>
+          <div class="status"><span>🔔</span><span>8 התראות</span></div>
+        </div>
+      </header>
+
+      <section class="kpiGrid">
+        <div class="glass kpiCard">
+          <div class="kpiTop">
+            <div>
+              <div class="kpiTitle">פרמיה חודשית</div>
+              <div class="kpiValue" id="totalPremium">₪0</div>
+            </div>
+            <div class="kpiIcon">📈</div>
+          </div>
+          <div class="kpiChange">נתון חי מהשרת</div>
+        </div>
+
+        <div class="glass kpiCard">
+          <div class="kpiTop">
+            <div>
+              <div class="kpiTitle">הצעות שנפתחו</div>
+              <div class="kpiValue" id="openProposals">0</div>
+            </div>
+            <div class="kpiIcon">💼</div>
+          </div>
+          <div class="kpiChange">כל ההצעות במערכת</div>
+        </div>
+
+        <div class="glass kpiCard">
+          <div class="kpiTop">
+            <div>
+              <div class="kpiTitle">תיקי לקוח</div>
+              <div class="kpiValue" id="customersCount">0</div>
+            </div>
+            <div class="kpiIcon">🛡️</div>
+          </div>
+          <div class="kpiChange">לקוחות קיימים</div>
+        </div>
+
+        <div class="glass kpiCard">
+          <div class="kpiTop">
+            <div>
+              <div class="kpiTitle">עמידה ביעד</div>
+              <div class="kpiValue" id="targetPercent">0%</div>
+            </div>
+            <div class="kpiIcon">🎯</div>
+          </div>
+          <div class="kpiChange">מחושב לפי יעדי נציגים</div>
+        </div>
+      </section>
+
+      <section class="mainGrid">
+        <div class="glass chartCard large">
+          <div class="cardHead">
+            <div class="cardTitle">ביצועי סוכנות</div>
+            <div class="cardHint">גרף חודשי</div>
+          </div>
+          <div class="chartBox">
+            <svg id="salesChart" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+
+        <div class="glass chartCard">
+          <div class="cardHead">
+            <div class="cardTitle">פילוח סטטוסים</div>
+            <div class="cardHint">הצעות</div>
+          </div>
+          <div class="donutWrap">
+            <div class="donut" id="statusDonut"></div>
+            <div class="donutText" id="donutText">0</div>
+          </div>
+          <div class="legend" id="statusLegend"></div>
+        </div>
+      </section>
+
+      <section class="bottomGrid">
+        <div class="glass agentsCard">
+          <div class="cardHead">
+            <div class="cardTitle">ביצועי נציגים</div>
+            <div class="cardHint">פרמיה / יעד / הצעות</div>
+          </div>
+          <div class="agentsList" id="agentsList"></div>
+        </div>
+
+        <div class="glass feedCard">
+          <div class="cardHead">
+            <div class="cardTitle">פעילות חיה</div>
+            <div class="cardHint" id="lastUpdate">ממתין לנתונים</div>
+          </div>
+          <div class="feedList" id="feedList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./app.js?v=20260507-static-ready-v1"></script>
+</body>
+</html>
