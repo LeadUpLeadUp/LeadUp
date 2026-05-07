@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#743f20" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="DoggyBot" />
+  <title>DoggyBot</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./assets/icon-180.png" />
+  <link rel="icon" type="image/png" href="./assets/icon-192.png" />
+  <link rel="stylesheet" href="./app.css?v=doggybot-pwa-v1" />
+</head>
+<body>
+  <main class="app-shell">
+    <button id="installAppBtn" class="install-pill hidden" type="button">
+      <span>⬇</span>
+      התקן את DoggyBot
+    </button>
+
+    <section id="screenLogin" class="screen screen-login active">
+      <div class="brand-wrap">
+        <div class="brand-pin"><span>🐾</span></div>
+        <h1>DoggyBot</h1>
+        <p><span>♡</span> העוזר החכם של כל כלב</p>
+      </div>
+
+      <div class="dog-hero">
+        <img src="./assets/doggybot-login-dog.png" alt="DoggyBot dog" />
+      </div>
+
+      <form class="auth-card" id="loginForm">
+        <label class="field">
+          <span class="field-icon">✉</span>
+          <input id="loginEmail" type="email" placeholder="אימייל" autocomplete="email" required />
+        </label>
+
+        <label class="field">
+          <span class="field-icon">🔒</span>
+          <input id="loginPassword" type="password" placeholder="סיסמה" autocomplete="current-password" required />
+          <button type="button" class="eye-btn" id="togglePassword">👁</button>
+        </label>
+
+        <button type="button" class="forgot-btn">שכחת סיסמה?</button>
+        <button class="primary-btn" type="submit">התחבר</button>
+
+        <div class="divider"><span>או</span></div>
+
+        <button type="button" class="google-btn" id="googleLogin">
+          <span class="google-mark">G</span>
+          התחבר עם Google
+        </button>
+
+        <p class="switch-line">
+          אין לך חשבון?
+          <button type="button" id="goRegister">הירשם עכשיו</button>
+        </p>
+      </form>
+    </section>
+
+    <section id="screenRegister" class="screen">
+      <button class="back-btn" data-back="screenLogin">‹</button>
+      <div class="simple-head">
+        <img class="mini-logo" src="./assets/doggybot-logo.png" alt="DoggyBot" />
+        <h2>יצירת חשבון</h2>
+        <p>נרשמים לדוגיבוט ומתחילים לנהל את הכלב במקום אחד</p>
+      </div>
+
+      <form class="panel-card" id="registerForm">
+        <label class="field"><span class="field-icon">👤</span><input id="regName" type="text" placeholder="שם מלא" autocomplete="name" required /></label>
+        <label class="field"><span class="field-icon">✉</span><input id="regEmail" type="email" placeholder="אימייל" autocomplete="email" required /></label>
+        <label class="field"><span class="field-icon">🔒</span><input id="regPassword" type="password" placeholder="סיסמה" autocomplete="new-password" required /></label>
+        <button class="primary-btn" type="submit">הרשמה במייל וסיסמה</button>
+        <div class="divider"><span>או</span></div>
+        <button type="button" class="google-btn" id="googleRegister"><span class="google-mark">G</span>הרשמה עם Google</button>
+      </form>
+    </section>
+
+    <section id="screenWelcome" class="screen">
+      <div class="welcome-card">
+        <img class="welcome-logo" src="./assets/doggybot-logo.png" alt="DoggyBot" />
+        <h2>ברוכים הבאים ל־DoggyBot</h2>
+        <p>בוא נכיר את הכלב שלך ונבנה לו פרופיל חכם עם תזכורות, טיפולים וספרים קרובים.</p>
+        <button class="primary-btn" data-next="screenDogProfile">המשך</button>
+      </div>
+    </section>
+
+    <section id="screenDogProfile" class="screen">
+      <button class="back-btn" data-back="screenWelcome">‹</button>
+      <div class="simple-head">
+        <h2>הוספת הכלב הראשון</h2>
+        <p>המידע יעזור לדוגיבוט לתת תזכורות והמלצות מדויקות יותר</p>
+      </div>
+
+      <form class="panel-card dog-form" id="dogForm">
+        <div class="dog-avatar-upload">
+          <div class="avatar-circle">🐕</div>
+          <button type="button">הוסף תמונה</button>
+        </div>
+        <label class="field"><input id="dogName" type="text" placeholder="שם הכלב" required /></label>
+        <label class="field"><input id="dogBreed" type="text" placeholder="גזע" /></label>
+        <div class="grid-2">
+          <label class="field"><input id="dogAge" type="number" min="0" placeholder="גיל" /></label>
+          <label class="field"><input id="dogWeight" type="number" min="0" placeholder="משקל" /></label>
+        </div>
+        <div class="choice-row">
+          <button type="button" class="choice active" data-sex="male">זכר</button>
+          <button type="button" class="choice" data-sex="female">נקבה</button>
+        </div>
+        <label class="field textarea-field"><textarea id="dogNotes" placeholder="רגישויות / הערות חשובות"></textarea></label>
+        <button class="primary-btn" type="submit">שמור והמשך</button>
+      </form>
+    </section>
+
+    <section id="screenLocation" class="screen">
+      <div class="welcome-card">
+        <div class="big-paw">📍</div>
+        <h2>נאתר ספרים קרובים אליך</h2>
+        <p>כדי להציג מספרות וספרי כלבים לפי מרחק, DoggyBot צריך הרשאת מיקום.</p>
+        <button class="primary-btn" id="allowLocation">אפשר מיקום</button>
+        <button class="ghost-btn" data-next="screenInterests">דלג כרגע</button>
+      </div>
+    </section>
+
+    <section id="screenInterests" class="screen">
+      <div class="simple-head">
+        <h2>מה מעניין אותך?</h2>
+        <p>אפשר לבחור כמה שירותים</p>
+      </div>
+      <div class="panel-card">
+        <div class="services-grid">
+          <button class="service selected" type="button">✂️<span>ספר כלבים</span></button>
+          <button class="service" type="button">🏥<span>וטרינר</span></button>
+          <button class="service" type="button">🏡<span>פנסיון</span></button>
+          <button class="service" type="button">🎾<span>אילוף</span></button>
+          <button class="service" type="button">🛒<span>חנות חיות</span></button>
+        </div>
+        <button class="primary-btn" data-next="screenHome">סיום והמשך לבית</button>
+      </div>
+    </section>
+
+    <section id="screenHome" class="screen screen-home">
+      <header class="home-head premium-home-head">
+        <div>
+          <p>שלום 👋</p>
+          <h2 id="homeUserName">ברוך הבא</h2>
+        </div>
+        <img class="home-logo" src="./assets/icon-192.png" alt="DoggyBot" />
+      </header>
+
+      <section class="home-hero">
+        <div>
+          <h2 id="homeHeroTitle">הגיע הזמן לתכנן תור טיפוח ✂️</h2>
+          <p>מצאנו עבורך ספרים קרובים עם דירוג גבוה באזור שלך.</p>
+          <button type="button" data-tab-target="screenGroomers">מצא ספר עכשיו</button><button class="hero-secondary-btn" type="button" data-tab-target="screenDoggyWorld">שחק עם הכלב</button>
+        </div>
+      </section>
+
+      <section id="doggyAiWidget" class="doggy-ai-widget" aria-label="Doggy AI Assistant">
+        <div class="doggy-ai-stage">
+          <div class="doggy-ai-orbit"></div>
+          <button id="doggyPetBtn" class="doggy-ai-dog" type="button" aria-label="שחק עם הכלב">
+            <span class="doggy-ear doggy-ear-left"></span>
+            <span class="doggy-ear doggy-ear-right"></span>
+            <span class="doggy-face">
+              <span class="doggy-eye doggy-eye-left"><i></i></span>
+              <span class="doggy-eye doggy-eye-right"><i></i></span>
+              <span class="doggy-muzzle">
+                <span class="doggy-nose"></span>
+                <span class="doggy-mouth"></span>
+              </span>
+            </span>
+            <span class="doggy-tail"></span>
+          </button>
+
+          <div class="doggy-ai-bubble">
+            <div class="doggy-ai-label">Doggy AI</div>
+            <p id="doggyBubbleText">וואף 🐶 אני כאן! תשאל אותי בעברית על תספורת, חיסון, אוכל, טיול או מצב רוח.</p>
+          </div>
+        </div>
+
+        <form id="doggyChatForm" class="doggy-chat-form">
+          <button id="doggyMicBtn" class="doggy-mic-btn" type="button" aria-label="מיקרופון">🎙️</button>
+          <input id="doggyQuestionInput" type="text" placeholder="שאל את הכלב שאלה בעברית..." autocomplete="off" />
+          <button class="doggy-send-btn" type="submit">שלח</button>
+        </form>
+
+        <div class="doggy-quick-row">
+          <button type="button" data-doggy-question="מתי כדאי לקבוע תספורת?">תספורת</button>
+          <button type="button" data-doggy-question="מה עם חיסון?">חיסון</button>
+          <button type="button" data-doggy-question="הכלב שלי עצוב">מצב רוח</button>
+        </div>
+      </section>
+
+      <section class="section-head">
+        <h3>ספרים קרובים אליך</h3>
+        <button type="button" data-tab-target="screenGroomers">הצג הכל</button>
+      </section>
+
+      <section class="groomer-preview-list">
+        <article class="groomer-card compact">
+          <div class="cover dog-cover-1"></div>
+          <div class="card-body">
+            <div class="title-row">
+              <h4>דוגי סטייל</h4>
+              <span class="rating">⭐ 4.9</span>
+            </div>
+            <div class="meta">
+              <span>📍 1.2 ק"מ</span>
+              <span>🟢 פתוח עכשיו</span>
+            </div>
+            <p>מתמחה בכלבים קטנים, רחצה, תספורת וטיפוח פרווה.</p>
+            <div class="actions">
+              <button class="primary small" type="button">קבע תור</button>
+              <button class="secondary small" type="button" data-tab-target="screenGroomerDetails">פרטים</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="groomer-card compact">
+          <div class="cover dog-cover-2"></div>
+          <div class="card-body">
+            <div class="title-row">
+              <h4>Royal Groom</h4>
+              <span class="rating">⭐ 4.8</span>
+            </div>
+            <div class="meta">
+              <span>📍 2.4 ק"מ</span>
+              <span>🟢 פתוח עכשיו</span>
+            </div>
+            <p>טיפוח פרימיום, אמבט, סירוק, קיצוץ ציפורניים וטיפול עדין.</p>
+            <div class="actions">
+              <button class="primary small" type="button">קבע תור</button>
+              <button class="secondary small" type="button" data-tab-target="screenGroomerDetails">פרטים</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="section-head">
+        <h3>הכלב שלי</h3>
+        <button type="button" data-tab-target="screenMyDog">עריכה</button>
+      </section>
+
+      <section class="dog-profile-card">
+        <div class="dog-avatar">🐕</div>
+        <div class="dog-info">
+          <h3 id="homeDogName">הכלב שלי</h3>
+          <p id="homeDogMeta">פרופיל חכם + תזכורות</p>
+          <div class="reminders">
+            <div class="reminder">
+              <span>💉</span>
+              <div>
+                <strong>חיסון שנתי</strong>
+                <small>תזכורת לדוגמה</small>
+              </div>
+            </div>
+            <div class="reminder">
+              <span>✂️</span>
+              <div>
+                <strong>תספורת</strong>
+                <small>הגיע הזמן לקבוע תור</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="screenGroomers" class="screen screen-groomers">
+      <header class="page-head">
+        <button class="round-back" type="button" data-tab-target="screenHome">‹</button>
+        <div>
+          <h2>ספרים קרובים</h2>
+          <p>עסקים מומלצים לפי מיקום ודירוג</p>
+        </div>
+      </header>
+
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="חפש ספר, מספרה או עיר" />
+      </div>
+
+      <div class="filter-row">
+        <button class="active" type="button">הכי קרוב</button>
+        <button type="button">דירוג גבוה</button>
+        <button type="button">פתוח עכשיו</button>
+      </div>
+
+      <section class="groomer-preview-list full-list">
+        <article class="groomer-card">
+          <div class="cover dog-cover-1"></div>
+          <div class="card-body">
+            <div class="title-row"><h4>דוגי סטייל</h4><span class="rating">⭐ 4.9</span></div>
+            <div class="meta"><span>📍 1.2 ק"מ</span><span>🟢 פתוח עכשיו</span><span>₪ החל מ־120</span></div>
+            <p>מתמחה בכלבים קטנים, רחצה, תספורת וטיפוח פרווה.</p>
+            <div class="actions">
+              <button class="primary" type="button">קבע תור</button>
+              <button class="secondary" type="button" data-tab-target="screenGroomerDetails">פרטים</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="groomer-card">
+          <div class="cover dog-cover-2"></div>
+          <div class="card-body">
+            <div class="title-row"><h4>Royal Groom</h4><span class="rating">⭐ 4.8</span></div>
+            <div class="meta"><span>📍 2.4 ק"מ</span><span>🟢 פתוח עכשיו</span><span>₪ החל מ־150</span></div>
+            <p>טיפוח פרימיום, אמבט, סירוק, קיצוץ ציפורניים וטיפול עדין.</p>
+            <div class="actions">
+              <button class="primary" type="button">קבע תור</button>
+              <button class="secondary" type="button" data-tab-target="screenGroomerDetails">פרטים</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="groomer-card">
+          <div class="cover dog-cover-3"></div>
+          <div class="card-body">
+            <div class="title-row"><h4>Happy Tail</h4><span class="rating">⭐ 4.7</span></div>
+            <div class="meta"><span>📍 3.1 ק"מ</span><span>🟡 תור פנוי היום</span><span>₪ החל מ־110</span></div>
+            <p>מספרת כלבים ביתית עם יחס רגוע לכלבים רגישים.</p>
+            <div class="actions">
+              <button class="primary" type="button">קבע תור</button>
+              <button class="secondary" type="button" data-tab-target="screenGroomerDetails">פרטים</button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <section id="screenGroomerDetails" class="screen screen-details">
+      <header class="page-head">
+        <button class="round-back" type="button" data-tab-target="screenGroomers">‹</button>
+        <div>
+          <h2>דוגי סטייל</h2>
+          <p>מספרת כלבים מומלצת</p>
+        </div>
+      </header>
+
+      <div class="details-hero dog-cover-1"></div>
+
+      <section class="details-card">
+        <div class="title-row">
+          <h3>דוגי סטייל</h3>
+          <span class="rating">⭐ 4.9</span>
+        </div>
+        <p>מספרת כלבים מקצועית עם התמחות בכלבים קטנים, טיפוח פרווה, אמבט וקיצוץ ציפורניים.</p>
+
+        <div class="details-grid">
+          <div><strong>📍 מרחק</strong><span>1.2 ק"מ</span></div>
+          <div><strong>🕒 סטטוס</strong><span>פתוח עכשיו</span></div>
+          <div><strong>💰 מחיר</strong><span>החל מ־120 ₪</span></div>
+          <div><strong>⭐ דירוג</strong><span>4.9 מתוך 5</span></div>
+        </div>
+
+        <h4>שירותים</h4>
+        <div class="chips">
+          <span>תספורת</span>
+          <span>רחצה</span>
+          <span>סירוק</span>
+          <span>קיצוץ ציפורניים</span>
+        </div>
+
+        <div class="actions details-actions">
+          <button class="primary" type="button">קבע תור</button>
+          <button class="secondary" type="button">WhatsApp</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="screenAppointments" class="screen">
+      <header class="page-head">
+        <div>
+          <h2>התורים שלי</h2>
+          <p>כאן יוצגו התורים שנקבעו דרך DoggyBot</p>
+        </div>
+      </header>
+
+      <section class="empty-state">
+        <div>📅</div>
+        <h3>אין תורים עדיין</h3>
+        <p>אפשר לקבוע תור ראשון דרך מסך הספרים הקרובים.</p>
+        <button class="primary-btn" type="button" data-tab-target="screenGroomers">מצא ספר קרוב</button>
+      </section>
+    </section>
+
+    <section id="screenMyDog" class="screen">
+      <header class="page-head">
+        <div>
+          <h2>הכלב שלי</h2>
+          <p>פרופיל, תזכורות והיסטוריית טיפולים</p>
+        </div>
+      </header>
+
+      <section class="dog-profile-card big">
+        <div class="dog-avatar big">🐕</div>
+        <div class="dog-info">
+          <h3 id="dogPageName">הכלב שלי</h3>
+          <p id="dogPageMeta">גזע, גיל ומשקל</p>
+        </div>
+      </section>
+
+      <section class="panel-card reminders-panel">
+        <h3>תזכורות חכמות</h3>
+        <div class="reminder">
+          <span>💉</span>
+          <div>
+            <strong>חיסון שנתי</strong>
+            <small>הוסף תאריך חיסון כדי לקבל התראה</small>
+          </div>
+        </div>
+        <div class="reminder">
+          <span>🪱</span>
+          <div>
+            <strong>תילוע / אמפולה</strong>
+            <small>תזכורת חודשית או לפי בחירה</small>
+          </div>
+        </div>
+        <div class="reminder">
+          <span>✂️</span>
+          <div>
+            <strong>תור לספר</strong>
+            <small>נזכיר לך כל כמה שבועות</small>
+          </div>
+        </div>
+      </section>
+    </section>
+
+
+    <section id="screenDoggyWorld" class="screen screen-doggy-world">
+      <header class="page-head doggy-room-head">
+        <button class="round-back" type="button" data-tab-target="screenHome">‹</button>
+        <div>
+          <h2>Doggy Room</h2>
+          <p>שחק עם הכלב, זרוק כדור, האכל אותו ושאל אותו שאלות בעברית</p>
+        </div>
+      </header>
+
+      <section id="doggyRoom" class="doggy-room">
+        <div class="room-status">
+          <div><strong id="doggyMoodLabel">שמח</strong><span>מצב רוח</span></div>
+          <div><strong id="doggyXpLabel">0 XP</strong><span>ניקוד משחק</span></div>
+        </div>
+
+        <div id="doggySpeechBubble" class="room-speech-bubble">
+          וואף 🐶 אני מוכן לשחק! גרור אליי את הכדור או את האוכל.
+        </div>
+
+        <button id="fullDog" class="full-dog full-dog-idle" type="button" aria-label="Doggy full dog">
+          <span class="full-dog-shadow"></span>
+          <span class="full-dog-tail"></span>
+          <span class="full-dog-body"><span class="full-dog-chest"></span><span class="full-dog-spot"></span></span>
+          <span class="full-dog-leg leg-front-left"></span>
+          <span class="full-dog-leg leg-front-right"></span>
+          <span class="full-dog-leg leg-back-left"></span>
+          <span class="full-dog-leg leg-back-right"></span>
+          <span class="full-dog-head">
+            <span class="full-dog-ear ear-left"></span>
+            <span class="full-dog-ear ear-right"></span>
+            <span class="full-dog-face">
+              <span class="full-dog-eye eye-left"><i></i></span>
+              <span class="full-dog-eye eye-right"><i></i></span>
+              <span class="full-dog-muzzle"><span class="full-dog-nose"></span><span class="full-dog-smile"></span></span>
+            </span>
+          </span>
+        </button>
+
+        <button id="playBall" class="play-toy play-ball" type="button">🥎</button>
+        <button id="foodBowl" class="play-toy food-bowl" type="button">🍖</button>
+        <button id="brushToy" class="play-toy brush-toy" type="button">🪮</button>
+        <div class="room-floor"></div>
+      </section>
+
+      <section class="room-actions">
+        <button type="button" id="callDogBtn">קרא לכלב</button>
+        <button type="button" id="jumpDogBtn">קפיצה</button>
+        <button type="button" id="petDogBtn">ליטוף</button>
+      </section>
+
+      <section class="room-chat-card">
+        <form id="roomDoggyChatForm" class="doggy-chat-form">
+          <button id="roomDoggyMicBtn" class="doggy-mic-btn" type="button">🎙️</button>
+          <input id="roomDoggyQuestionInput" type="text" placeholder="שאל את הכלב משהו בעברית..." autocomplete="off" />
+          <button class="doggy-send-btn" type="submit">שאל</button>
+        </form>
+      </section>
+    </section>
+
+    <section id="screenProfile" class="screen">
+      <header class="page-head">
+        <div>
+          <h2>פרופיל</h2>
+          <p>הגדרות משתמש והתקנת האפליקציה</p>
+        </div>
+      </header>
+
+      <section class="panel-card profile-panel">
+        <img class="profile-logo" src="./assets/doggybot-logo.png" alt="DoggyBot" />
+        <h3>DoggyBot</h3>
+        <p>העוזר החכם של כל כלב</p>
+        <button class="primary-btn" type="button" id="installAppBtnProfile">התקן את DoggyBot</button>
+      </section>
+    </section>
+
+      <nav class="bottom-nav app-nav hidden">
+        <button class="active" type="button" data-tab-target="screenHome">🏠<span>בית</span></button>
+        <button type="button" data-tab-target="screenGroomers">🔍<span>חיפוש</span></button>
+        <button type="button" data-tab-target="screenAppointments">📅<span>תורים</span></button>
+        <button type="button" data-tab-target="screenDoggyWorld">🎮<span>משחק</span></button>
+        <button type="button" data-tab-target="screenProfile">👤<span>פרופיל</span></button>
+      </nav>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="./app.js?v=doggybot-pwa-v1"></script>
+</body>
+</html>
