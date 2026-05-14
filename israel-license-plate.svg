@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120" role="img" aria-label="">
+  <defs>
+    <linearGradient id="ipBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0054a6"/>
+      <stop offset="100%" stop-color="#002f6c"/>
+    </linearGradient>
+  </defs>
+  <!-- дйчу щзеш -->
+  <rect x="1" y="1" width="518" height="118" rx="16" fill="#0a0a0a"/>
+  <!-- освшъ агеод -->
+  <rect x="5" y="5" width="510" height="110" rx="13" fill="none" stroke="#c41230" stroke-width="2.2"/>
+  <!-- щиз цдеб -->
+  <rect x="9" y="9" width="502" height="102" rx="10" fill="#ffd400"/>
+  <!-- фс лзем щоамй -->
+  <rect x="13" y="13" width="46" height="94" rx="5" fill="url(#ipBlue)"/>
+  <!-- гвм ожешж (сом) -->
+  <rect x="20" y="18" width="32" height="22" rx="1" fill="#fff"/>
+  <rect x="20" y="22" width="32" height="3" fill="#0038b8"/>
+  <rect x="20" y="31" width="32" height="3" fill="#0038b8"/>
+  <path fill="#0038b8" d="M36 24.5l1.2 3.7h3.9l-3.1 2.3 1.2 3.7-3.2-2.3-3.2 2.3 1.2-3.7-3.1-2.3h3.9z"/>
+  <!-- IL -->
+  <text x="36" y="62" text-anchor="middle" fill="#fff" font-family="Arial Black, Arial, sans-serif" font-size="16" font-weight="900">IL</text>
+  <!-- рчегеъ -->
+  <circle cx="36" cy="74" r="2.2" fill="#fff"/>
+  <circle cx="36" cy="82" r="2.2" fill="#f5a623"/>
+  <!-- зешй дйгеч -->
+  <circle cx="72" cy="24" r="4" fill="#b8b8b8" stroke="#8a8a8a" stroke-width="1"/>
+  <circle cx="72" cy="96" r="4" fill="#b8b8b8" stroke="#8a8a8a" stroke-width="1"/>
+  <circle cx="448" cy="24" r="4" fill="#b8b8b8" stroke="#8a8a8a" stroke-width="1"/>
+  <circle cx="448" cy="96" r="4" fill="#b8b8b8" stroke="#8a8a8a" stroke-width="1"/>
+  <!-- ъвйъ йщшам -->
+  <rect x="392" y="78" width="108" height="28" rx="4" fill="#fff" stroke="#0038b8" stroke-width="1.2"/>
+  <text x="446" y="97" text-anchor="middle" fill="#0038b8" font-family="Arial, 'Segoe UI', sans-serif" font-size="15" font-weight="800">йщшам</text>
+  <!-- ажеш ошлжй фрей мдчмгд (щчеу)  дойчен б-HTML -->
+</svg>
