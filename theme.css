@@ -2184,18 +2184,10 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   grid-row: 2 !important;
 }
 
-/* הגרף בעמודה הרחבה, שורה 3 */
-#view-dashboard .bankChart:not(#\9):not(#\9){
-  grid-column: 2 !important;
-  grid-row: 3 !important;
-  height: 100% !important;
-  min-width: 0 !important;
-}
-
 /* לקוחות אחרונים — העמודה הרחבה, שורה 4, מול המצטיין */
 #view-dashboard .bankRecent:not(#\9):not(#\9){
   grid-column: 2 !important;
-  grid-row: 4 !important;
+  grid-row: 3 !important;
   min-width: 0 !important;
 }
 
@@ -2226,7 +2218,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
 
 #view-dashboard .giDailySales:not(#\9):not(#\9){
   grid-column: 2 !important;
-  grid-row: 5 !important;
+  grid-row: 4 !important;
   min-width: 0 !important;
 }
 
@@ -2246,7 +2238,6 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   #view-dashboard .bankDash:not(#\9):not(#\9){
     grid-template-columns: 1fr !important;
   }
-  #view-dashboard .bankChart:not(#\9):not(#\9),
   #view-dashboard .bankRecent:not(#\9):not(#\9),
   #view-dashboard .bankSideCard:not(#\9):not(#\9),
   #view-dashboard .bankGoal:not(#\9):not(#\9),
@@ -3804,4 +3795,67 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   color: var(--gi-text-muted) !important;
   font-size: 13px !important;
   text-align: center !important;
+}
+
+
+/* =====================================================================
+   31. REPORTS — hide the upload meta line, strengthen every header
+   BUILD: 20260731-reports-v2
+   ===================================================================== */
+
+/* שורת "תאריך העלאה · הועלה על ידי · גיליון · מוצגות N שורות · פילוח…".
+   מוזנת מ-app.js לשני ה-div האלה בשני הדוחות. הסתרה ב-CSS משאירה את
+   הלוגיקה שלמה — אם תרצה אותה בחזרה זו שורה אחת. */
+#dailyReportMeta:not(#\9):not(#\9),
+#cancellationsMeta:not(#\9):not(#\9),
+.lcDailyReport__meta:not(#\9):not(#\9){
+  display: none !important;
+}
+
+/* --- כותרות טבלה: גדולות ומודגשות --- */
+.lcDailyReportTable th:not(#\9):not(#\9),
+.lcReportTable th:not(#\9):not(#\9),
+.table th:not(#\9):not(#\9),
+.bankRecent__table th:not(#\9):not(#\9){
+  padding: var(--gi-s4) var(--gi-s4) !important;
+  background: var(--gi-surface-2) !important;
+  border-bottom: 1px solid var(--gi-border-strong) !important;
+  color: var(--gi-text) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+/* --- כותרות כרטיסים ומקטעים --- */
+.lcDailyReportCard .card__title:not(#\9):not(#\9),
+.lcCancellationsCard .card__title:not(#\9):not(#\9),
+.giDailySales__title:not(#\9):not(#\9){
+  font-size: 19px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.lcReportSection__title:not(#\9):not(#\9){
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.lcReportRubrics__tab:not(#\9):not(#\9){
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.lcReportRubrics__tab.is-active:not(#\9):not(#\9){
+  font-weight: 700 !important;
+}
+
+/* --- כותרות הכרטיסים בדשבורד, לאותה שפה --- */
+.bankRecent__title:not(#\9):not(#\9),
+.bankSideCard__title:not(#\9):not(#\9),
+.bankGoal__title:not(#\9):not(#\9),
+.bankLeader__title:not(#\9):not(#\9){
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
 }
