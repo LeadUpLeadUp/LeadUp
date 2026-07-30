@@ -150,7 +150,7 @@ body:not(.lcAuthLock):not(#\9):not(#\9){
 }
 
 .app:not(#\9):not(#\9){
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: clamp(216px, 17vw, 260px) 1fr;
   background: var(--gi-bg);
 }
 
@@ -1951,7 +1951,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
 /* --- רוחב הרשת: תמיד המידה הפתוחה --- */
 body.sidebar-collapsed #app:not(#\9):not(#\9),
 body.sidebar-collapsed .app:not(#\9):not(#\9){
-  grid-template-columns: 260px 1fr !important;
+  grid-template-columns: clamp(216px, 17vw, 260px) 1fr !important;
 }
 
 body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
@@ -2156,7 +2156,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
 
 #view-dashboard .bankDash:not(#\9):not(#\9){
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.9fr) !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) !important;
   align-items: start !important;
   gap: var(--gi-s5) !important;
 }
