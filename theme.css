@@ -26,11 +26,13 @@
   --gi-surface-2:     #F8FAFC;
   --gi-surface-3:     #F1F5F9;
 
-  /* Navy (sidebar) */
-  --gi-navy:          #0F2748;
-  --gi-navy-hover:    #17355C;
-  --gi-navy-soft:     #1B3A63;
-  --gi-navy-line:     rgba(255,255,255,.08);
+  /* Sidebar blue — #2563EB from the reference, nudged one step lighter.
+     Note: the plain primary is the same #2563EB, so the active nav row can no
+     longer be a blue fill. It inverts to a white chip instead (section 4). */
+  --gi-navy:          #3870ED;
+  --gi-navy-hover:    #4A7EEE;
+  --gi-navy-soft:     #2A66E9;
+  --gi-navy-line:     rgba(255,255,255,.16);
 
   /* Primary */
   --gi-primary:       #2563EB;
@@ -48,8 +50,8 @@
   --gi-text-2:        #475569;
   --gi-text-3:        #64748B;
   --gi-text-muted:    #94A3B8;
-  --gi-on-navy:       #E2E8F0;
-  --gi-on-navy-dim:   #94A3B8;
+  --gi-on-navy:       rgba(255,255,255,.92);
+  --gi-on-navy-dim:   rgba(255,255,255,.68);
 
   /* Status */
   --gi-success:       #16A34A;
@@ -97,9 +99,9 @@
   --brandC:    #2563EB;
   --brandGlow: rgba(37,99,235,.22);
 
-  --sideA:     #0F2748;
-  --sideB:     #0F2748;
-  --sideLine:  rgba(255,255,255,.08);
+  --sideA:     #3870ED;
+  --sideB:     #3870ED;
+  --sideLine:  rgba(255,255,255,.16);
 
   --shadow:    0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
   --radius:    16px;
@@ -275,15 +277,21 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .nav__item:hover:not(#\9):not(#\9){
   transform: none !important;
-  background: rgba(255,255,255,.06) !important;
+  background: rgba(255,255,255,.14) !important;
   color: #FFFFFF !important;
 }
 
+/* Inverted: a blue fill would vanish into the blue rail */
 .nav__item.is-active:not(#\9):not(#\9){
-  background: var(--gi-primary) !important;
-  border-color: var(--gi-primary) !important;
-  color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  color: var(--gi-primary) !important;
   box-shadow: none !important;
+}
+
+.nav__item.is-active:hover:not(#\9):not(#\9){
+  background: #FFFFFF !important;
+  color: var(--gi-primary) !important;
 }
 
 /* Flatten the glass icon chip into a plain glyph */
@@ -323,7 +331,7 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .nav__item.is-active .nav__label:not(#\9):not(#\9){
   font-weight: 600 !important;
-  color: #FFFFFF !important;
+  color: var(--gi-primary) !important;
 }
 
 /* Sidebar scrollbar */
