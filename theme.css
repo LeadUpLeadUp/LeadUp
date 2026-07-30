@@ -1,0 +1,2096 @@
+/* =====================================================================
+   GEMEL INVEST — Enterprise Theme Layer
+   BUILD: 20260730-enterprise-v1
+
+   שכבת עיצוב בלבד. נטענת אחרי app.css ודורסת אותו.
+   אינה משנה שום מבנה DOM, ID, טקסט, לוגיקה או התנהגות.
+   לביטול מלא של העיצוב החדש: להסיר את תג ה-<link> של הקובץ הזה.
+
+   קונבנציית ספציפיות — חשוב בעת עריכה:
+   ב-app.css יש 1,808 סלקטורים עם #id ו-1,384 הצהרות !important, ולכן
+   סלקטור מחלקה רגיל מפסיד בקסקדה. לכן כל סלקטור כאן נושא סיומת
+   :not(#\9):not(#\9) — הרחבה שאינה משנה מה נבחר, אך מעניקה משקל
+   ברמת #id. כל כלל חדש שמתווסף לקובץ חייב לשאת את אותה סיומת,
+   אחרת הוא פשוט לא ייכנס לתוקף.
+   ===================================================================== */
+
+
+/* =====================================================================
+   1. TOKENS
+   ===================================================================== */
+
+:root:not(#\9):not(#\9){
+  /* Surfaces */
+  --gi-bg:            #F8FAFC;
+  --gi-surface:       #FFFFFF;
+  --gi-surface-2:     #F8FAFC;
+  --gi-surface-3:     #F1F5F9;
+
+  /* Navy (sidebar) */
+  --gi-navy:          #0F2748;
+  --gi-navy-hover:    #17355C;
+  --gi-navy-soft:     #1B3A63;
+  --gi-navy-line:     rgba(255,255,255,.08);
+
+  /* Primary */
+  --gi-primary:       #2563EB;
+  --gi-primary-hover: #1D4ED8;
+  --gi-primary-soft:  #EFF6FF;
+  --gi-primary-ring:  rgba(37,99,235,.18);
+
+  /* Borders */
+  --gi-border:        #E5E7EB;
+  --gi-border-soft:   #F1F5F9;
+  --gi-border-strong: #CBD5E1;
+
+  /* Text */
+  --gi-text:          #0F172A;
+  --gi-text-2:        #475569;
+  --gi-text-3:        #64748B;
+  --gi-text-muted:    #94A3B8;
+  --gi-on-navy:       #E2E8F0;
+  --gi-on-navy-dim:   #94A3B8;
+
+  /* Status */
+  --gi-success:       #16A34A;
+  --gi-success-soft:  #ECFDF5;
+  --gi-warn:          #D97706;
+  --gi-warn-soft:     #FFFBEB;
+  --gi-danger:        #DC2626;
+  --gi-danger-soft:   #FEF2F2;
+  --gi-info:          #2563EB;
+  --gi-info-soft:     #EFF6FF;
+
+  /* Radius */
+  --gi-r-card:        16px;
+  --gi-r-md:          12px;
+  --gi-r-ctl:         8px;
+  --gi-r-pill:        999px;
+
+  /* Elevation — very subtle */
+  --gi-sh-xs:         0 1px 2px rgba(15,23,42,.04);
+  --gi-sh-sm:         0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --gi-sh-md:         0 4px 12px rgba(15,23,42,.06);
+  --gi-sh-lg:         0 12px 32px rgba(15,23,42,.10);
+
+  /* 8px spacing scale */
+  --gi-s1: 4px;  --gi-s2: 8px;  --gi-s3: 12px; --gi-s4: 16px;
+  --gi-s5: 24px; --gi-s6: 32px; --gi-s7: 40px; --gi-s8: 48px;
+
+  --gi-font: 'Heebo', system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --gi-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---- Legacy token remap: retones ~900 existing var() usages at once ---- */
+  --bg:        #F8FAFC;
+  --bg2:       #FFFFFF;
+  --panel:     #FFFFFF;
+  --line:      #E5E7EB;
+  --text:      #0F172A;
+  --muted:     #64748B;
+
+  --blue:      #EFF6FF;
+  --blue2:     #BFDBFE;
+  --blueDeep:  #2563EB;
+
+  --brandA:    #0F2748;
+  --brandB:    #1E3A8A;
+  --brandC:    #2563EB;
+  --brandGlow: rgba(37,99,235,.22);
+
+  --sideA:     #0F2748;
+  --sideB:     #0F2748;
+  --sideLine:  rgba(255,255,255,.08);
+
+  --shadow:    0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --radius:    16px;
+  --radius2:   12px;
+  --focus:     0 0 0 3px rgba(37,99,235,.18);
+}
+
+
+/* =====================================================================
+   2. TYPOGRAPHY — Heebo
+   ===================================================================== */
+
+*, *::before, *::after{
+  font-family: var(--gi-font) !important;
+}
+
+/* Restore monospace where the app intentionally uses it (codes, card numbers, clock) */
+.lcElemLeviLookup__code:not(#\9):not(#\9),
+.lcElemPaymentCard__input:not(#\9):not(#\9),
+.lcElemPaymentCard__readonlyVal:not(#\9):not(#\9),
+.mcCallScript__missing:not(#\9):not(#\9),
+#giElementaryLeviCodeModal .lcElemLeviModal__pickCode:not(#\9):not(#\9),
+#view-dashboard .opsDashAgent__clock:not(#\9):not(#\9),
+code:not(#\9):not(#\9), pre:not(#\9):not(#\9), kbd:not(#\9):not(#\9), samp:not(#\9):not(#\9){
+  font-family: var(--gi-mono) !important;
+}
+
+body:not(#\9):not(#\9){
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gi-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Heebo tops out at 900 — normalize the legacy 950/750 weights */
+[style*="font-weight:950"], .kpi__value:not(#\9):not(#\9), .modal__title:not(#\9):not(#\9){ font-weight: 800; }
+
+
+/* =====================================================================
+   3. CANVAS
+   ===================================================================== */
+
+body:not(#\9):not(#\9),
+body:not(.lcAuthLock):not(#\9):not(#\9){
+  background: var(--gi-bg) !important;
+  color: var(--gi-text);
+}
+
+.app:not(#\9):not(#\9){
+  grid-template-columns: 260px 1fr;
+  background: var(--gi-bg);
+}
+
+body.sidebar-collapsed #app:not(#\9):not(#\9){
+  grid-template-columns: 84px 1fr !important;
+}
+
+.main:not(#\9):not(#\9){
+  padding: 0 !important;
+  background: var(--gi-bg);
+}
+
+.content:not(#\9):not(#\9){
+  padding: var(--gi-s5) var(--gi-s5) var(--gi-s6) !important;
+  background: var(--gi-bg);
+}
+
+
+/* =====================================================================
+   4. SIDEBAR — solid navy
+   ===================================================================== */
+
+.sidebar:not(#\9):not(#\9){
+  padding: var(--gi-s5) var(--gi-s3) var(--gi-s4) !important;
+  background: var(--gi-navy) !important;
+  border-inline-end: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: var(--gi-on-navy);
+}
+
+body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
+  padding-inline: var(--gi-s2) !important;
+}
+
+/* Strip the legacy glass overlays, noise texture and spine */
+.sidebar:not(#\9):not(#\9)::before,
+.sidebar:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+/* --- Brand block --- */
+.sidebar__topBar:not(#\9):not(#\9){
+  margin-bottom: var(--gi-s5) !important;
+  padding: 0 var(--gi-s2);
+}
+
+.sidebar .topbarBrand:not(#\9):not(#\9),
+.sidebar .brand:not(#\9):not(#\9),
+.brand--logoOnly:not(#\9):not(#\9){
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+/* The brand asset is dark artwork — render it white on navy */
+.sidebar .topbarBrand__img:not(#\9):not(#\9),
+.sidebar .brand__logoImg:not(#\9):not(#\9){
+  filter: brightness(0) invert(1);
+  opacity: .96;
+}
+
+.sidebar .brand__name:not(#\9):not(#\9){ color: #FFFFFF !important; }
+.sidebar .brand__sub:not(#\9):not(#\9){  color: var(--gi-on-navy-dim) !important; }
+
+/* --- Collapse switch --- */
+.sidebarModeSwitch:not(#\9):not(#\9){ margin: 0 0 var(--gi-s4) auto !important; }
+
+.sidebarModeSwitch__track:not(#\9):not(#\9){
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  box-shadow: none !important;
+}
+
+.sidebarModeSwitch:hover .sidebarModeSwitch__track:not(#\9):not(#\9){
+  background: rgba(255,255,255,.14) !important;
+  border-color: rgba(255,255,255,.22) !important;
+  box-shadow: none !important;
+}
+
+.sidebarModeSwitch__thumb:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  box-shadow: none !important;
+}
+
+/* --- Nav --- */
+.nav:not(#\9):not(#\9){
+  margin-top: 0 !important;
+  gap: 2px !important;
+  padding-inline: var(--gi-s1);
+}
+
+.nav__item:not(#\9):not(#\9){
+  padding: 10px var(--gi-s3) !important;
+  gap: var(--gi-s3) !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: transparent !important;
+  color: var(--gi-on-navy) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  min-height: 40px !important;
+  overflow: visible !important;
+  transition: background .15s ease, color .15s ease !important;
+}
+
+/* Legacy shine/glow overlays layered on every nav row */
+.nav__item:not(#\9):not(#\9)::before,
+.nav__item:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.nav__item:hover:not(#\9):not(#\9){
+  transform: none !important;
+  background: rgba(255,255,255,.06) !important;
+  color: #FFFFFF !important;
+}
+
+.nav__item.is-active:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+}
+
+/* Flatten the glass icon chip into a plain glyph */
+.nav__icon:not(#\9):not(#\9){
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  /* legacy rules size the icon via flex-basis, which outranks width */
+  flex: 0 0 20px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: inherit !important;
+  transform: none !important;
+}
+
+.nav__item:hover .nav__icon:not(#\9):not(#\9),
+.nav__item.is-active .nav__icon:not(#\9):not(#\9){
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  color: inherit !important;
+}
+
+.nav__iconSvg:not(#\9):not(#\9){ width: 19px !important; height: 19px !important; }
+
+.nav__label:not(#\9):not(#\9){
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  color: inherit !important;
+}
+
+.nav__item.is-active .nav__label:not(#\9):not(#\9){
+  font-weight: 600 !important;
+  color: #FFFFFF !important;
+}
+
+/* Sidebar scrollbar */
+.sidebar .nav:not(#\9):not(#\9)::-webkit-scrollbar{ width: 0 !important; }
+
+/* Anything else dropped into the navy rail stays legible */
+.sidebar__bottomTools:not(#\9):not(#\9),
+.sidebar__foot:not(#\9):not(#\9){ color: var(--gi-on-navy); }
+
+.sidebar__bottomTools .btn:not(#\9):not(#\9){
+  background: rgba(255,255,255,.08) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  color: var(--gi-on-navy) !important;
+  box-shadow: none !important;
+}
+
+.sidebar__bottomTools .btn:hover:not(#\9):not(#\9){
+  background: rgba(255,255,255,.14) !important;
+  color: #FFFFFF !important;
+}
+
+
+/* =====================================================================
+   5. TOPBAR — white bar with hairline
+   ===================================================================== */
+
+.topbar:not(#\9):not(#\9){
+  min-height: 64px;
+  margin-bottom: 0 !important;
+  padding: var(--gi-s2) var(--gi-s5) !important;
+  align-items: center !important;
+  background: var(--gi-surface);
+  border-bottom: 1px solid var(--gi-border);
+}
+
+.topbar__right:not(#\9):not(#\9){
+  align-items: center !important;
+}
+
+.topbar__actions:not(#\9):not(#\9){
+  align-items: center !important;
+  gap: var(--gi-s2) !important;
+}
+
+.topbar .topbarBrand__img:not(#\9):not(#\9){
+  max-height: 34px;
+  width: auto;
+}
+
+/* --- User pill --- */
+.lcUserPill:not(#\9):not(#\9){
+  padding: var(--gi-s1) var(--gi-s3) var(--gi-s1) var(--gi-s1) !important;
+  gap: var(--gi-s2) !important;
+  background: transparent !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-pill) !important;
+}
+
+.lcUserPill__avatar:not(#\9):not(#\9){
+  background: var(--gi-primary-soft) !important;
+  border: 1px solid var(--gi-border) !important;
+  color: var(--gi-primary) !important;
+}
+
+.topbar__actions .lcUserPill__text:not(#\9):not(#\9),
+.lcUserPill__text:not(#\9):not(#\9),
+.lcUserPill__name:not(#\9):not(#\9){
+  color: var(--gi-text) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+.lcUserPill__role:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  opacity: 1 !important;
+  font-size: 11px !important;
+}
+
+.lcUserPill__dot:not(#\9):not(#\9){ background: var(--gi-success) !important; }
+
+.topbar__actions .lcUserPill__btn:not(#\9):not(#\9),
+.lcUserPill__btn:not(#\9):not(#\9){
+  background: transparent !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-pill) !important;
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+
+.lcUserPill__btn:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-3) !important;
+  color: var(--gi-text) !important;
+}
+
+/* --- Topbar icon buttons --- */
+.lcTopBtn:not(#\9):not(#\9),
+.giOfferFab--topbar:not(#\9):not(#\9),
+.giReminderFab--topbar:not(#\9):not(#\9),
+.iconBtn:not(#\9):not(#\9){
+  width: 38px !important;
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-2) !important;
+  box-shadow: none !important;
+  animation: none !important;
+  transition: background .15s ease, border-color .15s ease, color .15s ease !important;
+}
+
+.lcTopBtn:hover:not(#\9):not(#\9),
+.giOfferFab--topbar:hover:not(#\9):not(#\9),
+.giReminderFab--topbar:hover:not(#\9):not(#\9),
+.iconBtn:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border-color: var(--gi-border-strong) !important;
+  color: var(--gi-primary) !important;
+  transform: none !important;
+}
+
+/* Chat FAB keeps its fixed/draggable positioning — colours only */
+.giChatFab:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border: 1px solid var(--gi-primary) !important;
+  color: #FFFFFF !important;
+  box-shadow: var(--gi-sh-md) !important;
+  animation: none !important;
+}
+
+.giChatFab:hover:not(#\9):not(#\9),
+.giChatFab:focus-visible:not(#\9):not(#\9){
+  background: var(--gi-primary-hover) !important;
+  border-color: var(--gi-primary-hover) !important;
+  box-shadow: var(--gi-sh-lg) !important;
+  transform: none !important;
+}
+
+.giChatFab:not(#\9):not(#\9)::after{ content: none !important; }
+
+.giReminderFab__badge:not(#\9):not(#\9),
+.giChatFab__badge:not(#\9):not(#\9){
+  background: var(--gi-danger) !important;
+  border: 2px solid var(--gi-surface) !important;
+  box-shadow: none !important;
+  font-weight: 700;
+}
+
+/* Attendance clock */
+.lcAttendanceClock:not(#\9):not(#\9){
+  border-radius: var(--gi-r-pill) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-2) !important;
+}
+
+.lcAttendanceClock__btn:not(#\9):not(#\9){
+  border-radius: var(--gi-r-pill) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
+
+.lcAttendanceClock__btn--in:not(#\9):not(#\9){  background: var(--gi-success-soft) !important; color: var(--gi-success) !important; border: 1px solid rgba(22,163,74,.20) !important; }
+.lcAttendanceClock__btn--out:not(#\9):not(#\9){ background: var(--gi-danger-soft) !important;  color: var(--gi-danger) !important;  border: 1px solid rgba(220,38,38,.20) !important; }
+
+
+/* =====================================================================
+   6. PAGE TITLES
+   ===================================================================== */
+
+.pageTitle__kicker:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text-3) !important;
+}
+
+.pageTitle__title:not(#\9):not(#\9){
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.01em !important;
+}
+
+
+/* =====================================================================
+   7. CARDS
+   ===================================================================== */
+
+.card:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.card:hover:not(#\9):not(#\9){
+  box-shadow: var(--gi-sh-md) !important;
+  transform: none !important;
+}
+
+.card__head:not(#\9):not(#\9){
+  align-items: center !important;
+  padding: var(--gi-s4) var(--gi-s5) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.card__title:not(#\9):not(#\9){
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.card__hint:not(#\9):not(#\9){
+  font-size: 13px !important;
+  color: var(--gi-text-3) !important;
+}
+
+.grid:not(#\9):not(#\9){ gap: var(--gi-s5) !important; }
+.grid--kpis:not(#\9):not(#\9){ gap: var(--gi-s4) !important; }
+
+.divider:not(#\9):not(#\9){ background: var(--gi-border) !important; }
+
+
+/* =====================================================================
+   8. KPI CARDS
+   ===================================================================== */
+
+.kpi:not(#\9):not(#\9){ padding: var(--gi-s5) !important; }
+
+.kpi__label:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-3) !important;
+}
+
+.kpi__value:not(#\9):not(#\9){
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  margin-top: var(--gi-s2) !important;
+  letter-spacing: -.02em;
+}
+
+.kpi__sub:not(#\9):not(#\9){
+  font-size: 12px !important;
+  color: var(--gi-text-3) !important;
+  margin-top: var(--gi-s1) !important;
+}
+
+/* --- Dashboard KPI cards (bankKpi) --- */
+.bankDash__kpis:not(#\9):not(#\9){ gap: var(--gi-s4) !important; }
+
+.bankKpi:not(#\9):not(#\9){
+  position: relative;
+  padding: var(--gi-s5) !important;
+  /* gutter on the visual left (inline-end under RTL) reserved for the icon badge */
+  padding-inline-end: 84px !important;
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  overflow: hidden;
+}
+
+.bankKpi__top:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gi-s2);
+}
+
+.bankKpi__he:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-3) !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+.bankKpi__value:not(#\9):not(#\9){
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  margin-top: var(--gi-s2) !important;
+  letter-spacing: -.02em !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+.bankKpi__delta:not(#\9):not(#\9),
+.bankKpiToday__sub:not(#\9):not(#\9){
+  margin-top: var(--gi-s2) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-3) !important;
+  text-shadow: none !important;
+}
+
+.bankKpi__delta.is-up:not(#\9):not(#\9){   color: var(--gi-success) !important; }
+.bankKpi__delta.is-down:not(#\9):not(#\9){ color: var(--gi-danger) !important; }
+
+/* Turn the faded background watermark into a soft blue icon badge */
+.bankKpi__watermark:not(#\9):not(#\9){
+  position: absolute !important;
+  top: var(--gi-s5) !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: var(--gi-s5) !important;
+  bottom: auto !important;
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-primary-soft) !important;
+  color: var(--gi-primary) !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  pointer-events: none;
+}
+
+.bankKpi__watermark svg:not(#\9):not(#\9),
+.bankKpi__watermark img:not(#\9):not(#\9){
+  width: 24px !important;
+  height: 24px !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Decorative accent bar — not part of the flat language */
+.bankKpi__bar:not(#\9):not(#\9){ display: none !important; }
+
+.bankKpi__caret:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; opacity: .7; }
+
+/* Below the icon badge — reclaim the reserved gutter */
+.bankKpi__detailBtn:not(#\9):not(#\9),
+.bankKpiToday__breakdown:not(#\9):not(#\9){
+  margin-inline-end: -60px !important;
+}
+
+.bankKpi__detailBtn:not(#\9):not(#\9){
+  margin-top: var(--gi-s3) !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  color: var(--gi-primary) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.bankKpi__detailBtn:hover:not(#\9):not(#\9){ color: var(--gi-primary-hover) !important; text-decoration: underline; }
+
+.bankKpiTodayRow:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gi-s2);
+  padding: var(--gi-s2) 0 !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  font-size: 13px !important;
+}
+
+.bankKpiTodayRow:last-child:not(#\9):not(#\9){ border-bottom: none !important; }
+.bankKpiTodayRow__label:not(#\9):not(#\9){ color: var(--gi-text-2) !important; }
+.bankKpiTodayRow__id:not(#\9):not(#\9){    color: var(--gi-text-muted) !important; font-size: 11px !important; }
+.bankKpiTodayRow__val:not(#\9):not(#\9){   color: var(--gi-text) !important; font-weight: 600 !important; }
+.bankKpiTodayRow--empty:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; justify-content: center; }
+
+
+/* =====================================================================
+   9. DASHBOARD — greeting, goal, chart, leaderboard
+   ===================================================================== */
+
+.bankDash:not(#\9):not(#\9){ display: grid; gap: var(--gi-s5); }
+.bankDash__row:not(#\9):not(#\9){ gap: var(--gi-s5) !important; }
+
+.bankDash__topStats:not(#\9):not(#\9),
+.bankDash__topStatsInner:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  color: var(--gi-text) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.bankDash__topStatsGreeting__intro:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  text-shadow: none !important;
+}
+
+.bankDash__topStatsGreeting__metricLabel:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text-3) !important;
+  text-shadow: none !important;
+}
+
+.bankDash__topStats__value:not(#\9):not(#\9){
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  text-shadow: none !important;
+}
+
+.bankDash__topStats__value--good:not(#\9):not(#\9){ color: var(--gi-success) !important; }
+.bankDash__topStats__value--mid:not(#\9):not(#\9){  color: var(--gi-warn) !important; }
+.bankDash__topStats__value--low:not(#\9):not(#\9){  color: var(--gi-danger) !important; }
+
+.bankDash__emptyCard:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px dashed var(--gi-border-strong) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: none !important;
+}
+
+.bankDash__emptyTitle:not(#\9):not(#\9){ color: var(--gi-text) !important; font-weight: 700 !important; }
+.bankDash__emptyText:not(#\9):not(#\9){  color: var(--gi-text-3) !important; }
+
+/* --- Goal card --- */
+.bankGoal:not(#\9):not(#\9),
+.bankGoal__shell:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  color: var(--gi-text) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.bankGoal__title:not(#\9):not(#\9){
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  text-shadow: none !important;
+}
+
+.bankGoal__percent:not(#\9):not(#\9){
+  font-weight: 700 !important;
+  color: var(--gi-primary) !important;
+  text-shadow: none !important;
+}
+
+.bankGoal__percentLabel:not(#\9):not(#\9),
+.bankGoal__percentSub:not(#\9):not(#\9),
+.bankGoal__meterCopy:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+  text-shadow: none !important;
+}
+
+.bankGoal__progressTrack:not(#\9):not(#\9),
+.bankGoal__meter:not(#\9):not(#\9){
+  background: var(--gi-surface-3) !important;
+  border-radius: var(--gi-r-pill) !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+.bankGoal__progressTrack > *,
+.bankGoal__meter > *{
+  background: var(--gi-primary) !important;
+  border-radius: var(--gi-r-pill) !important;
+  box-shadow: none !important;
+}
+
+.bankGoal__mainStat:not(#\9):not(#\9),
+.bankGoal__topStat:not(#\9):not(#\9){ color: var(--gi-text-2) !important; }
+.bankGoal__mainStat strong:not(#\9):not(#\9),
+.bankGoal__topStat strong:not(#\9):not(#\9){ color: var(--gi-text) !important; font-weight: 700 !important; }
+
+/* --- Chart --- */
+.bankChart:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.bankChart__title:not(#\9):not(#\9){ font-size: 16px !important; font-weight: 700 !important; color: var(--gi-text) !important; }
+.bankChart__sub:not(#\9):not(#\9){   font-size: 13px !important; color: var(--gi-text-3) !important; }
+.bankChart__bar:not(#\9):not(#\9){   background: var(--gi-primary) !important; border-radius: 4px 4px 0 0 !important; box-shadow: none !important; }
+.bankChart__targetLine:not(#\9):not(#\9){  border-top: 1px dashed var(--gi-border-strong) !important; background: none !important; }
+.bankChart__targetLabel:not(#\9):not(#\9){ color: var(--gi-text-3) !important; font-size: 11px !important; }
+
+.bankChart__tooltip:not(#\9):not(#\9){
+  background: var(--gi-text) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--gi-r-ctl) !important;
+  box-shadow: var(--gi-sh-lg) !important;
+  font-size: 12px !important;
+}
+
+/* --- Leaderboard --- */
+.bankLeader:not(#\9):not(#\9),
+.bankLeader__sideCard:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  color: var(--gi-text) !important;
+}
+
+.bankLeader__title:not(#\9):not(#\9){    font-size: 16px !important; font-weight: 700 !important; color: var(--gi-text) !important; text-shadow: none !important; }
+.bankLeader__headDate:not(#\9):not(#\9){ font-size: 12px !important; color: var(--gi-text-3) !important; text-shadow: none !important; }
+.bankLeader__entryText:not(#\9):not(#\9){ color: var(--gi-text-2) !important; text-shadow: none !important; }
+.bankLeader__empty:not(#\9):not(#\9){    color: var(--gi-text-muted) !important; }
+
+.bankLeader__entryRow:not(#\9):not(#\9){
+  padding: var(--gi-s3) 0 !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.bankLeader__entryRow:last-child:not(#\9):not(#\9){ border-bottom: none !important; }
+
+
+/* =====================================================================
+   10. TABLES
+   ===================================================================== */
+
+.tableWrap:not(#\9):not(#\9){
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: auto;
+}
+
+.table:not(#\9):not(#\9){
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th:not(#\9):not(#\9){
+  padding: var(--gi-s3) var(--gi-s5) !important;
+  background: var(--gi-surface-2) !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+  border-radius: 0 !important;
+  color: var(--gi-text-3) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap;
+}
+
+.table td:not(#\9):not(#\9){
+  padding: var(--gi-s4) var(--gi-s5) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  font-size: 13px !important;
+  color: var(--gi-text-2) !important;
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td:not(#\9):not(#\9){ border-bottom: none !important; }
+
+.table tr:hover td:not(#\9):not(#\9){ background: var(--gi-surface-2) !important; }
+
+/* First column reads as the record identity */
+.table td:first-child:not(#\9):not(#\9){ color: var(--gi-text) !important; font-weight: 500 !important; }
+
+.lcCustomers__avatar:not(#\9):not(#\9){
+  background: var(--gi-primary-soft) !important;
+  border: 1px solid var(--gi-border) !important;
+  color: var(--gi-primary) !important;
+  font-weight: 600 !important;
+}
+
+
+/* =====================================================================
+   11. BADGES / STATUS PILLS
+   ===================================================================== */
+
+.badge:not(#\9):not(#\9),
+.pill:not(#\9):not(#\9){
+  padding: var(--gi-s1) var(--gi-s3) !important;
+  border-radius: var(--gi-r-pill) !important;
+  border: 1px solid transparent !important;
+  background: var(--gi-surface-3) !important;
+  color: var(--gi-text-2) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.5;
+  box-shadow: none !important;
+}
+
+.badge.ok:not(#\9):not(#\9),      .badge--ok:not(#\9):not(#\9),      .badge.is-ok:not(#\9):not(#\9),      .badge--success:not(#\9):not(#\9){ background: var(--gi-success-soft) !important; color: var(--gi-success) !important; }
+.badge.warn:not(#\9):not(#\9),    .badge--warn:not(#\9):not(#\9),    .badge.is-warn:not(#\9):not(#\9),    .badge--warning:not(#\9):not(#\9){ background: var(--gi-warn-soft) !important;    color: var(--gi-warn) !important; }
+.badge.err:not(#\9):not(#\9),     .badge--danger:not(#\9):not(#\9),  .badge.is-err:not(#\9):not(#\9),     .badge--error:not(#\9):not(#\9){   background: var(--gi-danger-soft) !important;  color: var(--gi-danger) !important; }
+.badge.info:not(#\9):not(#\9),    .badge--info:not(#\9):not(#\9),    .badge.is-info:not(#\9):not(#\9),    .badge--primary:not(#\9):not(#\9){ background: var(--gi-info-soft) !important;    color: var(--gi-info) !important; }
+
+.dot:not(#\9):not(#\9){ box-shadow: none !important; }
+.dot.ok:not(#\9):not(#\9){   background: var(--gi-success) !important; }
+.dot.warn:not(#\9):not(#\9){ background: var(--gi-warn) !important; }
+.dot.err:not(#\9):not(#\9){  background: var(--gi-danger) !important; }
+
+
+/* =====================================================================
+   12. BUTTONS
+   ===================================================================== */
+
+.btn:not(#\9):not(#\9){
+  padding: var(--gi-s2) var(--gi-s4) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-2) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: background .15s ease, border-color .15s ease, color .15s ease !important;
+}
+
+.btn:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border-color: var(--gi-border-strong) !important;
+  color: var(--gi-text) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn:active:not(#\9):not(#\9){ transform: none !important; }
+
+.btn:focus-visible:not(#\9):not(#\9){
+  outline: none;
+  box-shadow: var(--focus) !important;
+  border-color: var(--gi-primary) !important;
+}
+
+.btn--primary:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #FFFFFF !important;
+}
+
+.btn--primary:hover:not(#\9):not(#\9){
+  background: var(--gi-primary-hover) !important;
+  border-color: var(--gi-primary-hover) !important;
+  color: #FFFFFF !important;
+}
+
+.btn--success:not(#\9):not(#\9){ background: var(--gi-success) !important; border-color: var(--gi-success) !important; color: #FFFFFF !important; }
+.btn--warning:not(#\9):not(#\9){ background: var(--gi-warn) !important;    border-color: var(--gi-warn) !important;    color: #FFFFFF !important; }
+.btn--danger:not(#\9):not(#\9){  background: var(--gi-danger) !important;  border-color: var(--gi-danger) !important;  color: #FFFFFF !important; }
+
+.btn--small:not(#\9):not(#\9){ padding: 6px var(--gi-s3) !important; font-size: 12px !important; }
+
+.btn[disabled]:not(#\9):not(#\9), .btn:disabled:not(#\9):not(#\9){ opacity: .5; cursor: not-allowed; }
+
+
+/* =====================================================================
+   13. FORMS
+   ===================================================================== */
+
+.search:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-pill) !important;
+  box-shadow: none !important;
+}
+
+.search:focus-within:not(#\9):not(#\9){
+  border-color: var(--gi-primary) !important;
+  box-shadow: var(--focus) !important;
+}
+
+.search__icon:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; opacity: 1 !important; }
+
+.search__input:not(#\9):not(#\9){
+  padding: 10px var(--gi-s4) !important;
+  font-size: 13px !important;
+  color: var(--gi-text) !important;
+}
+
+.search__input:not(#\9):not(#\9)::placeholder{ color: var(--gi-text-muted) !important; }
+.search__input:focus:not(#\9):not(#\9){ box-shadow: none !important; }
+
+.formGrid:not(#\9):not(#\9){ padding: var(--gi-s5) !important; gap: var(--gi-s4) !important; }
+.field:not(#\9):not(#\9){ gap: var(--gi-s2) !important; }
+
+.label:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-2) !important;
+}
+
+.input:not(#\9):not(#\9),
+input[type="text"]:not(#\9):not(#\9), input[type="number"]:not(#\9):not(#\9), input[type="tel"]:not(#\9):not(#\9),
+input[type="email"]:not(#\9):not(#\9), input[type="date"]:not(#\9):not(#\9), input[type="password"]:not(#\9):not(#\9),
+input[type="search"]:not(#\9):not(#\9), select:not(#\9):not(#\9), textarea:not(#\9):not(#\9){
+  padding: 9px var(--gi-s3) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text) !important;
+  font-size: 13px !important;
+  box-shadow: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.input:focus:not(#\9):not(#\9),
+input:focus:not(#\9):not(#\9), select:focus:not(#\9):not(#\9), textarea:focus:not(#\9):not(#\9){
+  border-color: var(--gi-primary) !important;
+  box-shadow: var(--focus) !important;
+  outline: none !important;
+}
+
+input:not(#\9):not(#\9)::placeholder, textarea:not(#\9):not(#\9)::placeholder{ color: var(--gi-text-muted) !important; }
+
+.help:not(#\9):not(#\9){ font-size: 12px !important; color: var(--gi-text-3) !important; }
+
+.fieldError:not(#\9):not(#\9){ color: var(--gi-danger) !important; font-size: 12px !important; }
+
+.moneyField__sym:not(#\9):not(#\9){ color: var(--gi-text-3) !important; font-weight: 600 !important; }
+
+
+/* =====================================================================
+   14. MODALS / DRAWERS
+   ===================================================================== */
+
+.modal__backdrop:not(#\9):not(#\9),
+.drawer__backdrop:not(#\9):not(#\9){
+  background: rgba(15,23,42,.45) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.modal__panel:not(#\9):not(#\9),
+.drawer__panel:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-lg) !important;
+}
+
+.modal__head:not(#\9):not(#\9){
+  padding: var(--gi-s5) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.modal__kicker:not(#\9):not(#\9){ font-size: 12px !important; font-weight: 500 !important; color: var(--gi-text-3) !important; }
+.modal__title:not(#\9):not(#\9){  font-size: 18px !important; font-weight: 700 !important; color: var(--gi-text) !important; }
+
+.modal__foot:not(#\9):not(#\9){
+  padding: var(--gi-s4) var(--gi-s5) !important;
+  border-top: 1px solid var(--gi-border-soft) !important;
+  background: var(--gi-surface-2) !important;
+}
+
+
+/* =====================================================================
+   15. MISC COMPONENTS
+   ===================================================================== */
+
+.emptyState:not(#\9):not(#\9){
+  padding: var(--gi-s8) var(--gi-s5) !important;
+  background: var(--gi-surface) !important;
+  border: 1px dashed var(--gi-border-strong) !important;
+  border-radius: var(--gi-r-card) !important;
+}
+
+.emptyState__icon:not(#\9):not(#\9){  opacity: .35 !important; }
+.emptyState__title:not(#\9):not(#\9){ font-size: 16px !important; font-weight: 700 !important; color: var(--gi-text) !important; }
+.emptyState__text:not(#\9):not(#\9){  font-size: 13px !important; color: var(--gi-text-3) !important; }
+
+/* Stepper */
+.lcStep:not(#\9):not(#\9){
+  padding: 6px var(--gi-s3) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-3) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.lcStep__num:not(#\9):not(#\9){ background: var(--gi-surface-3) !important; color: var(--gi-text-3) !important; font-weight: 700 !important; }
+
+.lcStep.is-active:not(#\9):not(#\9){
+  background: var(--gi-primary-soft) !important;
+  border-color: var(--gi-primary) !important;
+  color: var(--gi-primary) !important;
+  box-shadow: none !important;
+}
+
+.lcStep.is-active .lcStep__num:not(#\9):not(#\9){ background: var(--gi-primary) !important; color: #FFFFFF !important; }
+
+.lcStep.is-done:not(#\9):not(#\9){
+  background: var(--gi-success-soft) !important;
+  border-color: rgba(22,163,74,.25) !important;
+  color: var(--gi-success) !important;
+}
+
+.lcStep.is-done .lcStep__num:not(#\9):not(#\9){ background: var(--gi-success) !important; color: #FFFFFF !important; }
+
+.lcStep:not(:last-child):not(#\9):not(#\9)::after{ background: var(--gi-border) !important; }
+
+/* Timeline / events */
+.event:not(#\9):not(#\9){
+  padding: var(--gi-s3) !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-surface-2) !important;
+  border: 1px solid var(--gi-border-soft) !important;
+}
+
+.event__dot:not(#\9):not(#\9){  background: var(--gi-primary) !important; }
+.event__text:not(#\9):not(#\9){ font-size: 13px !important; color: var(--gi-text-2) !important; }
+.event__time:not(#\9):not(#\9){ font-size: 12px !important; color: var(--gi-text-muted) !important; }
+
+/* Mini stats */
+.miniStats__bar:not(#\9):not(#\9){      background: var(--gi-surface-3) !important; }
+.miniStats__bar span:not(#\9):not(#\9){ background: var(--gi-primary) !important; }
+.miniStats__label:not(#\9):not(#\9){    font-size: 13px !important; color: var(--gi-text-2) !important; }
+.miniStats__value:not(#\9):not(#\9){    font-size: 12px !important; color: var(--gi-text-3) !important; }
+
+
+/* =====================================================================
+   16. SCROLLBARS
+   ===================================================================== */
+
+.content:not(#\9):not(#\9)::-webkit-scrollbar,
+.tableWrap:not(#\9):not(#\9)::-webkit-scrollbar,
+.modal__panel:not(#\9):not(#\9)::-webkit-scrollbar{ width: 10px; height: 10px; }
+
+.content:not(#\9):not(#\9)::-webkit-scrollbar-track,
+.tableWrap:not(#\9):not(#\9)::-webkit-scrollbar-track,
+.modal__panel:not(#\9):not(#\9)::-webkit-scrollbar-track{ background: transparent; }
+
+.content:not(#\9):not(#\9)::-webkit-scrollbar-thumb,
+.tableWrap:not(#\9):not(#\9)::-webkit-scrollbar-thumb,
+.modal__panel:not(#\9):not(#\9)::-webkit-scrollbar-thumb{
+  background: var(--gi-border-strong);
+  border: 3px solid var(--gi-bg);
+  border-radius: var(--gi-r-pill);
+}
+
+.content:not(#\9):not(#\9)::-webkit-scrollbar-thumb:hover,
+.tableWrap:not(#\9):not(#\9)::-webkit-scrollbar-thumb:hover,
+.modal__panel:not(#\9):not(#\9)::-webkit-scrollbar-thumb:hover{ background: var(--gi-text-muted); }
+
+
+/* =====================================================================
+   17. LOGIN SCREEN
+   ===================================================================== */
+
+body.lcAuthLock:not(#\9):not(#\9){ background: var(--gi-navy) !important; }
+
+.lcLogin__card:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-lg) !important;
+  padding: var(--gi-s7) var(--gi-s6) var(--gi-s6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+}
+
+.lcLogin__card:hover:not(#\9):not(#\9){
+  transform: none !important;
+  box-shadow: var(--gi-sh-lg) !important;
+}
+
+/* The legacy card builds its frosted-glass look from two overlays */
+.lcLogin__card:not(#\9):not(#\9)::before,
+.lcLogin__card:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.lcLogin:not(#\9):not(#\9){
+  background: var(--gi-navy) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.lcLogin:not(#\9):not(#\9)::before,
+.lcLogin:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.lcLogin__brand:not(#\9):not(#\9){
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Animated aura / sparkle layers behind the login logo */
+.giLogoAnim__aura:not(#\9):not(#\9),
+.giLogoAnim__investWake:not(#\9):not(#\9),
+.giLogoAnim__investLine:not(#\9):not(#\9),
+.giLogoAnim__symbolGlow:not(#\9):not(#\9),
+.giLogoAnim__glassSweep:not(#\9):not(#\9),
+.giLogoAnim__dots:not(#\9):not(#\9),
+.giLogoAnim__sparkles:not(#\9):not(#\9){
+  display: none !important;
+}
+
+.giLogoAnim__wrap:not(#\9):not(#\9){
+  animation: none !important;
+  filter: none !important;
+}
+
+.lcLogin__logoImg:not(#\9):not(#\9){
+  width: 180px !important;
+  height: auto !important;
+  filter: none !important;
+}
+
+.lcLogin__title:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  text-align: center !important;
+  margin-top: var(--gi-s5) !important;
+}
+
+.lcLogin__hint:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text-3) !important;
+  text-align: center !important;
+  margin-top: var(--gi-s1) !important;
+}
+
+.lcLogin__secureNote:not(#\9):not(#\9){
+  margin: var(--gi-s4) auto 0 !important;
+  justify-content: center !important;
+  gap: var(--gi-s2) !important;
+  padding: var(--gi-s1) var(--gi-s3) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--gi-success) !important;
+  background: var(--gi-success-soft) !important;
+  border: 1px solid rgba(22,163,74,.20) !important;
+  border-radius: var(--gi-r-pill) !important;
+}
+
+.lcLogin__secureDot:not(#\9):not(#\9){
+  width: 6px !important;
+  height: 6px !important;
+  background: var(--gi-success) !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.lcLogin__form:not(#\9):not(#\9){ margin-top: var(--gi-s5) !important; }
+
+body.lcAuthLock #lcLoginCredentialsStep:not(#\9):not(#\9),
+body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !important; }
+
+/* --- Credential fields ---------------------------------------------------
+   The legacy input carried the frame itself plus 74px of side padding to
+   clear an absolutely positioned icon badge. The frame now lives on the
+   wrapper, so that padding pushed the text out of the box and clipped it.
+   Laying the wrapper out as a flex row lets the input size itself instead. */
+
+.lcLogin__field:not(#\9):not(#\9){
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--gi-s3) !important;
+  height: 48px !important;
+  padding: 0 var(--gi-s3) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-surface) !important;
+  box-shadow: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease !important;
+}
+
+.lcLogin__field:focus-within:not(#\9):not(#\9){
+  border-color: var(--gi-primary) !important;
+  box-shadow: var(--focus) !important;
+}
+
+.lcLogin__fieldIcon:not(#\9):not(#\9){
+  position: static !important;
+  transform: none !important;
+  flex: 0 0 auto !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--gi-text-muted) !important;
+}
+
+.lcLogin__fieldIconSvg:not(#\9):not(#\9){ width: 18px !important; height: 18px !important; }
+
+.lcLogin__field:focus-within .lcLogin__fieldIcon:not(#\9):not(#\9){ color: var(--gi-primary) !important; }
+
+.lcLogin__field > .lcLogin__input:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--gi-font) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text) !important;
+  transform: none !important;
+}
+
+.lcLogin__field > .lcLogin__input:focus:not(#\9):not(#\9){
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.lcLogin__input::placeholder:not(#\9):not(#\9){
+  color: var(--gi-text-muted) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.lcLogin__btn:not(#\9):not(#\9){
+  width: 100% !important;
+  height: 44px !important;
+  margin-top: var(--gi-s2) !important;
+  padding: 0 var(--gi-s4) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-primary) !important;
+  border: 1px solid var(--gi-primary) !important;
+  color: #FFFFFF !important;
+  font-family: var(--gi-font) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.lcLogin__btn:hover:not(#\9):not(#\9){
+  background: var(--gi-primary-hover) !important;
+  border-color: var(--gi-primary-hover) !important;
+  transform: none !important;
+}
+
+.lcLogin__error:not(#\9):not(#\9){
+  margin-top: var(--gi-s2) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-danger) !important;
+  text-align: center !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.lcLogin__footBtn:not(#\9):not(#\9){
+  display: block !important;
+  width: 100% !important;
+  margin-top: var(--gi-s5) !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--gi-primary) !important;
+  font-family: var(--gi-font) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+}
+
+.lcLogin__footBtn:hover:not(#\9):not(#\9){
+  color: var(--gi-primary-hover) !important;
+  background: none !important;
+  text-decoration: underline !important;
+}
+
+
+/* --- Two-factor step ----------------------------------------------------- */
+
+.lcLogin__mfaTitle:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  text-align: center !important;
+  margin-top: var(--gi-s5) !important;
+}
+
+.lcLogin__mfaCodeHint:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text-3) !important;
+  text-align: center !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.lcLogin__mfaQrBox:not(#\9):not(#\9){
+  min-height: 220px !important;
+  padding: var(--gi-s4) !important;
+  border: 1px dashed var(--gi-border-strong) !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-surface-2) !important;
+  box-shadow: none !important;
+}
+
+.lcLogin__mfaQrBox img:not(#\9):not(#\9),
+.lcLogin__mfaQrBox canvas:not(#\9):not(#\9){
+  padding: var(--gi-s2) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.lcLogin__mfaQrBox code:not(#\9):not(#\9){
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-surface) !important;
+  font-family: var(--gi-mono) !important;
+  color: var(--gi-text-2) !important;
+}
+
+.lcLogin__input--mfa:not(#\9):not(#\9){
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 0 var(--gi-s4) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-surface) !important;
+  box-shadow: none !important;
+  color: var(--gi-text) !important;
+  font-family: var(--gi-mono) !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  letter-spacing: .30em !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+.lcLogin__input--mfa:focus:not(#\9):not(#\9){
+  border-color: var(--gi-primary) !important;
+  box-shadow: var(--focus) !important;
+  background: var(--gi-surface) !important;
+  transform: none !important;
+}
+
+/* State feedback still has to outrank the base rule above */
+#lcLoginMfaStep:not(#\9):not(#\9) .lcLogin__input--mfa.is-error,
+#lcLoginMfaStep.is-error:not(#\9):not(#\9) .lcLogin__input--mfa{
+  border-color: var(--gi-danger) !important;
+  box-shadow: 0 0 0 3px rgba(220,38,38,.15) !important;
+}
+
+#lcLoginMfaStep.is-success:not(#\9):not(#\9) .lcLogin__input--mfa{
+  border-color: var(--gi-success) !important;
+  box-shadow: 0 0 0 3px rgba(22,163,74,.15) !important;
+}
+
+#lcLoginMfaStep.is-complete:not(#\9):not(#\9) .lcLogin__input--mfa{
+  border-color: var(--gi-primary) !important;
+  box-shadow: var(--focus) !important;
+}
+
+/* A blurred blue orb sat behind the step and haloed the title */
+#lcLoginMfaStep:not(#\9):not(#\9)::before{
+  content: none !important;
+  display: none !important;
+}
+
+.lcLogin__mfaSetupBox:not(#\9):not(#\9){
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* The action bar used to float over the card as a sticky frosted strip */
+.lcLogin__mfaActions:not(#\9):not(#\9){
+  display: flex !important;
+  gap: var(--gi-s2) !important;
+  position: static !important;
+  margin-top: var(--gi-s4) !important;
+  padding-top: 0 !important;
+  background: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* A lone button should fill the width like the one on the credentials step,
+   which a centred grid column would otherwise shrink to its label. */
+.lcLogin__mfaActions--single:not(#\9):not(#\9){ display: block !important; }
+
+.lcLogin__btn--mfa:not(#\9):not(#\9){
+  min-height: 44px !important;
+  height: 44px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+  animation: none !important;
+}
+
+/* Sheen and gloss overlays that washed the blue out */
+.lcLogin__btn:not(#\9):not(#\9)::before,
+.lcLogin__btn:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+#lcLoginMfaStep.is-success:not(#\9):not(#\9) .lcLogin__btn--mfa{
+  background: var(--gi-success) !important;
+  border-color: var(--gi-success) !important;
+}
+
+
+/* =====================================================================
+   18. MOTION — calm the legacy animations
+   ===================================================================== */
+
+.brand__logo:not(#\9):not(#\9),
+.giChatFab:not(#\9):not(#\9),
+.bankKpi__value:not(#\9):not(#\9){ animation: none !important; }
+
+.card:not(#\9):not(#\9),
+.bankKpi:not(#\9):not(#\9),
+.lcNaCard:not(#\9):not(#\9){ animation-duration: .22s !important; }
+
+
+/* =====================================================================
+   19. FLAT PASS — strip the glass/photo styling the app was built on
+   ===================================================================== */
+
+/* The whole UI was frosted glass. Nothing in a flat enterprise sheet blurs. */
+*:not(#\9):not(#\9){
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Every view painted its own tinted canvas plus gradient and noise overlays.
+   The screens must sit directly on #F8FAFC instead. */
+.view:not(#\9):not(#\9){
+  background: transparent !important;
+}
+
+.view:not(#\9):not(#\9)::before,
+.view:not(#\9):not(#\9)::after,
+.bankDash:not(#\9):not(#\9)::before,
+.bankDash:not(#\9):not(#\9)::after,
+.bankDash__topStats:not(#\9):not(#\9)::before,
+.bankDash__topStats:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+.bankDash:not(#\9):not(#\9){ gap: var(--gi-s5) !important; }
+
+/* --- KPI cards: drop the photo backdrop and everything it dragged along --- */
+
+/* Each card painted a photo through ::before at 50% opacity */
+.bankKpi:not(#\9):not(#\9)::before,
+.bankKpi:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+  background-image: none !important;
+}
+
+/* Text carried heavy white halos so it stayed legible over the photo */
+.bankKpi:not(#\9):not(#\9),
+.bankKpi:not(#\9):not(#\9) *{
+  text-shadow: none !important;
+}
+
+.bankKpi:not(#\9):not(#\9){
+  background-image: none !important;
+  filter: none !important;
+}
+
+/* The photo variants hid the icon outright — bring it back as the badge */
+.bankKpi__watermark:not(#\9):not(#\9){
+  display: grid !important;
+}
+
+.bankKpi__he:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+}
+
+/* Decorative chevron glyph; the "הצג פירוט" button is the real affordance */
+.bankKpi__caret:not(#\9):not(#\9){
+  display: none !important;
+}
+
+.bankKpi__value:not(#\9):not(#\9){
+  color: var(--gi-text) !important;
+  font-weight: 700 !important;
+}
+
+.bankKpi__delta:not(#\9):not(#\9){ font-weight: 500 !important; }
+.bankKpi__delta.is-up:not(#\9):not(#\9){   color: var(--gi-success) !important; }
+.bankKpi__delta.is-down:not(#\9):not(#\9){ color: var(--gi-danger) !important; }
+
+.bankKpiToday__sub:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+}
+
+.bankKpiTodayRow:not(#\9):not(#\9),
+.bankKpiTodayRow__label:not(#\9):not(#\9),
+.bankKpiTodayRow__val:not(#\9):not(#\9),
+.bankKpiTodayRow__id:not(#\9):not(#\9),
+.bankKpiTodayRow--empty:not(#\9):not(#\9){
+  font-style: normal !important;
+}
+
+.bankKpiTodayRow__label:not(#\9):not(#\9){ color: var(--gi-text-2) !important; font-weight: 500 !important; }
+.bankKpiTodayRow__val:not(#\9):not(#\9){   color: var(--gi-text) !important;   font-weight: 600 !important; }
+.bankKpiTodayRow__id:not(#\9):not(#\9){    color: var(--gi-text-muted) !important; }
+.bankKpiTodayRow--empty:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; }
+
+/* The detail toggle was a dark glass chip sitting on the photo */
+.bankKpi__detailBtn:not(#\9):not(#\9){
+  background: none !important;
+  border: none !important;
+  color: var(--gi-primary) !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+.bankKpi__detailBtn:hover:not(#\9):not(#\9){
+  background: none !important;
+  color: var(--gi-primary-hover) !important;
+}
+
+/* --- Goal card: grafbizua.png --- */
+.bankGoal:not(#\9):not(#\9){
+  padding: var(--gi-s5) !important;
+  border-radius: var(--gi-r-card) !important;
+  background-color: var(--gi-surface) !important;
+  background-image: none !important;
+  filter: none !important;
+}
+
+.bankGoal:not(#\9):not(#\9)::before,
+.bankGoal:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.bankGoal:not(#\9):not(#\9) *{ text-shadow: none !important; }
+
+.bankGoal__title:not(#\9):not(#\9){ font-size: 16px !important; font-weight: 700 !important; }
+
+/* --- Leaderboard card: grafmtzayen.png --- */
+.bankLeader--photoBg:not(#\9):not(#\9),
+.bankLeader:not(#\9):not(#\9){
+  background-color: var(--gi-surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--gi-border) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.bankLeader--photoBg:not(#\9):not(#\9)::before,
+.bankLeader--photoBg:not(#\9):not(#\9)::after,
+.bankLeader:not(#\9):not(#\9)::before,
+.bankLeader:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.bankLeader:not(#\9):not(#\9) *{ text-shadow: none !important; }
+
+.bankLeader__podiumSlot:not(#\9):not(#\9),
+.bankLeader__podiumSlot--first:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-md) !important;
+  box-shadow: none !important;
+}
+
+.bankLeader__confetti:not(#\9):not(#\9){ display: none !important; }
+
+
+/* =====================================================================
+   20. PAGE HEADER — title block above the KPI row
+   ===================================================================== */
+
+.bankDash__topStats:not(#\9):not(#\9),
+.bankDash__topStatsInner:not(#\9):not(#\9){
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* The greeting strip shipped as a mint-tinted glass pill with green text.
+   It now reads as a plain page-title block: heading, subtitle, accent rule. */
+.bankDash__topStatsGreeting:not(#\9):not(#\9){
+  display: block !important;
+  padding: 0 !important;
+  margin-bottom: var(--gi-s2) !important;
+  text-align: right;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--gi-text-3) !important;
+  text-shadow: none !important;
+}
+
+/* Heading text lives here rather than in app.js, so no script is touched */
+.bankDash__topStatsGreeting:not(#\9):not(#\9)::before{
+  content: "לוח בקרה";
+  display: block;
+  margin-bottom: 2px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+  color: var(--gi-text);
+}
+
+.bankDash__topStatsGreeting:not(#\9):not(#\9)::after{
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  margin-top: var(--gi-s2);
+  border-radius: var(--gi-r-pill);
+  background: var(--gi-primary);
+}
+
+/* The dynamic greeting drops from headline to subtitle */
+.bankDash__topStatsGreeting__intro:not(#\9):not(#\9){
+  display: block !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--gi-text-3) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Metrics stay in the DOM — app.js keeps writing to them — but are not shown */
+.bankDash__topStatsGreeting__colon:not(#\9):not(#\9),
+.bankDash__topStatsGreeting__sep:not(#\9):not(#\9),
+.bankDash__topStatsGreeting__metric:not(#\9):not(#\9){
+  display: none !important;
+}
+
+.bankDash__topStatsGreeting__metricLabel:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+.bankDash__topStats__value:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.bankDash__topStats__value--good:not(#\9):not(#\9){    color: var(--gi-success) !important; }
+.bankDash__topStats__value--mid:not(#\9):not(#\9){     color: var(--gi-warn) !important; }
+.bankDash__topStats__value--low:not(#\9):not(#\9){     color: var(--gi-danger) !important; }
+.bankDash__topStats__value--neutral:not(#\9):not(#\9){ color: var(--gi-text) !important; }
+
+
+/* =====================================================================
+   21. TOOLBARS, TABLES, PAGINATION
+   ===================================================================== */
+
+.card__head:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--gi-s4);
+}
+
+.lcCustomers__toolbar:not(#\9):not(#\9),
+[class$="__toolbar"]:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gi-s3) !important;
+  padding: var(--gi-s4) var(--gi-s5) !important;
+  background: none !important;
+  border: none !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  box-shadow: none !important;
+}
+
+.search__btn:not(#\9):not(#\9){
+  padding: 8px var(--gi-s4) !important;
+  border: none !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-primary) !important;
+  color: #FFFFFF !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.search__btn:hover:not(#\9):not(#\9){ background: var(--gi-primary-hover) !important; }
+
+/* Header stays put while the body scrolls */
+.table thead th:not(#\9):not(#\9){
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.table tbody tr:not(#\9):not(#\9){ transition: background .12s ease; }
+
+/* Row action buttons read as quiet icons, not filled controls */
+.table td .btn:not(#\9):not(#\9){
+  padding: 5px var(--gi-s3) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* Broad sweep so every feature's own status chip picks up the same shape */
+[class*="Badge"]:not(#\9):not(#\9),
+[class*="__pill"]:not(#\9):not(#\9),
+[class*="__chip"]:not(#\9):not(#\9),
+[class*="__status"]:not(#\9):not(#\9),
+[class*="__tag"]:not(#\9):not(#\9){
+  border-radius: var(--gi-r-pill) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+
+/* =====================================================================
+   22. GLOBAL FLATTENING — decorative layers left over from the glass era
+   ===================================================================== */
+
+/* Cards across every feature carried gradient fills and coloured glows */
+.card:not(#\9):not(#\9)::before,
+.card:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* The login boxes are opted out — section 17 gives them their own treatment
+   and this sweep would otherwise win on source order. */
+[class$="Card"]:not(#\9):not(#\9),
+[class$="Box"]:not([class*="lcLogin"]):not(#\9):not(#\9),
+[class$="Panel"]:not(#\9):not(#\9){
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.emptyState__icon:not(#\9):not(#\9) svg,
+.bankDash__emptyIcon:not(#\9):not(#\9) svg{
+  width: 40px;
+  height: 40px;
+  color: var(--gi-text-muted);
+}
+
+
+/* =====================================================================
+   19. SIDEBAR — LOCKED OPEN
+   BUILD: 20260730-enterprise-v3
+
+   התפריט תמיד פתוח. כפתור הכיווץ הוסר מהתצוגה.
+
+   חשוב: הלוגיקה ב-app.js ממשיכה לרוץ ועדיין שומרת דגל ב-localStorage,
+   ולכן משתמשים שכיווצו בעבר עדיין נטענים עם body.sidebar-collapsed.
+   הכללים כאן מנטרלים את המצב המכווץ עצמו, כך שהדגל השמור חסר משמעות
+   ואיש לא נתקע עם תפריט סגור וללא כפתור לפתוח אותו.
+
+   כתוצאה מכך, כללי ה-collapsed שבסעיפים 3 ו-4 (שורות 157, 186) ובלוק
+   "Collapse switch" הפכו ללא רלוונטיים. הם הושארו במקומם כדי שהסרת
+   הסעיף הזה תחזיר את התנהגות הכיווץ במלואה.
+   ===================================================================== */
+
+/* --- כפתור הכיווץ יורד מהתצוגה --- */
+.sidebarModeSwitch:not(#\9):not(#\9){
+  display: none !important;
+}
+
+/* --- רוחב הרשת: תמיד המידה הפתוחה --- */
+body.sidebar-collapsed #app:not(#\9):not(#\9),
+body.sidebar-collapsed .app:not(#\9):not(#\9){
+  grid-template-columns: 260px 1fr !important;
+}
+
+body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
+  padding: var(--gi-s5) var(--gi-s3) var(--gi-s4) !important;
+}
+
+/* --- בלוק הלוגו נשאר גלוי --- */
+body.sidebar-collapsed .sidebar__topBar:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  margin-bottom: var(--gi-s5) !important;
+  padding: 0 var(--gi-s2) !important;
+}
+
+body.sidebar-collapsed .sidebar__topBar .topbarBrand--sidebar:not(#\9):not(#\9){
+  width: 100% !important;
+  margin-inline-start: 0 !important;
+  padding-inline-start: 0 !important;
+  pointer-events: none !important;
+}
+
+body.sidebar-collapsed .sidebar__topBar .topbarBrand--sidebar > .topbarBrand__img:not(#\9):not(#\9){
+  width: min(100%, 196px) !important;
+  margin: 0 auto !important;
+}
+
+/* הלוגו הכפול בטופבר הופיע רק במצב מכווץ — עכשיו מוסתר תמיד */
+.topbar__right > .topbarBrand:not(#\9):not(#\9),
+.topbar .topbarBrand:not(.topbarBrand--sidebar):not(#\9):not(#\9){
+  display: none !important;
+}
+
+/* --- גיאומטריית הניווט: ערכי המצב הפתוח --- */
+body.sidebar-collapsed .sidebar .nav:not(#\9):not(#\9){
+  gap: 2px !important;
+  padding-inline: var(--gi-s1) !important;
+}
+
+body.sidebar-collapsed .sidebar .nav__item:not(#\9):not(#\9){
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: var(--gi-s3) !important;
+  padding: 10px var(--gi-s3) !important;
+  min-height: 40px !important;
+  border-radius: var(--gi-r-ctl) !important;
+}
+
+body.sidebar-collapsed .sidebar .nav__icon:not(#\9):not(#\9){
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  margin: 0 !important;
+}
+
+/* התוויות היו מוסתרות ב-opacity/max-width — מוחזרות לתצוגה מלאה */
+body.sidebar-collapsed .sidebar .nav__label:not(#\9):not(#\9){
+  opacity: 1 !important;
+  max-width: none !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\9){
+  font-weight: 600 !important;
+}
+
+
+/* =====================================================================
+   20. TOPBAR SEARCH
+   BUILD: 20260730-enterprise-v3
+
+   שדה חיפוש גלובלי. ויזואלי בלבד — אין לו מאזינים ואינו מחובר לשום
+   מקור נתונים. ה-input נושא id="giTopSearchInput" לחיבור עתידי.
+
+   ב-RTL ‏.topbar__left הוא הילד הראשון ולכן יושב בצד ימין, וה-input
+   מופיע ב-DOM לפני האייקון כדי שזכוכית המגדלת תיפול בקצה השמאלי.
+   ===================================================================== */
+
+.topbar__left:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+.topbar__right:not(#\9):not(#\9){
+  flex: 0 1 auto !important;
+}
+
+.giTopSearch:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  gap: var(--gi-s2);
+  width: 100%;
+  max-width: 460px;
+  height: 40px;
+  margin-inline: auto;
+  padding: 0 var(--gi-s3);
+  background: var(--gi-surface);
+  border: 1px solid var(--gi-border);
+  border-radius: var(--gi-r-ctl);
+  box-shadow: var(--gi-sh-xs);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.giTopSearch:hover:not(#\9):not(#\9){
+  border-color: var(--gi-border-strong);
+}
+
+.giTopSearch:focus-within:not(#\9):not(#\9){
+  border-color: var(--gi-primary);
+  box-shadow: 0 0 0 3px var(--gi-primary-ring);
+}
+
+.giTopSearch__input:not(#\9):not(#\9){
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--gi-font);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gi-text);
+  text-align: start;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.giTopSearch__input:not(#\9):not(#\9)::placeholder{
+  color: var(--gi-text-muted);
+  opacity: 1;
+}
+
+/* ה-X המובנה של type="search" בכרום שובר את היישור */
+.giTopSearch__input:not(#\9):not(#\9)::-webkit-search-cancel-button,
+.giTopSearch__input:not(#\9):not(#\9)::-webkit-search-decoration{
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.giTopSearch__icon:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--gi-text-muted);
+}
+
+.giTopSearch__icon:not(#\9):not(#\9) svg{
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 1200px){
+  .giTopSearch:not(#\9):not(#\9){ max-width: 320px; }
+}
+
+@media (max-width: 900px){
+  .giTopSearch:not(#\9):not(#\9){ display: none !important; }
+}
