@@ -2197,9 +2197,22 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   min-width: 0 !important;
 }
 
-#view-dashboard .bankLeader:not(#\9):not(#\9){
+/* שני הכרטיסים החדשים בעמודה הצרה, מתחת ליעד */
+#view-dashboard .bankSideCard--lead:not(#\9):not(#\9){
   grid-column: 1 !important;
   grid-row: 4 !important;
+  min-width: 0 !important;
+}
+
+#view-dashboard .bankSideCard--untouched:not(#\9):not(#\9){
+  grid-column: 1 !important;
+  grid-row: 5 !important;
+  min-width: 0 !important;
+}
+
+#view-dashboard .bankLeader:not(#\9):not(#\9){
+  grid-column: 1 !important;
+  grid-row: 6 !important;
   min-width: 0 !important;
 }
 
@@ -2211,7 +2224,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
 
 #view-dashboard .bankInvestNews:not(#\9):not(#\9){
   grid-column: 1 !important;
-  grid-row: 5 !important;
+  grid-row: 7 !important;
   min-width: 0 !important;
 }
 
@@ -2227,6 +2240,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   }
   #view-dashboard .bankChart:not(#\9):not(#\9),
   #view-dashboard .bankRecent:not(#\9):not(#\9),
+  #view-dashboard .bankSideCard:not(#\9):not(#\9),
   #view-dashboard .bankGoal:not(#\9):not(#\9),
   #view-dashboard .bankLeader:not(#\9):not(#\9),
   #view-dashboard .giDailySales:not(#\9):not(#\9),
@@ -3615,4 +3629,171 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   background: var(--gi-primary-soft) !important;
   border-color: var(--gi-border) !important;
   color: var(--gi-primary) !important;
+}
+
+
+/* =====================================================================
+   30. SIDE CARDS — latest lead / saved-but-untouched proposal
+   BUILD: 20260731-sidecards
+
+   שני כרטיסים חדשים בעמודה הצרה, במקום "משימות לביצוע" שבתמונה.
+   מחלקות חדשות לגמרי, ולכן אין כאן התנגשות עם app.css.
+   ===================================================================== */
+
+.bankSideCard:not(#\9):not(#\9){
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  overflow: hidden !important;
+}
+
+.bankSideCard__head:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--gi-s2) !important;
+  padding: var(--gi-s4) var(--gi-s4) var(--gi-s3) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.bankSideCard__title:not(#\9):not(#\9){
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text) !important;
+}
+
+.bankSideCard__all:not(#\9):not(#\9){
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--gi-primary) !important;
+  font-family: var(--gi-font) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+.bankSideCard__all:hover:not(#\9):not(#\9){
+  text-decoration: underline !important;
+}
+
+.bankSideCard__body:not(#\9):not(#\9){
+  padding: var(--gi-s4) !important;
+}
+
+.bankSideCard__leadTop:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--gi-s2) !important;
+}
+
+.bankSideCard__leadName:not(#\9):not(#\9){
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text) !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.bankSideCard__pill:not(#\9):not(#\9){
+  flex: 0 0 auto !important;
+  padding: 2px var(--gi-s2) !important;
+  background: var(--gi-primary-soft) !important;
+  border: 1px solid rgba(37,99,235,.18) !important;
+  border-radius: var(--gi-r-pill) !important;
+  color: var(--gi-primary) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.bankSideCard__pill--warn:not(#\9):not(#\9){
+  background: var(--gi-warn-soft) !important;
+  border-color: rgba(217,119,6,.20) !important;
+  color: var(--gi-warn) !important;
+}
+
+.bankSideCard__link:not(#\9):not(#\9){
+  display: inline-block !important;
+  margin-top: var(--gi-s1) !important;
+  color: var(--gi-primary) !important;
+  font-size: 13px !important;
+  text-decoration: none !important;
+}
+
+.bankSideCard__link:hover:not(#\9):not(#\9){
+  text-decoration: underline !important;
+}
+
+.bankSideCard__rows:not(#\9):not(#\9){
+  margin-top: var(--gi-s3) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.bankSideCard__row:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--gi-s2) !important;
+  padding: var(--gi-s2) 0 !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.bankSideCard__row:last-child:not(#\9):not(#\9){
+  border-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.bankSideCard__row span:not(#\9):not(#\9){
+  font-size: 12px !important;
+  color: var(--gi-text-3) !important;
+}
+
+.bankSideCard__row strong:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text) !important;
+  text-align: end !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.bankSideCard__cta:not(#\9):not(#\9){
+  width: 100% !important;
+  height: 36px !important;
+  margin-top: var(--gi-s4) !important;
+  background: var(--gi-primary) !important;
+  border: 1px solid var(--gi-primary) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  box-shadow: none !important;
+  color: #FFFFFF !important;
+  font-family: var(--gi-font) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background .15s ease !important;
+}
+
+.bankSideCard__cta:hover:not(#\9):not(#\9){
+  background: var(--gi-primary-hover) !important;
+  border-color: var(--gi-primary-hover) !important;
+}
+
+.bankSideCard__empty:not(#\9):not(#\9){
+  padding: var(--gi-s4) 0 !important;
+  color: var(--gi-text-muted) !important;
+  font-size: 13px !important;
+  text-align: center !important;
 }
