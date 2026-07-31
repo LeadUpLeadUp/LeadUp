@@ -7,7 +7,7 @@
   "use strict";
 
   const GI_MAX_DISCOUNT_YEARS = 50;   // GI-FIX-DISCOUNT-YEARS
-  const BUILD = "20260801-daily-sales-page-v1";
+  const BUILD = "20260801-daily-sales-page-v2";
   const NEW_POLICY_PREMIUM_MAX_ILS = 3000;
   const OPERATIONAL_PDF_MAX_PAGE_SCROLL_PX = 1080;
   const POST_LOGIN_DATA_TIMEOUT_MS = 15000;
@@ -24244,41 +24244,8 @@ UsersGateUI.init();
     },
 
     renderDailySalesReportHtml(){
-      if(!this.canSeeDailySalesReport()) return "";
-      const report = this.buildDailyAgentSalesReport();
-      return `
-        <div class="bankDash__row bankDash__row--dailySales">
-          <article class="giDailySales card giDailySales--teaser" id="giDailySalesReport" aria-label="דוח מעקב מכירות יומי">
-            <header class="giDailySales__head">
-              <div class="giDailySales__titles">
-                <h2 class="giDailySales__title">דוח מעקב מכירות יומי</h2>
-                <div class="giDailySales__sub">סיכום יומי · לחצו «פתח» לפירוט הנציגים</div>
-              </div>
-              <div class="giDailySales__nav" role="group" aria-label="בחירת תאריך ופתיחה">
-                <button class="giDailySales__todayBtn${report.isToday ? " is-active" : ""}" type="button" data-daily-sales-nav="today"${report.isToday ? " disabled" : ""}>היום</button>
-                <label class="giDailySales__dateWrap">
-                  <span class="giDailySales__dateText">${escapeHtml(report.dateLabel)}</span>
-                  <input class="giDailySales__dateInput" id="giDailySalesDateInput" type="date" value="${escapeHtml(report.dateKey)}" max="${escapeHtml(this.toLocalDateKey(new Date()))}" aria-label="בחר תאריך"/>
-                </label>
-                <button class="giDailySales__openBtn" type="button" data-daily-sales-nav="open">פתח</button>
-              </div>
-            </header>
-            <div class="giDailySales__teaserFoot">
-              <div class="giDailySales__teaserStat">
-                <span class="giDailySales__teaserLbl">נציגים</span>
-                <strong>${escapeHtml(this.dailySalesAgentsWord(report.agentCount))}</strong>
-              </div>
-              <div class="giDailySales__teaserStat">
-                <span class="giDailySales__teaserLbl">עסקאות</span>
-                <strong>${escapeHtml(this.dailySalesDealsWord(report.dealCount))}</strong>
-              </div>
-              <div class="giDailySales__teaserStat giDailySales__teaserStat--prem">
-                <span class="giDailySales__teaserLbl">סה״כ פרמיה</span>
-                <strong>${escapeHtml(this.formatMoney(report.totalPremium))}</strong>
-              </div>
-            </div>
-          </article>
-        </div>`;
+      // כרטיס הסיכום הוסר מהדשבורד — הפירוט זמין במסך «מעקב מכירות יומי» בתפריט
+      return "";
     },
 
     renderDailySalesOverlayInnerHtml(){
@@ -25352,8 +25319,6 @@ UsersGateUI.init();
           </div>
 
           ${this.renderRecentCustomersHtml()}
-
-          ${this.renderDailySalesReportHtml()}
 
         </section>`;
       this._renderedDomKey = (metrics && !metrics._loading) ? this.getMetricsCacheKey() : "";
