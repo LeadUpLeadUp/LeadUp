@@ -5258,3 +5258,196 @@ body.view-campaignLeads-active .content:not(#\9):not(#\9){
     grid-template-columns: 1fr !important;
   }
 }
+/* ===== מעקב מכירות יומי — מסך מלא ===== */
+#view-dailySales .giDailySalesPage:not(#\9):not(#\9){
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: min(70vh, 720px);
+  padding: 18px 20px 20px;
+  background: var(--gi-surface);
+  border: 1px solid var(--gi-border);
+  border-radius: var(--gi-r-card);
+  box-shadow: var(--gi-sh-sm, 0 1px 2px rgba(15,23,42,.04));
+}
+
+#view-dailySales .giDailySalesPage__head:not(#\9):not(#\9){
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--gi-border-soft);
+}
+
+#view-dailySales .giDailySalesPage__nav:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#view-dailySales .giDailySalesPage__todayBtn:not(#\9):not(#\9){
+  background: var(--gi-primary);
+  color: #fff;
+  border-color: var(--gi-primary);
+}
+
+#view-dailySales .giDailySalesPage__todayBtn.is-active:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__todayBtn:disabled:not(#\9):not(#\9){
+  opacity: .72;
+  cursor: default;
+}
+
+#view-dailySales .giDailySalesPage__dateWrap:not(#\9):not(#\9){
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: var(--gi-r-ctl, 10px);
+  border: 1px solid var(--gi-border);
+  background: var(--gi-surface-2);
+  cursor: pointer;
+}
+
+#view-dailySales .giDailySalesPage__dateText:not(#\9):not(#\9){
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gi-text);
+}
+
+#view-dailySales .giDailySalesPage__dateInput:not(#\9):not(#\9){
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+#view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9),
+.giDailySalesOverlay__summary:not(#\9):not(#\9){
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#view-dailySales .giDailySalesPage__stat:not(#\9):not(#\9),
+.giDailySalesOverlay__summary .giDailySalesPage__stat:not(#\9):not(#\9){
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--gi-border-soft);
+  background: var(--gi-surface-2);
+}
+
+#view-dailySales .giDailySalesPage__stat > span:not(#\9):not(#\9),
+.giDailySalesOverlay__summary .giDailySalesPage__stat > span:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gi-text-muted);
+}
+
+#view-dailySales .giDailySalesPage__stat > strong:not(#\9):not(#\9),
+.giDailySalesOverlay__summary .giDailySalesPage__stat > strong:not(#\9):not(#\9){
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--gi-text);
+}
+
+#view-dailySales .giDailySalesPage__stat--prem > strong:not(#\9):not(#\9),
+.giDailySalesOverlay__summary .giDailySalesPage__stat--prem > strong:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__premCell:not(#\9):not(#\9),
+.giDailySalesOverlay__table .giDailySalesPage__premCell:not(#\9):not(#\9){
+  color: var(--gi-success);
+  white-space: nowrap;
+}
+
+#view-dailySales .giDailySalesPage__tableWrap:not(#\9):not(#\9){
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--gi-border-soft);
+  border-radius: 12px;
+}
+
+#view-dailySales .giDailySalesPage__table:not(#\9):not(#\9){
+  width: 100%;
+  margin: 0;
+}
+
+#view-dailySales .giDailySalesPage__table th:not(#\9):not(#\9){
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--gi-surface-2);
+  color: var(--gi-text-3);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#view-dailySales .giDailySalesPage__table td:not(#\9):not(#\9){
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gi-text);
+}
+
+.giDailySalesOverlay__panel--detail:not(#\9):not(#\9){
+  width: min(1080px, calc(100vw - 28px));
+  max-height: min(88vh, 900px);
+  display: flex;
+  flex-direction: column;
+}
+
+.giDailySalesOverlay__panel--detail .giDailySales__list--detail:not(#\9):not(#\9){
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 18px 8px;
+}
+
+.giDailySalesOverlay__table:not(#\9):not(#\9){
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.giDailySalesOverlay__table th:not(#\9):not(#\9),
+.giDailySalesOverlay__table td:not(#\9):not(#\9){
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--gi-border-soft);
+  text-align: right;
+  font-size: 13px;
+}
+
+.giDailySalesOverlay__table th:not(#\9):not(#\9){
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--gi-surface);
+  color: var(--gi-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.giDailySalesOverlay__summary:not(#\9):not(#\9){
+  padding: 0 18px 12px;
+}
+
+@media (max-width: 900px){
+  #view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9),
+  .giDailySalesOverlay__summary:not(#\9):not(#\9){
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px){
+  #view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9),
+  .giDailySalesOverlay__summary:not(#\9):not(#\9){
+    grid-template-columns: 1fr;
+  }
+}

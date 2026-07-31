@@ -7,7 +7,7 @@
   "use strict";
 
   const GI_MAX_DISCOUNT_YEARS = 50;   // GI-FIX-DISCOUNT-YEARS
-  const BUILD = "20260801-dash-perf-v1";
+  const BUILD = "20260801-daily-sales-page-v1";
   const NEW_POLICY_PREMIUM_MAX_ILS = 3000;
   const OPERATIONAL_PDF_MAX_PAGE_SCROLL_PX = 1080;
   const POST_LOGIN_DATA_TIMEOUT_MS = 15000;
@@ -12134,6 +12134,7 @@ this.els.syncDot = $("#syncDot");
       this.els.navCampaignLeads = $("#navCampaignLeads");
       this.els.navCampaignMyLeads = $("#navCampaignMyLeads");
       this.els.navDailyReport = $("#navDailyReport");
+      this.els.navDailySales = $("#navDailySales");
       this.els.navMyTeam = $("#navMyTeam");
       this.els.navActivityLog = $("#navActivityLog");
       this.els.myProcessesTbody = $("#myProcessesTbody");
@@ -12309,6 +12310,9 @@ UsersGateUI.init();
       if (this.els.navCampaignLeads) this.els.navCampaignLeads.style.display = Auth.canAccessCampaignLeadsInbox() ? "" : "none";
       if (this.els.navCampaignMyLeads) this.els.navCampaignMyLeads.style.display = Auth.canAccessCampaignMyLeads() ? "" : "none";
       if (this.els.navDailyReport) this.els.navDailyReport.style.display = Auth.current ? "" : "none";
+      if (this.els.navDailySales){
+        this.els.navDailySales.style.display = DashboardUI.canSeeDailySalesReport?.() ? "" : "none";
+      }
       if (this.els.navMyTeam) this.els.navMyTeam.style.display = Auth.isTeamManager() ? "" : "none";
       if (this.els.navActivityLog) this.els.navActivityLog.style.display = "none";
       if (isReferent) {
@@ -12362,6 +12366,7 @@ UsersGateUI.init();
       if(safe === "users" && !Auth.canManageUsers()) safe = "dashboard";
       if(safe === "users" && !UsersGateUI.isAuthorized()){ UsersGateUI.open(() => this.goView("users")); return; }
       if(safe === "mirrors") safe = "mirrorCall";
+      if(safe === "dailySales" && !DashboardUI.canSeeDailySalesReport?.()) safe = "dashboard";
       if(safe === "myProcesses" && !Auth.isOps()) safe = "dashboard";
       if(safe === "mirrorCall" && !Auth.canAccessMirrorCall()) safe = "dashboard";
       if(safe === "elementaryMirror" && !Auth.isElementary()) safe = "dashboard";
@@ -12419,6 +12424,7 @@ UsersGateUI.init();
           campaignLeads: "לידים מקמפיין",
           campaignMyLeads: "הלידים שלי",
           dailyReport: "דוח יומי",
+          dailySales: "מעקב מכירות יומי",
           myTeam: "הצוות שלי",
           activityLog: "לוג פעילות",
           attendanceReport: "דוח נוכחות"
@@ -12427,7 +12433,7 @@ UsersGateUI.init();
       }
 
       this.setActiveNav(safe);
-      document.body.classList.remove("view-users-active","view-dashboard-active","view-settings-active","view-myTools-active","view-customers-active","view-archivedCustomers-active","view-proposals-active","view-elementaryProposals-active","view-elementaryPending-active","view-agentElementaryTracking-active","view-myProcesses-active","view-mirrorCall-active","view-elementaryMirror-active","view-mirrorAssignments-active","view-systemUpdates-active","view-campaignLeads-active","view-campaignMyLeads-active","view-dailyReport-active","view-myTeam-active","view-activityLog-active","view-attendanceReport-active");
+      document.body.classList.remove("view-users-active","view-dashboard-active","view-settings-active","view-myTools-active","view-customers-active","view-archivedCustomers-active","view-proposals-active","view-elementaryProposals-active","view-elementaryPending-active","view-agentElementaryTracking-active","view-myProcesses-active","view-mirrorCall-active","view-elementaryMirror-active","view-mirrorAssignments-active","view-systemUpdates-active","view-campaignLeads-active","view-campaignMyLeads-active","view-dailyReport-active","view-dailySales-active","view-myTeam-active","view-activityLog-active","view-attendanceReport-active");
       document.body.classList.add("view-" + safe + "-active");
       if(safe !== "settings"){
         ["connection","version","campaigns","landing","security","systemUpdates","activityLog","attendanceReport","archivedCustomers"].forEach((name) => {
@@ -12491,6 +12497,9 @@ UsersGateUI.init();
         if (safe === "campaignLeads") void CampaignLeadsUI.render();
         if (safe === "campaignMyLeads") void CampaignMyLeadsUI.render();
         if (safe === "dailyReport") void DailyReportUI.scheduleNavRender();
+        if (safe === "dailySales") {
+          try { DashboardUI.renderDailySalesPage?.(); } catch(_e) {}
+        }
         if (safe === "myTeam") void MyTeamUI.render();
         if (safe !== "settings" || this._settingsRubric !== "activityLog") AgentActivityLogUI.stopRealtime();
         try { ProcessesUI.syncRealtimeForView?.(); } catch(_e) {}
@@ -14400,6 +14409,7 @@ UsersGateUI.init();
           id: safeTrim(raw?.id),
           origin: "new",
           type: safeTrim(p?.type || raw?.type),
+          company: safeTrim(p?.company || raw?.company),
           _addedAt: safeTrim(raw?._addedAt),
           premiumValue: safeTrim(p?.premiumMonthly || p?.premium || ""),
           premiumAfterDiscountValue,
@@ -23828,6 +23838,25 @@ UsersGateUI.init();
       map[key].deals += Number(deals) || 0;
     },
 
+    resolveSalesDepartmentLabel(rec){
+      const agents = Array.isArray(State.data?.agents) ? State.data.agents : [];
+      const aid = safeTrim(rec?.agentId);
+      const aname = safeTrim(rec?.agentName);
+      let agent = null;
+      if(aid) agent = agents.find((a) => String(a?.id) === aid) || null;
+      if(!agent && aname) agent = agents.find((a) => safeTrim(a?.name) === aname) || null;
+      const roleRaw = safeTrim(agent?.role) || safeTrim(rec?.agentRole) || "agent";
+      const role = String(roleRaw).toLowerCase().replace(/[\s_-]+/g, "");
+      if(role === "admin" || role === "owner") return "מנהל מערכת";
+      if(role === "manager") return "מנהל";
+      if(role === "teammanager") return "מנהל צוות";
+      if(role === "ops" || role === "operations") return "מנהל תפעול";
+      if(role === "opsagent") return "נציג תפעול";
+      if(role === "elementary") return "אלמנטרי";
+      if(role === "referent") return "רפרנטית";
+      return "נציג";
+    },
+
     buildDailyAgentSalesReport(forDate){
       const ref = forDate instanceof Date ? forDate : this.parseLocalDateKey(this.getDailySalesReportDateKey());
       const dateKey = this.toLocalDateKey(ref);
@@ -23837,6 +23866,7 @@ UsersGateUI.init();
         this.getMetricsCacheKey(),
         "dailyAgents",
         "alignTodayKpi",
+        "detailLinesV1",
         dateKey,
         String(customers.length),
         App?._fullDataReady ? "1" : "0"
@@ -23847,6 +23877,7 @@ UsersGateUI.init();
 
       // אותה לוגיקה כמו כרטיס «נמכר היום» — רק פוליסות חדשות בטווח היום, מחולק לנציג
       const map = Object.create(null);
+      const lines = [];
       customers.forEach((rec) => {
         const newPolicies = CustomersUI.collectNewPoliciesForMetrics(rec, {
           range: dayRange,
@@ -23855,8 +23886,19 @@ UsersGateUI.init();
         });
         if(!newPolicies.length) return;
         const agentName = safeTrim(rec?.agentName) || safeTrim(rec?.createdBy) || "נציג";
+        const department = this.resolveSalesDepartmentLabel(rec);
+        const customerName = safeTrim(rec?.fullName) || "—";
         newPolicies.forEach((p) => {
-          this._bumpDailySalesAgent(map, agentName, this.policyNetPremium(p), 1);
+          const premium = Math.round((this.policyNetPremium(p) || 0) * 100) / 100;
+          this._bumpDailySalesAgent(map, agentName, premium, 1);
+          lines.push({
+            agentName,
+            department,
+            product: safeTrim(p?.type) || "פוליסה",
+            company: safeTrim(p?.company) || "—",
+            premium,
+            customerName
+          });
         });
       });
 
@@ -23868,10 +23910,16 @@ UsersGateUI.init();
         }))
         .filter((row) => row.deals > 0 || row.premium > 0)
         .sort((a, b) => b.premium - a.premium || safeTrim(a.name).localeCompare(safeTrim(b.name), "he"));
+      lines.sort((a, b) =>
+        safeTrim(a.agentName).localeCompare(safeTrim(b.agentName), "he")
+        || (Number(b.premium) - Number(a.premium))
+        || safeTrim(a.product).localeCompare(safeTrim(b.product), "he")
+      );
       const totalPremium = Math.round(agents.reduce((sum, row) => sum + row.premium, 0) * 100) / 100;
       const todayKey = this.toLocalDateKey(new Date());
       const result = {
         agents,
+        lines,
         totalPremium,
         agentCount: agents.length,
         dealCount: agents.reduce((sum, row) => sum + row.deals, 0),
@@ -23911,6 +23959,83 @@ UsersGateUI.init();
           <div class="giDailySales__premium">${escapeHtml(this.formatMoney(row.premium))}</div>
         </div>`;
       }).join("");
+    },
+
+    renderDailySalesDetailRowsHtml(report){
+      const lines = Array.isArray(report?.lines) ? report.lines : [];
+      if(!lines.length){
+        return `<tr><td colspan="5" class="muted" style="text-align:center;padding:28px">אין מכירות ביום זה</td></tr>`;
+      }
+      return lines.map((row) => `<tr>
+        <td>${escapeHtml(row.agentName || "—")}</td>
+        <td>${escapeHtml(row.department || "—")}</td>
+        <td>${escapeHtml(row.product || "—")}</td>
+        <td>${escapeHtml(row.company || "—")}</td>
+        <td class="giDailySalesPage__premCell">${escapeHtml(this.formatMoney(row.premium))}</td>
+      </tr>`).join("");
+    },
+
+    renderDailySalesSummaryHtml(report){
+      return `
+        <div class="giDailySalesPage__stat"><span>נציגים</span><strong>${escapeHtml(this.dailySalesAgentsWord(report.agentCount))}</strong></div>
+        <div class="giDailySalesPage__stat"><span>עסקאות</span><strong>${escapeHtml(this.dailySalesDealsWord(report.dealCount))}</strong></div>
+        <div class="giDailySalesPage__stat giDailySalesPage__stat--prem"><span>סה״כ פרמיה</span><strong>${escapeHtml(this.formatMoney(report.totalPremium))}</strong></div>
+        <div class="giDailySalesPage__stat"><span>תאריך</span><strong>${escapeHtml(report.dateLabel || "—")}</strong></div>`;
+    },
+
+    _ensureDailySalesPageBound(){
+      if(this._dailySalesPageBound) return;
+      this._dailySalesPageBound = true;
+      const todayBtn = document.getElementById("btnDailySalesToday");
+      const refreshBtn = document.getElementById("btnDailySalesRefresh");
+      const printBtn = document.getElementById("btnDailySalesPrint");
+      const dateInput = document.getElementById("dailySalesDateInput");
+      if(todayBtn){
+        on(todayBtn, "click", () => {
+          this.setDailySalesReportDateKey(this.toLocalDateKey(new Date()));
+          this.renderDailySalesPage();
+          try { this.refreshDailySalesReportPanel?.(); } catch(_e) {}
+        });
+      }
+      if(refreshBtn){
+        on(refreshBtn, "click", () => {
+          this._dailyAgentsCacheKey = "";
+          this._dailyAgentsCache = null;
+          this.renderDailySalesPage();
+        });
+      }
+      if(printBtn){
+        on(printBtn, "click", () => this.printDailySalesReportScreen());
+      }
+      if(dateInput){
+        on(dateInput, "change", () => {
+          this.setDailySalesReportDateKey(dateInput.value);
+          this.renderDailySalesPage();
+          try { this.refreshDailySalesReportPanel?.(); } catch(_e) {}
+        });
+      }
+    },
+
+    renderDailySalesPage(){
+      if(!this.canSeeDailySalesReport()) return;
+      this._ensureDailySalesPageBound();
+      const report = this.buildDailyAgentSalesReport();
+      const summary = document.getElementById("dailySalesSummary");
+      const tbody = document.getElementById("dailySalesTbody");
+      const dateInput = document.getElementById("dailySalesDateInput");
+      const dateText = document.getElementById("dailySalesDateText");
+      const todayBtn = document.getElementById("btnDailySalesToday");
+      if(summary) summary.innerHTML = this.renderDailySalesSummaryHtml(report);
+      if(tbody) tbody.innerHTML = this.renderDailySalesDetailRowsHtml(report);
+      if(dateInput){
+        dateInput.value = report.dateKey;
+        dateInput.max = this.toLocalDateKey(new Date());
+      }
+      if(dateText) dateText.textContent = report.dateLabel || "—";
+      if(todayBtn){
+        todayBtn.disabled = !!report.isToday;
+        todayBtn.classList.toggle("is-active", !!report.isToday);
+      }
     },
 
     /* ===== לקוחות אחרונים — חמש הרשומות האחרונות שהנציג רשאי לראות =====
@@ -24159,11 +24284,11 @@ UsersGateUI.init();
     renderDailySalesOverlayInnerHtml(){
       const report = this.buildDailyAgentSalesReport();
       return `
-        <div class="giDailySalesOverlay__panel" role="document">
+        <div class="giDailySalesOverlay__panel giDailySalesOverlay__panel--detail" role="document">
           <header class="giDailySalesOverlay__head">
             <div class="giDailySales__titles">
               <h2 class="giDailySales__title" id="giDailySalesOverlayTitle">דוח מעקב מכירות יומי</h2>
-              <div class="giDailySales__sub">נציגים שמכרו ביום זה · סה״כ פרמיה · ${escapeHtml(report.dateLabel)}</div>
+              <div class="giDailySales__sub">נציג · מחלקה · מוצר · חברה · פרמיה · ${escapeHtml(report.dateLabel)}</div>
             </div>
             <div class="giDailySales__nav" role="group" aria-label="בחירת תאריך ושליטה">
               <button class="giDailySales__todayBtn${report.isToday ? " is-active" : ""}" type="button" data-daily-sales-nav="today"${report.isToday ? " disabled" : ""}>היום</button>
@@ -24175,13 +24300,22 @@ UsersGateUI.init();
               <button class="giDailySales__closeBtn" type="button" data-daily-sales-nav="close" aria-label="סגור">סגור</button>
             </div>
           </header>
-          <div class="giDailySales__cols" aria-hidden="true">
-            <span>נציג</span>
-            <span>מספר עסקאות</span>
-            <span>סה״כ פרמיה</span>
+          <div class="giDailySalesOverlay__summary">
+            ${this.renderDailySalesSummaryHtml(report)}
           </div>
-          <div class="giDailySales__list giDailySales__list--overlay" id="giDailySalesOverlayList">
-            ${this.renderDailySalesRowsHtml(report)}
+          <div class="giDailySales__list giDailySales__list--overlay giDailySales__list--detail" id="giDailySalesOverlayList">
+            <table class="giDailySalesOverlay__table">
+              <thead>
+                <tr>
+                  <th>נציג</th>
+                  <th>מחלקה</th>
+                  <th>מוצר</th>
+                  <th>חברה</th>
+                  <th>פרמיה</th>
+                </tr>
+              </thead>
+              <tbody>${this.renderDailySalesDetailRowsHtml(report)}</tbody>
+            </table>
           </div>
           <footer class="giDailySales__foot">
             <div class="giDailySales__footLabel">סה״כ יומי</div>
@@ -24233,14 +24367,17 @@ UsersGateUI.init();
     printDailySalesReportScreen(){
       if(!this.canSeeDailySalesReport()) return;
       const report = this.buildDailyAgentSalesReport();
-      const rows = report.agents.length
-        ? report.agents.map((row) => `<tr>
-            <td>${escapeHtml(row.name)}</td>
-            <td>${escapeHtml(this.dailySalesDealsWord(row.deals))}</td>
-            <td>${escapeHtml(this.formatMoney(row.premium))}</td>
+      const lines = Array.isArray(report.lines) ? report.lines : [];
+      const rows = lines.length
+        ? lines.map((row) => `<tr>
+            <td>${escapeHtml(row.agentName || "—")}</td>
+            <td>${escapeHtml(row.department || "—")}</td>
+            <td>${escapeHtml(row.product || "—")}</td>
+            <td>${escapeHtml(row.company || "—")}</td>
+            <td class="prem">${escapeHtml(this.formatMoney(row.premium))}</td>
           </tr>`).join("")
-        : `<tr><td colspan="3" style="text-align:center;padding:28px;color:#6b7c99">אין מכירות ביום זה</td></tr>`;
-      const win = window.open("", "_blank", "width=980,height=820");
+        : `<tr><td colspan="5" style="text-align:center;padding:28px;color:#6b7c99">אין מכירות ביום זה</td></tr>`;
+      const win = window.open("", "_blank", "width=1080,height=820");
       if(!win) return;
       win.document.write(`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>דוח מעקב מכירות יומי</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -24250,29 +24387,26 @@ UsersGateUI.init();
   h1{margin:0 0 6px;font-size:22px;color:#153c81}
   .sub{margin:0 0 18px;color:#6b7c99;font-size:13px;font-weight:700}
   table{width:100%;border-collapse:collapse}
-  th,td{padding:12px 10px;border-bottom:1px solid #e8eef7;text-align:right;font-size:14px}
-  th{color:#8a99b2;font-size:12px;font-weight:800}
-  td:nth-child(2),th:nth-child(2),td:nth-child(3),th:nth-child(3){text-align:center}
-  .prem{color:#0f9f6e;font-weight:800}
+  th,td{padding:10px 8px;border-bottom:1px solid #e8eef7;text-align:right;font-size:13px}
+  th{color:#8a99b2;font-size:11px;font-weight:800}
+  .prem{color:#0f9f6e;font-weight:800;white-space:nowrap}
   .foot{margin-top:16px;padding-top:14px;border-top:1px solid #e8eef7;display:flex;justify-content:space-between;gap:12px;font-weight:800}
   .foot .prem{font-size:18px}
   @page{margin:14mm}
 </style></head><body><div class="wrap">
   <h1>דוח מעקב מכירות יומי</h1>
-  <p class="sub">נציגים שמכרו · ${escapeHtml(report.dateLabel)}</p>
+  <p class="sub">נציג · מחלקה · מוצר · חברה · פרמיה · ${escapeHtml(report.dateLabel)}</p>
   <table>
-    <thead><tr><th>נציג</th><th>מספר עסקאות</th><th>סה״כ פרמיה</th></tr></thead>
+    <thead><tr><th>נציג</th><th>מחלקה</th><th>מוצר</th><th>חברה</th><th>פרמיה</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="foot">
-    <span>${escapeHtml(this.dailySalesAgentsWord(report.agentCount))}</span>
-    <span class="prem">סה״כ פרמיה: ${escapeHtml(this.formatMoney(report.totalPremium))}</span>
+    <span>${escapeHtml(this.dailySalesAgentsWord(report.agentCount))} · ${escapeHtml(this.dailySalesDealsWord(report.dealCount))}</span>
+    <span class="prem">${escapeHtml(this.formatMoney(report.totalPremium))}</span>
   </div>
 </div></body></html>`);
       win.document.close();
-      setTimeout(() => {
-        try { win.focus(); win.print(); } catch(_e) {}
-      }, 120);
+      try { win.focus(); win.print(); } catch(_e) {}
     },
 
     refreshDailySalesReportPanel(){
@@ -24326,7 +24460,7 @@ UsersGateUI.init();
           return;
         }
         if(action === "open"){
-          this.openDailySalesReportScreen();
+          try { UI.goView("dailySales"); } catch(_e) { this.openDailySalesReportScreen(); }
         }
       });
       on(this.els.root, "change", (ev) => {
