@@ -605,7 +605,7 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 }
 
 /* --- Dashboard KPI cards (bankKpi) --- */
-.bankDash__kpis:not(#\9):not(#\9){ gap: var(--gi-s4) !important; }
+.bankDash__kpis:not(#\9):not(#\9){ gap: 10px !important; }
 
 .bankKpi:not(#\9):not(#\9){
   position: relative;
@@ -730,8 +730,8 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
    9. DASHBOARD — greeting, goal, chart, leaderboard
    ===================================================================== */
 
-.bankDash:not(#\9):not(#\9){ display: grid; gap: var(--gi-s5); }
-.bankDash__row:not(#\9):not(#\9){ gap: var(--gi-s5) !important; }
+.bankDash:not(#\9):not(#\9){ display: grid; gap: 10px; }
+.bankDash__row:not(#\9):not(#\9){ gap: 10px !important; }
 
 .bankDash__topStats:not(#\9):not(#\9),
 .bankDash__topStatsInner:not(#\9):not(#\9){
@@ -1657,7 +1657,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   background: none !important;
 }
 
-.bankDash:not(#\9):not(#\9){ gap: var(--gi-s5) !important; }
+.bankDash:not(#\9):not(#\9){ gap: 10px !important; }
 
 /* --- KPI cards: drop the photo backdrop and everything it dragged along --- */
 
@@ -2194,7 +2194,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) !important;
   align-items: start !important;
-  gap: var(--gi-s5) !important;
+  gap: 10px !important;
 }
 
 /* עטיפות השורה מתבטלות — הכרטיסים עולים לרשת הראשית */

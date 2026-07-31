@@ -20307,11 +20307,11 @@ body.lcAuthLock .lcLogin--mfa #lcLoginMfaStep::before{
    =============================== */
 #view-dashboard .bankDash{
   display:grid;
-  gap:18px;
+  gap:10px;
 }
 
 
-#view-dashboard .bankDash--cleanTop{ display:grid; gap:12px; }
+#view-dashboard .bankDash--cleanTop{ display:grid; gap:8px; }
 #view-dashboard .bankDash__topStats{
   display:flex;
   justify-content:space-between;
@@ -20382,7 +20382,7 @@ body.lcAuthLock .lcLogin--mfa #lcLoginMfaStep::before{
   margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; color:rgba(33,57,101,.74); font-size:13px; font-weight:700;
 }
 #view-dashboard .bankDash__heroMeta span:not(:last-child)::after{ content:"|"; margin-inline-start:12px; opacity:.35; }
-#view-dashboard .bankDash__kpis{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+#view-dashboard .bankDash__kpis{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
 #view-dashboard .bankKpi{
   position:relative;
   min-height:0;
@@ -21118,7 +21118,7 @@ body.lcAuthLock .lcLogin--mfa #lcLoginMfaStep::before{
 /* שורות דשבורד: משמאל–מימין (פיזית) עם direction:ltr כדי ש‑RTL בשאר המסך לא יהפוך סדר מול המבוקש */
 #view-dashboard .bankDash__row{
   display:grid;
-  gap:16px;
+  gap:10px;
   align-items:stretch;
 }
 #view-dashboard .bankDash__row--goalLeader{
@@ -23093,7 +23093,7 @@ body.sidebar-collapsed .sidebar .nav__icon{
 #view-dashboard > *{ position:relative; z-index:1; }
 #view-dashboard .bankDash{
   position:relative;
-  gap:20px;
+  gap:10px;
 }
 #view-dashboard .bankDash::before{
   content:"";
@@ -23105,7 +23105,7 @@ body.sidebar-collapsed .sidebar .nav__icon{
   opacity:.75;
 }
 #view-dashboard .bankDash--cleanTop{
-  gap:14px;
+  gap:8px;
 }
 #view-dashboard .bankDash__topStats{
   position:relative;
