@@ -7,7 +7,7 @@
   "use strict";
 
   const GI_MAX_DISCOUNT_YEARS = 50;   // GI-FIX-DISCOUNT-YEARS
-  const BUILD = "20260731-summary-v13";
+  const BUILD = "20260801-dash-perf-v1";
   const NEW_POLICY_PREMIUM_MAX_ILS = 3000;
   const OPERATIONAL_PDF_MAX_PAGE_SCROLL_PX = 1080;
   const POST_LOGIN_DATA_TIMEOUT_MS = 15000;
@@ -19,7 +19,7 @@
   const POST_LOGIN_DATA_RECOVERY_DELAYS_MS = Object.freeze([2000, 4000, 8000, 15000, 30000, 30000]);
   const LOAD_SHEETS_MAP_CHUNK_SIZE = 24;
   const CUSTOMER_PAYLOAD_METRICS_SKIP_BYTES = 2 * 1024 * 1024;
-  const METRICS_CHUNK_SIZE = 12;
+  const METRICS_CHUNK_SIZE = 28;
   const GI_PERF_LOG_MS = 50;
   const ADMIN_CONTACT_EMAIL = "oriasomech@gmail.com";
   const AUTO_LOGOUT_IDLE_MS = 40 * 60 * 1000;
@@ -14372,6 +14372,10 @@ UsersGateUI.init();
 
     collectNewPoliciesForMetrics(rec, options = {}){
       if(!rec) return [];
+      // PERF: new policies live only under payload.newPolicies / operational.newPolicies.
+      // Skip collectPolicies (builds full UI rows for existing policies too) when empty.
+      const rawNew = getCustomerRawNewPolicies(rec);
+      if(!rawNew.length) return [];
       const range = options.range || null;
       const resolveCustomerMonthStamp = typeof options.resolveCustomerMonthStamp === "function"
         ? options.resolveCustomerMonthStamp
@@ -14386,7 +14390,7 @@ UsersGateUI.init();
         });
       }
       const out = [];
-      getCustomerRawNewPolicies(rec).forEach((raw) => {
+      rawNew.forEach((raw) => {
         if(String(raw?.origin || "") === "existing") return;
         const stamp = safeTrim(raw?._addedAt) || (resolveCustomerMonthStamp ? resolveCustomerMonthStamp(rec) : "");
         if(range && isWithinRange && (!stamp || !isWithinRange(stamp, range))) return;
@@ -14554,18 +14558,16 @@ UsersGateUI.init();
         Wizard?.closePolicyDiscountModal?.();
         Wizard?.closeCoversDrawer?.();
       } catch(_e) {}
-      this.showLoader();
+      // UX: הלקוח כבר בזיכרון — פתיחה מיידית בלי אנימציית "טוען תיק".
       window.clearTimeout(this._loaderTimer);
-      this._loaderTimer = window.setTimeout(() => {
-        try{
-          this.hideLoader();
-          this.openById(safeId);
-        }catch(err){
-          console.error("CUSTOMER_OPEN_WITH_LOADER_FAILED", err, safeId);
-          this.hideLoader();
-          this.openById(safeId, { skipLoader:true });
-        }
-      }, Math.max(80, Number(delay) || 0));
+      try{
+        this.hideLoader();
+        this.openById(safeId);
+      }catch(err){
+        console.error("CUSTOMER_OPEN_WITH_LOADER_FAILED", err, safeId);
+        this.hideLoader();
+        this.openById(safeId, { skipLoader:true });
+      }
     },
 
     byId(id){
@@ -14858,6 +14860,44 @@ UsersGateUI.init();
         policyCount,
         customerItems: customerItems.sort((a, b) => b.latestStamp - a.latestStamp)
       };
+    },
+
+    // PERF: same math as two aggregateAgentAppointmentMetrics calls, one collect per customer.
+    aggregateAgentAppointmentMetricsDual(customers, currentRange, previousRange, isWithinRangeFn){
+      const empty = () => ({ totalPremium: 0, policyCount: 0, customerItems: [] });
+      const current = empty();
+      const previous = empty();
+      const pushPack = (pack, rec, rows) => {
+        if(!rows.length) return;
+        const premium = this.sumAgentAppointmentPremium(rows);
+        pack.policyCount += rows.length;
+        pack.totalPremium += premium;
+        const latestStamp = rows.reduce((max, row) => {
+          const t = Date.parse(safeTrim(row.appointmentDate) || "");
+          return Number.isFinite(t) ? Math.max(max, t) : max;
+        }, 0);
+        pack.customerItems.push({ rec, premium, policies: rows, latestStamp });
+      };
+      (Array.isArray(customers) ? customers : []).forEach((rec) => {
+        if(isCustomerPayloadTooHeavyForSyncMetrics(rec)) return;
+        const allRows = this.collectAgentAppointmentPolicies(rec);
+        if(!allRows.length) return;
+        const curRows = [];
+        const prevRows = [];
+        allRows.forEach((row) => {
+          const stamp = safeTrim(row.appointmentDate);
+          if(!stamp || typeof isWithinRangeFn !== "function") return;
+          if(isWithinRangeFn(stamp, currentRange)) curRows.push(row);
+          else if(isWithinRangeFn(stamp, previousRange)) prevRows.push(row);
+        });
+        pushPack(current, rec, curRows);
+        pushPack(previous, rec, prevRows);
+      });
+      current.totalPremium = Math.round(current.totalPremium * 100) / 100;
+      previous.totalPremium = Math.round(previous.totalPremium * 100) / 100;
+      current.customerItems.sort((a, b) => b.latestStamp - a.latestStamp);
+      previous.customerItems.sort((a, b) => b.latestStamp - a.latestStamp);
+      return { current, previous };
     },
 
     buildAgentAppointmentBreakdownHtml(customerItems, limit, formatMoneyFn){
@@ -22999,6 +23039,43 @@ UsersGateUI.init();
       }
     },
 
+    // PERF: one collectPolicies per customer, then bucket into current + previous month.
+    // Optionally fills dailySeries for customers whose month-stamp falls in currentRange
+    // (same rules as buildDailySeries).
+    accumulateCustomerIntoBothAggs(rec, currentAgg, prevAgg, currentRange, previousRange, dailySeries){
+      const allNew = CustomersUI.collectNewPoliciesForMetrics(rec, {
+        resolveCustomerMonthStamp: (row) => this.resolveCustomerMonthStamp(row)
+      });
+      if(!allNew.length && !dailySeries) return;
+      const custStamp = this.resolveCustomerMonthStamp(rec);
+      const addTo = (agg, p) => {
+        const gross = CustomersUI.asMoneyNumber(p?.premiumValue);
+        const net = this.policyNetPremium(p);
+        agg.soldPolicies += 1;
+        agg.grossPremium += gross;
+        agg.netPremium += net;
+        if(net > 0){
+          const pType = safeTrim(p?.type) || "אחר";
+          agg.productTotals[pType] = (agg.productTotals[pType] || 0) + net;
+        }
+      };
+      for(const p of allNew){
+        const stamp = safeTrim(p?._addedAt) || custStamp;
+        if(!stamp) continue;
+        if(this.isWithinRange(stamp, currentRange)) addTo(currentAgg, p);
+        else if(this.isWithinRange(stamp, previousRange)) addTo(prevAgg, p);
+      }
+      if(!dailySeries || !Array.isArray(dailySeries)) return;
+      if(!custStamp || !this.isWithinRange(custStamp, currentRange)) return;
+      const dayMs = Date.parse(custStamp);
+      if(!Number.isFinite(dayMs)) return;
+      const day = new Date(dayMs).getDate();
+      const entry = dailySeries[day - 1];
+      if(!entry) return;
+      entry.premium += allNew.reduce((sum, p) => sum + this.policyNetPremium(p), 0);
+      entry.clients += 1;
+    },
+
     finalizeAgg(agg, allCustomers, range){
       const apptMetrics = CustomersUI.aggregateAgentAppointmentMetrics(
         allCustomers,
@@ -23011,6 +23088,26 @@ UsersGateUI.init();
       agg.grossPremium = Math.round(agg.grossPremium * 100) / 100;
       agg.netPremium = Math.round(agg.netPremium * 100) / 100;
       return agg;
+    },
+
+    // PERF: one scan of agent-appointment policies for current + previous month.
+    finalizeBothAggs(currentAgg, prevAgg, allCustomers, currentRange, previousRange){
+      const dual = CustomersUI.aggregateAgentAppointmentMetricsDual(
+        allCustomers,
+        currentRange,
+        previousRange,
+        (stamp, monthRange) => this.isWithinRange(stamp, monthRange)
+      );
+      const apply = (agg, pack) => {
+        agg.agentAppointmentPremium = Math.round(pack.totalPremium * 100) / 100;
+        agg.agentAppointments = pack.policyCount;
+        agg.agentApptItems = Array.isArray(pack.customerItems) ? pack.customerItems : [];
+        agg.grossPremium = Math.round(agg.grossPremium * 100) / 100;
+        agg.netPremium = Math.round(agg.netPremium * 100) / 100;
+      };
+      apply(currentAgg, dual.current);
+      apply(prevAgg, dual.previous);
+      return { currentAgg, prevAgg };
     },
 
     formatNetProductBreakdownHtml(productTotals){
@@ -23028,7 +23125,7 @@ UsersGateUI.init();
       );
     },
 
-    _assembleMetricsResult(cacheKey, customersAll, proposalsAll, currentRange, previousRange, customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg){
+    _assembleMetricsResult(cacheKey, customersAll, proposalsAll, currentRange, previousRange, customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg, prebuiltDailySeries){
       const salesScope = Auth.getDashboardSalesScope();
       const orgScope = salesScope === "all" || salesScope === "team";
       const currentAgent = this.getCurrentAgentRecord();
@@ -23046,7 +23143,9 @@ UsersGateUI.init();
         if(!prev) return 100;
         return Math.round((((curr - prev) / prev) * 100) * 10) / 10;
       };
-      const dailySeries = this.buildDailySeries(customersMonth);
+      const dailySeries = Array.isArray(prebuiltDailySeries)
+        ? prebuiltDailySeries.map((item) => ({ ...item, premium: Math.round((item.premium || 0) * 100) / 100 }))
+        : this.buildDailySeries(customersMonth);
       const metricsResult = {
         monthLabel: this.formatMonthTitle(currentRange.start),
         updatedAt: State.data?.meta?.updatedAt || nowISO(),
@@ -23134,15 +23233,16 @@ UsersGateUI.init();
         const proposalsPrev = proposalsAll.filter((rec) => this.isWithinRange(this.resolveProposalMonthStamp(rec), previousRange));
         const currentAgg = this.newEmptyAgg();
         const prevAgg = this.newEmptyAgg();
+        const monthSpan = this.getMonthRange();
+        const totalDays = new Date(monthSpan.start.getFullYear(), monthSpan.start.getMonth() + 1, 0).getDate();
+        const dailySeries = Array.from({ length: totalDays }, (_, idx) => ({ day: idx + 1, premium: 0, clients: 0 }));
         customersAll.forEach((rec) => {
-          this.accumulateCustomerIntoAgg(rec, currentAgg, currentRange);
-          this.accumulateCustomerIntoAgg(rec, prevAgg, previousRange);
+          this.accumulateCustomerIntoBothAggs(rec, currentAgg, prevAgg, currentRange, previousRange, dailySeries);
         });
-        this.finalizeAgg(currentAgg, customersAll, currentRange);
-        this.finalizeAgg(prevAgg, customersAll, previousRange);
+        this.finalizeBothAggs(currentAgg, prevAgg, customersAll, currentRange, previousRange);
         return this._assembleMetricsResult(
           cacheKey, customersAll, proposalsAll, currentRange, previousRange,
-          customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg
+          customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg, dailySeries
         );
       });
     },
@@ -23161,14 +23261,16 @@ UsersGateUI.init();
       const proposalsPrev = proposalsAll.filter((rec) => this.isWithinRange(this.resolveProposalMonthStamp(rec), previousRange));
       const currentAgg = this.newEmptyAgg();
       const prevAgg = this.newEmptyAgg();
+      const monthSpan = this.getMonthRange();
+      const totalDays = new Date(monthSpan.start.getFullYear(), monthSpan.start.getMonth() + 1, 0).getDate();
+      const dailySeries = Array.from({ length: totalDays }, (_, idx) => ({ day: idx + 1, premium: 0, clients: 0 }));
       let idx = 0;
       GiPerf.mark("buildMetrics");
       const step = () => {
         const end = Math.min(customersAll.length, idx + METRICS_CHUNK_SIZE);
         for(; idx < end; idx += 1){
           const rec = customersAll[idx];
-          this.accumulateCustomerIntoAgg(rec, currentAgg, currentRange);
-          this.accumulateCustomerIntoAgg(rec, prevAgg, previousRange);
+          this.accumulateCustomerIntoBothAggs(rec, currentAgg, prevAgg, currentRange, previousRange, dailySeries);
         }
         if(idx < customersAll.length){
           if(typeof requestIdleCallback === "function"){
@@ -23178,11 +23280,10 @@ UsersGateUI.init();
           }
           return;
         }
-        this.finalizeAgg(currentAgg, customersAll, currentRange);
-        this.finalizeAgg(prevAgg, customersAll, previousRange);
+        this.finalizeBothAggs(currentAgg, prevAgg, customersAll, currentRange, previousRange);
         this._assembleMetricsResult(
           cacheKey, customersAll, proposalsAll, currentRange, previousRange,
-          customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg
+          customersMonth, customersPrev, proposalsMonth, proposalsPrev, currentAgg, prevAgg, dailySeries
         );
         this._metricsBuildBusy = false;
         GiPerf.mark("buildMetrics:end");
@@ -24348,7 +24449,8 @@ UsersGateUI.init();
       const customersAll = this.getVisibleCustomers();
       const agentScoped = !!(Auth.current && !Auth.canViewAllCustomers?.());
       // PERF: admins hit sync path too often at 30–45 customers; chunk earlier
-      const syncLimit = agentScoped ? 12 : 20;
+      // After single-pass + empty-new early-exit, sync is cheap enough for larger sets.
+      const syncLimit = agentScoped ? 24 : 45;
       if(customersAll.length <= syncLimit){
         return this.computeAndCacheMetrics(cacheKey);
       }

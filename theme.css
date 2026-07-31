@@ -646,11 +646,7 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .bankKpi__delta:not(#\9):not(#\9),
 .bankKpiToday__sub:not(#\9):not(#\9){
-  margin-top: var(--gi-s2) !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: var(--gi-text-3) !important;
-  text-shadow: none !important;
+  display: none !important;
 }
 
 .bankKpi__delta.is-up:not(#\9):not(#\9){   color: var(--gi-success) !important; }
@@ -1700,13 +1696,12 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   font-weight: 700 !important;
 }
 
-.bankKpi__delta:not(#\9):not(#\9){ font-weight: 500 !important; }
+.bankKpi__delta:not(#\9):not(#\9){ display: none !important; }
 .bankKpi__delta.is-up:not(#\9):not(#\9){   color: var(--gi-success) !important; }
 .bankKpi__delta.is-down:not(#\9):not(#\9){ color: var(--gi-danger) !important; }
 
 .bankKpiToday__sub:not(#\9):not(#\9){
-  color: var(--gi-text-3) !important;
-  font-weight: 500 !important;
+  display: none !important;
 }
 
 .bankKpiTodayRow:not(#\9):not(#\9),
@@ -4813,4 +4808,453 @@ body.view-campaignLeads-active .content:not(#\9):not(#\9){
 #campaignLeadsTrackingPanel .lcTrackAgentCard:not(#\9):not(#\9),
 #trackingSummary:not(#\9):not(#\9){
   display: none !important;
+}
+
+
+/* =====================================================================
+   CUSTOMER FILE (cfFile) — align to GI enterprise language
+   BUILD: 20260801-cfFile-gi-v1
+   ===================================================================== */
+
+#customerFull.cfFile .customerFull__panel:not(#\9):not(#\9){
+  background: var(--gi-bg) !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+#customerFull.cfFile .customerFull__top:not(#\9):not(#\9),
+.cfFile__header:not(#\9):not(#\9),
+#customerFull .customerHero:not(#\9):not(#\9){
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+#customerFull.cfFile .customerFull__top:not(#\9):not(#\9),
+.cfFile__header:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+#customerFull.cfFile .customerFull__top:not(#\9):not(#\9){
+  padding: var(--gi-s4) var(--gi-s5) !important;
+}
+
+#customerFull.cfFile .customerFull__dash:not(#\9):not(#\9){
+  padding: var(--gi-s3) var(--gi-s5) 0 !important;
+  background: transparent !important;
+}
+
+#customerFull.cfFile .customerFull__body:not(#\9):not(#\9){
+  padding: var(--gi-s3) var(--gi-s5) var(--gi-s5) !important;
+  gap: var(--gi-s4) !important;
+  background: transparent !important;
+}
+
+.cfFile__avatar:not(#\9):not(#\9),
+.cfFile__avatarImg:not(#\9):not(#\9){
+  display: none !important;
+}
+
+.cfFile__back:not(#\9):not(#\9){
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-2) !important;
+  box-shadow: none !important;
+}
+
+.cfFile__back:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border-color: var(--gi-border-strong) !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFile__name:not(#\9):not(#\9){
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.01em !important;
+}
+
+.cfFile__chips:not(#\9):not(#\9){
+  gap: var(--gi-s2) !important;
+  margin-top: var(--gi-s2) !important;
+}
+
+.cfFile__chip:not(#\9):not(#\9){
+  min-height: 32px !important;
+  padding: 5px 10px !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-surface-2) !important;
+  border: 1px solid var(--gi-border) !important;
+  box-shadow: none !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-2) !important;
+}
+
+.cfFile__chipText:not(#\9):not(#\9),
+.cfFile__chipIcon:not(#\9):not(#\9){
+  color: var(--gi-text-2) !important;
+  font-weight: 600 !important;
+}
+
+.cfFileActionBtn:not(#\9):not(#\9){
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--gi-r-ctl) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.cfFileActionBtn--purchase:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #fff !important;
+}
+
+.cfFileActionBtn--purchase:hover:not(#\9):not(#\9){
+  background: var(--gi-primary-hover) !important;
+  border-color: var(--gi-primary-hover) !important;
+  color: #fff !important;
+}
+
+.cfFileActionBtn--edit:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border-color: var(--gi-border) !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFileActionBtn--edit:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border-color: var(--gi-border-strong) !important;
+}
+
+.cfFileActionBtn--archive:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border-color: rgba(220,38,38,.35) !important;
+  color: var(--gi-danger) !important;
+}
+
+.cfFileActionBtn--archive:hover:not(#\9):not(#\9){
+  background: var(--gi-danger-soft) !important;
+  border-color: var(--gi-danger) !important;
+  color: var(--gi-danger) !important;
+}
+
+.cfFileActionBtn--assign:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border-color: rgba(22,163,74,.35) !important;
+  color: var(--gi-success) !important;
+}
+
+.cfFileActionBtn--assign:hover:not(#\9):not(#\9){
+  background: var(--gi-success-soft) !important;
+  border-color: var(--gi-success) !important;
+  color: var(--gi-success) !important;
+}
+
+.cfFileActionBtn:focus-visible:not(#\9):not(#\9){
+  outline: none !important;
+  box-shadow: var(--focus) !important;
+  border-color: var(--gi-primary) !important;
+}
+
+/* KPI strip */
+.cfFile__kpiBar:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  overflow: hidden !important;
+}
+
+.cfFile__kpi:not(#\9):not(#\9){
+  padding: var(--gi-s4) var(--gi-s4) !important;
+  border-inline-start: 1px solid var(--gi-border-soft) !important;
+  gap: var(--gi-s3) !important;
+}
+
+.cfFile__kpi:first-child:not(#\9):not(#\9){
+  border-inline-start: none !important;
+}
+
+.cfFile__kpiIcon:not(#\9):not(#\9){
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-primary-soft) !important;
+  color: var(--gi-primary) !important;
+  box-shadow: none !important;
+}
+
+.cfFile__kpiIcon--green:not(#\9):not(#\9){
+  background: var(--gi-success-soft) !important;
+  color: var(--gi-success) !important;
+}
+
+.cfFile__kpiIcon--amber:not(#\9):not(#\9){
+  background: var(--gi-warn-soft) !important;
+  color: var(--gi-warn) !important;
+}
+
+.cfFile__kpiIcon--blue:not(#\9):not(#\9){
+  background: var(--gi-info-soft) !important;
+  color: var(--gi-info) !important;
+}
+
+.cfFile__kpiVal:not(#\9):not(#\9){
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.01em !important;
+}
+
+.cfFile__kpiVal--green:not(#\9):not(#\9){
+  color: var(--gi-success) !important;
+}
+
+.cfFile__kpiLabel:not(#\9):not(#\9){
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-3) !important;
+  margin-top: 2px !important;
+}
+
+.cfFile__kpiSub:not(#\9):not(#\9){
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-muted) !important;
+}
+
+.cfFile__opsBadge:not(#\9):not(#\9){
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 3px 9px !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-warn-soft) !important;
+  color: #92400E !important;
+  border: 1px solid rgba(217,119,6,.22) !important;
+}
+
+/* Tabs */
+.cfFile__tabs:not(#\9):not(#\9){
+  gap: 6px !important;
+}
+
+.cfFile__tab:not(#\9):not(#\9){
+  padding: 6px 12px !important;
+  border-radius: var(--gi-r-pill) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-3) !important;
+  box-shadow: none !important;
+}
+
+.cfFile__tab:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  color: var(--gi-text-2) !important;
+}
+
+.cfFile__tab.is-active:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #fff !important;
+}
+
+.cfFile__tabCount:not(#\9):not(#\9){
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  background: var(--gi-surface-3) !important;
+  color: var(--gi-text-2) !important;
+}
+
+.cfFile__tab.is-active .cfFile__tabCount:not(#\9):not(#\9){
+  background: rgba(255,255,255,.22) !important;
+  color: #fff !important;
+}
+
+/* Side + main cards */
+.cfFile__side:not(#\9):not(#\9),
+.cfFile__main:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.cfFile__sideHead:not(#\9):not(#\9){
+  padding: var(--gi-s3) var(--gi-s4) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+  background: transparent !important;
+}
+
+.cfFile__sideBody:not(#\9):not(#\9){
+  padding: var(--gi-s3) var(--gi-s4) var(--gi-s4) !important;
+  gap: var(--gi-s2) !important;
+}
+
+.cfFile__sideTotal:not(#\9):not(#\9){
+  padding: var(--gi-s3) !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-success-soft) !important;
+  border: 1px solid rgba(22,163,74,.22) !important;
+  box-shadow: none !important;
+}
+
+.cfFile__sideTotalVal:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gi-success) !important;
+}
+
+.cfFile__sideTotalLbl:not(#\9):not(#\9){
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-3) !important;
+}
+
+.cfFile__sideRow:not(#\9):not(#\9){
+  padding: 8px 0 !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  font-size: 13px !important;
+}
+
+.cfFile__sideRow span:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+}
+
+.cfFile__sideRow strong:not(#\9):not(#\9){
+  color: var(--gi-text) !important;
+  font-weight: 700 !important;
+}
+
+.cfFile__sideRow.cfFile__sideRow--agentAppt strong:not(#\9):not(#\9){
+  color: var(--gi-primary) !important;
+}
+
+/* Policy table */
+.cfFile__groupLabel:not(#\9):not(#\9){
+  padding: 9px 14px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  color: var(--gi-text-2) !important;
+  background: var(--gi-surface-2) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+.cfFile__table:not(#\9):not(#\9){
+  font-size: 13px !important;
+}
+
+.cfFile__table thead th:not(#\9):not(#\9){
+  padding: 10px 12px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-3) !important;
+  background: var(--gi-surface-2) !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+}
+
+.cfFile__table tbody tr:not(#\9):not(#\9){
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  background: var(--gi-surface) !important;
+}
+
+.cfFile__table tbody tr:hover:not(#\9):not(#\9),
+.cfFile__table tbody tr.is-menu-open:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+}
+
+.cfFile__table td:not(#\9):not(#\9){
+  padding: 11px 12px !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFile__policyType:not(#\9):not(#\9),
+.cfFile__coverage:not(#\9):not(#\9){
+  color: var(--gi-text-3) !important;
+  font-weight: 500 !important;
+}
+
+.cfFile__premium:not(#\9):not(#\9){
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFile__premiumAfter:not(#\9):not(#\9){
+  font-weight: 700 !important;
+  color: var(--gi-success) !important;
+}
+
+.cfFile__statusBadge:not(#\9):not(#\9){
+  padding: 3px 9px !important;
+  border-radius: var(--gi-r-pill) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  background: var(--gi-success-soft) !important;
+  color: #166534 !important;
+  border: 1px solid rgba(22,163,74,.2) !important;
+}
+
+.cfFile__menuBtn:not(#\9):not(#\9){
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface) !important;
+  color: var(--gi-text-3) !important;
+  box-shadow: none !important;
+}
+
+.cfFile__menuBtn:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFile__menu:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-md) !important;
+  box-shadow: var(--gi-sh-md) !important;
+  padding: 6px !important;
+}
+
+.cfFile__menuItem:not(#\9):not(#\9){
+  border-radius: var(--gi-r-ctl) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text) !important;
+}
+
+.cfFile__menuItem:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+}
+
+.cfFile__opsPanel:not(#\9):not(#\9){
+  padding: var(--gi-s4) !important;
+}
+
+@media (max-width: 980px){
+  #customerFull.cfFile .customerFull__body:not(#\9):not(#\9){
+    grid-template-columns: 1fr !important;
+  }
 }
