@@ -9799,6 +9799,43 @@
       return !p || (typeof p === "object" && !Object.keys(p).length);
     },
 
+    // GI-FIX 2026-07-31: מנה שנכשלת מתפצלת לשתיים ומנוסה שוב, עד רמת מזהה בודד.
+    // הנתונים מצדיקים את זה: הרשומה הכבדה ביותר היא 1.8MB דחוסים (קבצי פוליסה
+    // ב-base64 תחת elementaryPolicyFiles), פי 65 מהממוצע. בלי פיצול, מנה שנופל
+    // בה לקוח כזה מפילה 40 לקוחות. איתו — מפסידים לכל היותר אחד.
+    async _fetchPayloadsAdaptive(tableName, ids){
+      const rows = [];
+      const failedIds = [];
+      const stack = [Array.isArray(ids) ? ids : []];
+      while(stack.length){
+        const chunk = stack.pop();
+        if(!chunk || !chunk.length) continue;
+        const batch = await this._fetchPayloadBatch(tableName, chunk);
+        if(batch){
+          batch.forEach((row) => rows.push(row));
+          continue;
+        }
+        if(chunk.length === 1){
+          failedIds.push(chunk[0]);
+          try { console.warn("PAYLOAD_FETCH_FAILED_SINGLE:", tableName, chunk[0]); } catch(_e) {}
+          continue;
+        }
+        const mid = Math.ceil(chunk.length / 2);
+        stack.push(chunk.slice(0, mid));
+        stack.push(chunk.slice(mid));
+      }
+      return { rows, failedIds };
+    },
+
+    countMissingPayloads(){
+      let missing = 0;
+      ["customers", "proposals"].forEach((key) => {
+        const list = Array.isArray(State.data?.[key]) ? State.data[key] : [];
+        list.forEach((rec) => { if(this.payloadIsEmpty(rec)) missing += 1; });
+      });
+      return missing;
+    },
+
     async hydratePayloads(options = {}){
       if(this._payloadHydrationRunning) return { ok:false, error:"ALREADY_RUNNING" };
       this._payloadHydrationRunning = true;
@@ -9821,11 +9858,9 @@
           for(let i = 0; i < pending.length; i += PAYLOAD_HYDRATION_BATCH_SIZE){
             if(!Auth?.current) return { ok:false, error:"SESSION_ENDED", filled, failed };
             const ids = pending.slice(i, i + PAYLOAD_HYDRATION_BATCH_SIZE);
-            const batch = await this._fetchPayloadBatch(spec.table, ids);
-            if(!batch){
-              failed += ids.length;
-              continue;
-            }
+            const { rows: batch, failedIds } = await this._fetchPayloadsAdaptive(spec.table, ids);
+            failed += failedIds.length;
+            if(!batch.length) continue;
             const byId = new Map();
             batch.forEach((row) => {
               const id = safeTrim(row?.id);
@@ -59550,7 +59585,13 @@ const ClalRiskLifePdf = {
 
     startPayloadHydration(){
       if(this._payloadHydrationStarted) return;
-      if(!Storage._lastLoadWasLight) return; // טעינה מלאה — אין מה למלא
+      // GI-FIX 2026-07-31: השער הקודם היה `if(!Storage._lastLoadWasLight) return`,
+      // כלומר הוא שאל *איך* נטענו הנתונים במקום *האם חסר משהו*. זה יצר פגם קבוע:
+      // מנה שנכשלה נשמרה חלקית למטמון, בכניסה הבאה רץ מסלול הדלתא (ולא loadSheets),
+      // הדגל נשאר כבוי, והלקוחות האלה נשארו בלי פרטים עד שהמטמון פג. עכשיו הבדיקה
+      // ישירה — יש רשומות עם payload ריק? למלא. מאיפה שלא הגענו.
+      const missing = Storage.countMissingPayloads();
+      if(!missing) return;
       this._payloadHydrationStarted = true;
       void (async () => {
         try {
