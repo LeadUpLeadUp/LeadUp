@@ -1538,7 +1538,13 @@
     data: defaultState()
   };
 
-  function normalizeState(s){
+  /* GI-PERF 2026-07-31 (שלב ה'): preMapped.
+     normalizeState רץ 3 פעמים על אותן רשומות בכל סנכרון — פעם ב-loadSheets,
+     שוב ב-applyStateSnapshot, ושוב דרך refreshStateShadows. עם ~1,035 לקוחות
+     שנושאים payload שמן זה task ארוך שחוסם את החוט הראשי.
+     preMapped=true מדלג על ה-map החוזר (הרשומות כבר מנורמלות) ומשאיר את
+     הסינונים ואת נרמול ה-meta בדיוק כשהיו. */
+  function normalizeState(s, preMapped){
     const base = defaultState();
     const out = {
       meta: { ...(s?.meta || {}) },
@@ -1563,9 +1569,13 @@
     applyTeamManagerAssignmentsToAgents(out);
 
     if (!out.agents.length) out.agents = base.agents;
-    out.customers = (out.customers || []).map((c, idx) => normalizeCustomerRecord(c, idx)).filter(Boolean);
+    out.customers = preMapped === true
+      ? (out.customers || []).filter(Boolean)
+      : (out.customers || []).map((c, idx) => normalizeCustomerRecord(c, idx)).filter(Boolean);
     out.customers = out.customers.filter((c) => !isServerArchivedCustomerRecord(c));
-    out.proposals = (out.proposals || []).map((p, idx) => normalizeProposalRecord(p, idx)).filter(Boolean);
+    out.proposals = preMapped === true
+      ? (out.proposals || []).filter(Boolean)
+      : (out.proposals || []).map((p, idx) => normalizeProposalRecord(p, idx)).filter(Boolean);
     out.proposals = out.proposals.filter((p) => !isPurgedProposalRecord(p));
     out.meta.opsEvents = Array.isArray(out.meta.opsEvents) ? out.meta.opsEvents.map((ev, idx) => normalizeOpsEvent(ev, idx)).filter(Boolean) : [];
     out.meta.chatAvatars = normalizeChatAvatarMap(out.meta.chatAvatars);
@@ -1610,6 +1620,30 @@
     enrichStateAgentOwnership(out);
     reconcileAllAgentOwnershipInState(out);
     return out;
+  }
+
+  /* גרסה א-סינכרונית של normalizeState שמפרקת את המיפוי הכבד לנתחים ומשחררת
+     את החוט הראשי ביניהם. מיועדת למסלול הטעינה מהשרת, שם המערך גדול והחסימה
+     היא זו שמקפיאה את המסך. התוצאה זהה ל-normalizeState(s). */
+  async function normalizeStateChunked(s){
+    const src = (s && typeof s === "object") ? s : {};
+    // 200 ולא LOAD_SHEETS_MAP_CHUNK_SIZE (24): perfYield נשען על requestIdleCallback
+    // עם timeout של 32ms, כך שנתח קטן מדי מוסיף עשרות סבבי המתנה ומאט יותר
+    // ממה שהוא מרוויח. 200 מספיק כדי לא לחסום קלט.
+    const chunk = 200;
+    const customers = await perfMapChunked(
+      Array.isArray(src.customers) ? src.customers : [],
+      (c, idx) => normalizeCustomerRecord(c, idx),
+      chunk
+    );
+    await perfYield();
+    const proposals = await perfMapChunked(
+      Array.isArray(src.proposals) ? src.proposals : [],
+      (p, idx) => normalizeProposalRecord(p, idx),
+      chunk
+    );
+    await perfYield();
+    return normalizeState({ ...src, customers, proposals }, true);
   }
 
 
@@ -10068,7 +10102,7 @@
         );
         const proposalRows = await perfMapChunked(proposalsRes.data || [], (row, idx) => this.mapProposalRow(row, idx));
         const agentsMerged = mergeAgentsTableWithMetaShadow(agentsRows, mappedMeta);
-        const payload = normalizeState({
+        const payload = await normalizeStateChunked({
           meta: mappedMeta,
           agents: agentsMerged,
           customers: customerRows,
@@ -10082,7 +10116,7 @@
         } catch(_e) {}
         try { this.clearLegacyCaches({ keepBackup:true }); } catch(_e) {}
         try { this.saveBackup(payload); } catch(_e) {}
-        return { ok:true, payload, at: payload?.meta?.updatedAt || nowISO(), source:'server', stale:false, warning:'' };
+        return { ok:true, payload, at: payload?.meta?.updatedAt || nowISO(), source:'server', stale:false, warning:'', normalized:true };
       } catch(e) {
         if(useCachedFallback){
           const backupState = this.loadBackup();
@@ -12340,52 +12374,76 @@ UsersGateUI.init();
       }
 
       // render view data
-      if (safe === "settings") this.renderSettingsView();
-      // render view data
-      if (safe === "dashboard"){
-        // Only force "pending" when entering dashboard from another view (or explicit focus).
-        // Re-opening dashboard / quiet re-renders must not wipe the agent's chosen tab.
-        if(Auth.isElementary() && this._lastRenderedView !== "dashboard" && !options.keepElementaryDashTab){
-          focusElementaryDashboardPendingTab();
-        }
-        if(!options.skipDashboardRender){
-          if(Auth.isElementary()){
-            try { ElementaryDashboardUI.render(); } catch(_e) {}
-          } else if(Auth.isOps() || Auth.isOpsAgent()){
-            try { OpsDashboardUI.render(); } catch(_e) {}
-          } else if(DashboardUI.shouldShowPerformanceBoard?.()){
-            try { DashboardUI.schedulePostLoginRender({ skipDailyReportWait: true }); } catch(_e) {}
-          } else {
-            try { void DashboardUI.render(); } catch(_e) {}
-          }
-        }
-      }
-      if (safe === "users") UsersUI.render();
-      if (safe === "customers") {
-        if(UI.els.customersSearch) UI.els.customersSearch.value = "";
-        CustomersUI.render();
-      }
-      if (safe === "proposals") ProposalsUI.render();
-      if (safe === "elementaryProposals") ElementaryProposalsUI.render();
-      if (safe === "elementaryPending") ElementaryPendingUI.render();
-      if (safe === "agentElementaryTracking") AgentElementaryTrackingUI.render();
-      if(safe === "proposals" || safe === "elementaryPending" || safe === "elementaryProposals"){
-        try { perfIdle(() => { void ReferralQuietRefresh.tick(); }, 1800); } catch(_e) {}
-      }
+      /* GI-PERF 2026-07-31 (שלב ה'): המעבר הויזואלי והרינדור הכבד היו באותו task.
+         כלומר קליק בתפריט הצד לא הדליק את הפריט ולא החליף מסך עד ש-XxxUI.render()
+         סיים לרוץ על כל הרשומות — הדפדפן פשוט לא הגיע ל-paint. זה מה שנראה
+         כתקיעה. עכשיו: שלב 1 מסיים את המעבר הויזואלי, הדפדפן מצייר, ורק אז
+         שלב 2 מרנדר את הנתונים.
+
+         _navToken מבטל רינדור מיושן: אם המשתמש לחץ על פריט אחר בינתיים,
+         הרינדור הישן לא ירוץ ולא ידרוס את המסך החדש. */
+      const prevRenderedView = this._lastRenderedView;
       this._lastRenderedView = safe;
       this._lastRenderedViewAt = Date.now();
-      if (safe === "myProcesses") ProcessesUI.render();
-      if (safe === "mirrorCall") MirrorCallUI.render();
-      if (safe === "elementaryMirror") ElementaryMirrorUI.render();
-      else { try { ElementaryMirrorUI.onLeaveView?.(); } catch(_e) {} }
-      if (safe === "mirrorAssignments") MirrorAssignmentsUI.render();
-      if (safe === "campaignLeads") void CampaignLeadsUI.render();
-      if (safe === "campaignMyLeads") void CampaignMyLeadsUI.render();
-      if (safe === "dailyReport") void DailyReportUI.scheduleNavRender();
-      if (safe === "myTeam") void MyTeamUI.render();
-      if (safe !== "settings" || this._settingsRubric !== "activityLog") AgentActivityLogUI.stopRealtime();
-      try { ProcessesUI.syncRealtimeForView?.(); } catch(_e) {}
-      try { ListRecordRealtime.syncForView?.(); } catch(_e) {}
+
+      const navToken = (Number(this._navToken) || 0) + 1;
+      this._navToken = navToken;
+
+      const runViewRender = () => {
+        if(this._navToken !== navToken) return;
+
+        if (safe === "settings") this.renderSettingsView();
+        if (safe === "dashboard"){
+          // Only force "pending" when entering dashboard from another view (or explicit focus).
+          // Re-opening dashboard / quiet re-renders must not wipe the agent's chosen tab.
+          if(Auth.isElementary() && prevRenderedView !== "dashboard" && !options.keepElementaryDashTab){
+            focusElementaryDashboardPendingTab();
+          }
+          if(!options.skipDashboardRender){
+            if(Auth.isElementary()){
+              try { ElementaryDashboardUI.render(); } catch(_e) {}
+            } else if(Auth.isOps() || Auth.isOpsAgent()){
+              try { OpsDashboardUI.render(); } catch(_e) {}
+            } else if(DashboardUI.shouldShowPerformanceBoard?.()){
+              try { DashboardUI.schedulePostLoginRender({ skipDailyReportWait: true }); } catch(_e) {}
+            } else {
+              try { void DashboardUI.render(); } catch(_e) {}
+            }
+          }
+        }
+        if (safe === "users") UsersUI.render();
+        if (safe === "customers") {
+          if(UI.els.customersSearch) UI.els.customersSearch.value = "";
+          CustomersUI.render();
+        }
+        if (safe === "proposals") ProposalsUI.render();
+        if (safe === "elementaryProposals") ElementaryProposalsUI.render();
+        if (safe === "elementaryPending") ElementaryPendingUI.render();
+        if (safe === "agentElementaryTracking") AgentElementaryTrackingUI.render();
+        if(safe === "proposals" || safe === "elementaryPending" || safe === "elementaryProposals"){
+          try { perfIdle(() => { void ReferralQuietRefresh.tick(); }, 1800); } catch(_e) {}
+        }
+        if (safe === "myProcesses") ProcessesUI.render();
+        if (safe === "mirrorCall") MirrorCallUI.render();
+        if (safe === "elementaryMirror") ElementaryMirrorUI.render();
+        else { try { ElementaryMirrorUI.onLeaveView?.(); } catch(_e) {} }
+        if (safe === "mirrorAssignments") MirrorAssignmentsUI.render();
+        if (safe === "campaignLeads") void CampaignLeadsUI.render();
+        if (safe === "campaignMyLeads") void CampaignMyLeadsUI.render();
+        if (safe === "dailyReport") void DailyReportUI.scheduleNavRender();
+        if (safe === "myTeam") void MyTeamUI.render();
+        if (safe !== "settings" || this._settingsRubric !== "activityLog") AgentActivityLogUI.stopRealtime();
+        try { ProcessesUI.syncRealtimeForView?.(); } catch(_e) {}
+        try { ListRecordRealtime.syncForView?.(); } catch(_e) {}
+      };
+
+      // syncRender: מוצא מילוט לקוראים שחייבים את ה-DOM מוכן מיד באותו task.
+      if(options.syncRender === true || typeof requestAnimationFrame !== "function"){
+        runViewRender();
+        return;
+      }
+      // rAF כפול — הראשון רץ לפני ה-paint, השני אחריו.
+      requestAnimationFrame(() => requestAnimationFrame(runViewRender));
     },
 
 
@@ -59557,7 +59615,13 @@ const ClalRiskLifePdf = {
     applyLoadResult(result, statusLabel = 'מחובר', options = {}){
       if(!result?.ok || !result.payload) return result;
       if(result.source === "server") this._sessionFullDataLoadDone = true;
-      this.applyStateSnapshot(result.payload, options);
+      // GI-PERF 2026-07-31 (שלב ה'): loadSheets כבר החזיר payload מנורמל.
+      // בלי זה syncNow הרקעי היה מנרמל את כל הרשומות שוב בכל סבב סנכרון —
+      // task ארוך שחוסם קלט בדיוק כשהמשתמש מנסה לעבוד.
+      const applyOptions = (result.normalized === true && options.skipNormalize !== false)
+        ? { ...options, skipNormalize: true }
+        : options;
+      this.applyStateSnapshot(result.payload, applyOptions);
       try { DashboardUI.invalidateMetricsCache?.(); } catch(_e) {}
       if(!result.stale){
         this._lastServerAt = safeTrim(result.at || result.payload?.meta?.updatedAt) || "";
