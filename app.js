@@ -155,6 +155,51 @@
         this.measure(name, name);
         throw err;
       }
+    },
+    /* GI-PERF 2026-07-31 (שלב ו'): מדידת קטעים א-סינכרוניים.
+       שים לב שהמשך הזמן כאן הוא זמן קיר (wall clock) — כולל המתנה לרשת
+       ו-yields — ולא זמן חסימה של החוט הראשי. */
+    async runAsync(name, fn){
+      this.mark(name);
+      try {
+        return await fn();
+      } finally {
+        this.mark(name + ":end");
+        this.measure(name, name);
+      }
+    },
+    /** דוח מסכם: כל המדידות שנאספו, מקובצות לפי שם. */
+    report(){
+      try {
+        const rows = performance.getEntriesByType("measure")
+          .filter((e) => String(e.name).startsWith("gi:"));
+        const byName = new Map();
+        rows.forEach((e) => {
+          const key = e.name.slice(3);
+          const cur = byName.get(key) || { name: key, calls: 0, total: 0, max: 0 };
+          cur.calls += 1;
+          cur.total += e.duration;
+          if(e.duration > cur.max) cur.max = e.duration;
+          byName.set(key, cur);
+        });
+        const out = Array.from(byName.values())
+          .map((r) => ({
+            "מדידה": r.name,
+            "קריאות": r.calls,
+            'סה"כ ms': Math.round(r.total),
+            "ממוצע ms": Math.round(r.total / r.calls),
+            "מקסימום ms": Math.round(r.max)
+          }))
+          .sort((a, b) => b['סה"כ ms'] - a['סה"כ ms']);
+        if(console.table) console.table(out);
+        return out;
+      } catch(err){
+        console.warn("giPerfReport failed:", err);
+        return [];
+      }
+    },
+    reset(){
+      try { performance.clearMeasures(); performance.clearMarks(); } catch(_e) {}
     }
   };
   const safeTrim = (v) => String(v ?? "").trim();
@@ -1626,6 +1671,10 @@
      את החוט הראשי ביניהם. מיועדת למסלול הטעינה מהשרת, שם המערך גדול והחסימה
      היא זו שמקפיאה את המסך. התוצאה זהה ל-normalizeState(s). */
   async function normalizeStateChunked(s){
+    return GiPerf.runAsync("normalizeStateChunked", () => _normalizeStateChunkedImpl(s));
+  }
+
+  async function _normalizeStateChunkedImpl(s){
     const src = (s && typeof s === "object") ? s : {};
     // 200 ולא LOAD_SHEETS_MAP_CHUNK_SIZE (24): perfYield נשען על requestIdleCallback
     // עם timeout של 32ms, כך שנתח קטן מדי מוסיף עשרות סבבי המתנה ומאט יותר
@@ -1786,6 +1835,10 @@
   }
 
   function refreshStateShadows(options = {}){
+    return GiPerf.run("refreshStateShadows", () => _refreshStateShadowsImpl(options));
+  }
+
+  function _refreshStateShadowsImpl(options = {}){
     if(options.skipNormalize !== true){
       State.data = normalizeState(State.data);
     }
@@ -12389,9 +12442,7 @@ UsersGateUI.init();
       const navToken = (Number(this._navToken) || 0) + 1;
       this._navToken = navToken;
 
-      const runViewRender = () => {
-        if(this._navToken !== navToken) return;
-
+      const renderViewBody = () => {
         if (safe === "settings") this.renderSettingsView();
         if (safe === "dashboard"){
           // Only force "pending" when entering dashboard from another view (or explicit focus).
@@ -12435,6 +12486,12 @@ UsersGateUI.init();
         if (safe !== "settings" || this._settingsRubric !== "activityLog") AgentActivityLogUI.stopRealtime();
         try { ProcessesUI.syncRealtimeForView?.(); } catch(_e) {}
         try { ListRecordRealtime.syncForView?.(); } catch(_e) {}
+      };
+
+      const runViewRender = () => {
+        if(this._navToken !== navToken) return;
+        // המדידה הזו היא זמן חסימה אמיתי של החוט הראשי — מה שהמשתמש חווה כתקיעה.
+        GiPerf.run("view:" + safe, renderViewBody);
       };
 
       // syncRender: מוצא מילוט לקוראים שחייבים את ה-DOM מוכן מיד באותו task.
@@ -16767,6 +16824,11 @@ UsersGateUI.init();
   };
   try{
     if(typeof globalThis !== "undefined") globalThis.__GI_CustomersUI = CustomersUI;
+    // GI-PERF 2026-07-31 (שלב ו'): giPerfReport() בקונסול מדפיס טבלת מדידות אמיתית.
+    if(typeof globalThis !== "undefined"){
+      globalThis.giPerfReport = () => GiPerf.report();
+      globalThis.giPerfReset = () => GiPerf.reset();
+    }
   }catch(_e){}
 
   function getCustomerAdminPinCandidates(){
@@ -59538,6 +59600,10 @@ const ClalRiskLifePdf = {
     _warmViewAfterLogin: false,
 
     applyStateSnapshot(payload, options = {}){
+      return GiPerf.run("applyStateSnapshot", () => this._applyStateSnapshotImpl(payload, options));
+    },
+
+    _applyStateSnapshotImpl(payload, options = {}){
       let state = options.skipNormalize === true
         ? (payload && typeof payload === "object" ? payload : defaultState())
         : normalizeState(payload || defaultState());
@@ -62765,6 +62831,17 @@ const CampaignLeadsStore = {
       return this.customerFieldsInDb;
     },
 
+    /* GI-PERF 2026-07-31 (שלב ו'): מזין את הרשימה מהמטמון המקומי כדי שהמסך
+       יוכל להיצבע לפני שהרשת עונה. אותו מטמון כבר שימש כ-mergeBase בתוך
+       _fetchAllImpl — רק אף אחד לא צייר ממנו. */
+    hydrateFromCacheIfEmpty(){
+      if(Array.isArray(this.leads) && this.leads.length) return false;
+      const cached = this._loadInboxCache();
+      if(!cached.length) return false;
+      this.leads = cached.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+      return true;
+    },
+
     async fetchAll(options = {}){
       const scope = this.resolveFetchScope(options);
       if(this._fetchAllPromise && this._fetchAllScope === scope) return this._fetchAllPromise;
@@ -62779,6 +62856,10 @@ const CampaignLeadsStore = {
     },
 
     async _fetchAllImpl(scope){
+      return GiPerf.runAsync("campaignLeads:fetchAll", () => this.__fetchAllImpl(scope));
+    },
+
+    async __fetchAllImpl(scope){
       this.lastError = "";
       await this.probeCustomerFieldsInDb();
       const res = await Storage.loadCampaignLeadRows(scope, "*");
@@ -66776,11 +66857,27 @@ const CampaignLeadsStore = {
       this.showPanel("form");
       this.fillCampaignSelect();
       this.fillAgentSelect();
-      await this.refresh(false, { retries: 4 });
+
+      /* GI-PERF 2026-07-31 (שלב ו'): קודם היה כאן
+             await this.refresh(false, { retries: 4 });
+         לפני renderList. כלומר המסך נשאר ריק לאורך כל שרשרת הרשת:
+         loadCampaignLeadRows שולף select("*") בעמודים של 1000 עד 25,000 שורות,
+         בקשות סדרתיות, ומעליו עד 4 ניסיונות עם המתנה של 700/1400/2100ms.
+         במקרה הגרוע המשתמש בוהה במסך ריק עשרות שניות. זה מה שנראה כתקיעה.
+         עכשיו: צובעים מהמטמון, הטופס שמיש מיד, והרענון רץ ברקע. */
+      try { CampaignLeadsStore.hydrateFromCacheIfEmpty(); } catch(_e) {}
+      try { this.renderList(); } catch(_e) {}
       if(!this.selectedId) this.beginNewLead();
       this._renderAgentSummary();
       this.scheduleMidnightReset();
       this.startPoll();
+
+      void this.refresh(false, { retries: 4 })
+        .then(() => {
+          if(LiveRefresh?.getCurrentView?.() !== "campaignLeads") return;
+          try { this._renderAgentSummary(); } catch(_e) {}
+        })
+        .catch(() => {});
     },
 
     startPoll(){
