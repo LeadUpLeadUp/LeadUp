@@ -66928,8 +66928,8 @@ const CampaignLeadsStore = {
       if(agentFilterEl) agentFilterEl.style.display = "";
 
       const prev = safeTrim(this.agentFilter);
-      // אם הנציג שנבחר כבר לא קיים בתקופה — מאפסים
-      if(prev && !names.includes(prev)) this.agentFilter = "";
+      // מאפסים רק נציג ספציפי שנעלם מהתקופה — לא את בחירת "הכל"
+      if(prev && prev !== "__ALL__" && !names.includes(prev)) this.agentFilter = "";
 
       const cur = safeTrim(this.agentFilter);
       agentSelectEl.innerHTML =
@@ -66938,6 +66938,8 @@ const CampaignLeadsStore = {
         names.map((n) =>
           `<option value="${escapeHtml(n)}"${n === cur ? " selected" : ""}>${escapeHtml(n)}</option>`
         ).join("");
+      // שומרים את הערך ב-DOM אחרי rebuild (חשוב ל-__ALL__)
+      agentSelectEl.value = cur || "";
     },
 
     _isAgentFilterActive(){
@@ -67015,22 +67017,19 @@ const CampaignLeadsStore = {
         this.renderList();
       });
 
-      // Month filter
+      // Month filter — לא מאפסים בחירת נציג (כולל "הכל")
       if(this.els.dateFilter) on(this.els.dateFilter, "change", (e) => {
         this.monthFilter = safeTrim(e.target.value);
-        this.agentFilter = "";
         this.renderList();
       });
       if(this.els.btnDateToday) on(this.els.btnDateToday, "click", () => {
         this.monthFilter = "";
         if(this.els.dateFilter) this.els.dateFilter.value = this._currentMonthIL();
-        this.agentFilter = "";
         this.renderList();
       });
       if(this.els.btnDateAll) on(this.els.btnDateAll, "click", () => {
         this.monthFilter = "ALL";
         if(this.els.dateFilter) this.els.dateFilter.value = "";
-        this.agentFilter = "";
         this.renderList();
       });
 
