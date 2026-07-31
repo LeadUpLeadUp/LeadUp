@@ -5,11 +5,11 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>GEMEL INVEST - CRM</title>
-<meta content="#f6f8fc" name="theme-color"/>
+<meta content="#f8fafc" name="theme-color"/>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<link href="./app.css?v=20260731-track-agent-v2" rel="stylesheet"/>
-<link href="./theme.css?v=20260731-track-agent-v2" rel="stylesheet"/>
+<link href="./app.css?v=20260731-login-white-v1" rel="stylesheet"/>
+<link href="./theme.css?v=20260731-login-white-v1" rel="stylesheet"/>
 
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
@@ -744,55 +744,53 @@
 <div class="goldBoard__body" id="goldBoardBody"></div>
 </div>
 
-<div id="campaignLeadsTrackingPanel" style="display:none">
-<div class="card__head">
-<div>
-<div class="card__title">דו"ח מעקב סגירות</div>
-<div class="card__hint">בחר נציג — סינון וחיפוש לפי סטטוס</div>
+<div id="campaignLeadsTrackingPanel" class="lcTrackScreen" hidden>
+<div class="lcTrackScreen__head">
+  <div class="lcTrackScreen__title">דו"ח מעקב סגירות</div>
+  <div class="lcTrackScreen__actions">
+    <div class="lcCampaign__datePicker" id="clTrackDatePickerWrap">
+      <input class="lcCampaign__datePickerInput lcTrackScreen__month" id="trackingDateFilter" type="month" dir="ltr" aria-label="בחירת חודש"/>
+      <button class="btn lcTrackScreen__btn lcTrackScreen__btn--primary" id="btnTrackingDateToday" type="button">חודש נוכחי</button>
+      <button class="btn lcTrackScreen__btn" id="btnTrackingDateAll" type="button">כל הזמנים</button>
+    </div>
+    <button class="btn lcTrackScreen__btn lcTrackScreen__btn--accent" id="btnCampaignShowFormFromTracking" type="button">
+      <span aria-hidden="true">+</span> הקמת ליד חדש
+    </button>
+    <button class="btn lcTrackScreen__btn" id="btnCampaignShowListFromTracking" type="button">מסך לידים</button>
+    <button class="btn lcTrackScreen__btn" id="btnTrackingRefresh" type="button">רענון</button>
+  </div>
 </div>
-<div class="lcCampaign__headMeta">
-<div class="lcCampaign__datePicker" id="clTrackDatePickerWrap">
-  <label class="lcCampaign__datePickerLabel" for="trackingDateFilter">חודש:</label>
-  <input class="lcCampaign__datePickerInput" id="trackingDateFilter" type="month" dir="ltr"/>
-  <button class="btn lcCampaign__dateTodayBtn" id="btnTrackingDateToday" type="button">חודש נוכחי</button>
-  <button class="btn lcCampaign__dateTodayBtn lcCampaign__dateTodayBtn--all" id="btnTrackingDateAll" type="button">כל הזמנים</button>
+<div class="lcTrackScreen__filters">
+  <div class="lcTracking__agentFilter" id="trackingAgentFilter">
+    <label class="lcTracking__agentFilterLabel" for="trackingAgentSelect">נציג:</label>
+    <select class="input lcTracking__agentSelect" id="trackingAgentSelect" aria-label="בחר נציג">
+      <option value="">— בחר נציג —</option>
+    </select>
+  </div>
+  <div class="lcTracking__filters" id="trackingFilters">
+    <button class="mcSearch__chip is-active" data-track-filter="all" type="button">הכל</button>
+    <button class="mcSearch__chip" data-track-filter="in_progress" type="button">בטיפול</button>
+    <button class="mcSearch__chip" data-track-filter="no_answer" type="button">אין מענה</button>
+    <button class="mcSearch__chip" data-track-filter="agent_appointment" type="button">מינוי סוכן</button>
+    <button class="mcSearch__chip" data-track-filter="closed" type="button">נסגר</button>
+    <button class="mcSearch__chip" data-track-filter="irrelevant" type="button">לא רלוונטי</button>
+  </div>
+  <div class="search lcTracking__search">
+    <input class="search__input" id="trackingSearch" placeholder="חיפוש לפי שם, ת״ז או טלפון" type="text"/>
+  </div>
 </div>
-<button class="btn" id="btnCampaignShowFormFromTracking" type="button">הקמת ליד חדש</button>
-<button class="btn" id="btnCampaignShowListFromTracking" type="button">מסך לידים</button>
-<button class="btn" id="btnTrackingRefresh" type="button">רענון</button>
-</div>
-</div>
-<div class="lcTracking__toolbar">
-<div class="search lcTracking__search">
-<input class="search__input" id="trackingSearch" placeholder="חיפוש לפי שם, תעודת זהות או טלפון" type="text"/>
-</div>
-<div class="lcTracking__filters" id="trackingFilters">
-<button class="mcSearch__chip is-active" data-track-filter="all" type="button">הכל</button>
-<button class="mcSearch__chip" data-track-filter="in_progress" type="button">בטיפול</button>
-<button class="mcSearch__chip" data-track-filter="no_answer" type="button">אין מענה</button>
-<button class="mcSearch__chip" data-track-filter="agent_appointment" type="button">מינוי סוכן</button>
-<button class="mcSearch__chip" data-track-filter="closed" type="button">נסגר</button>
-<button class="mcSearch__chip" data-track-filter="irrelevant" type="button">לא רלוונטי</button>
-</div>
-<!-- AGENT FILTER -->
-<div class="lcTracking__agentFilter" id="trackingAgentFilter">
-  <label class="lcTracking__agentFilterLabel" for="trackingAgentSelect">נציג:</label>
-  <select class="input lcTracking__agentSelect" id="trackingAgentSelect" aria-label="בחר נציג">
-    <option value="">— בחר נציג —</option>
-  </select>
-</div>
-</div>
-<div class="lcTracking__summary" id="trackingSummary"></div>
-<!-- AGENT CARD (shown when agent selected) -->
-<div class="lcTrackAgentCard" id="trackingAgentCard" style="display:none">
+<div class="lcTrackScreen__stats" id="trackingStatsBar" hidden></div>
+<div class="lcTracking__summary" id="trackingSummary" hidden></div>
+<!-- kept for JS hooks; visual replaced by lcTrackScreen__stats -->
+<div class="lcTrackAgentCard" id="trackingAgentCard" hidden style="display:none">
   <div class="lcTrackAgentCard__head">
     <div class="lcTrackAgentCard__name" id="trackingAgentCardName"></div>
     <div class="lcTrackAgentCard__stats" id="trackingAgentCardStats"></div>
   </div>
   <div class="lcTrackAgentCard__pills" id="trackingAgentCardPills"></div>
 </div>
-<div class="tableWrap lcCampaign__tableWrap">
-<table class="table lcCampaignTable">
+<div class="tableWrap lcCampaign__tableWrap lcTrackScreen__table">
+<table class="table lcCampaignTable lcTrackScreen__tableEl">
 <thead>
 <tr>
 <th>שם</th>
@@ -3537,7 +3535,7 @@
   </div>
 </div>
 
-<script src="./app.js?v=20260731-track-agent-v3"></script>
+<script src="./app.js?v=20260731-track-mockup-v2"></script>
 
 
 <div id="giPwaInstallBanner" class="giPwaInstallBanner" hidden>

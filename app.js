@@ -66319,7 +66319,15 @@ const CampaignLeadsStore = {
       this.syncGoldButtons();
       if(this.els.formPanel) this.els.formPanel.style.display = panel === "form" ? "" : "none";
       if(this.els.listPanel) this.els.listPanel.style.display = panel === "list" ? "" : "none";
-      if(this.els.trackingPanel) this.els.trackingPanel.style.display = panel === "tracking" ? "" : "none";
+      if(this.els.trackingPanel){
+        if(panel === "tracking"){
+          this.els.trackingPanel.hidden = false;
+          this.els.trackingPanel.style.display = "";
+        } else {
+          this.els.trackingPanel.hidden = true;
+          this.els.trackingPanel.style.display = "none";
+        }
+      }
       try { CampaignLeadInsuranceDropdown._close(); } catch(_e) {}
       // GI-GOLD-LEAD
       const goldPanel = document.getElementById("campaignLeadsGoldPanel");
@@ -66957,34 +66965,38 @@ const CampaignLeadsStore = {
     },
 
     _renderAgentCard(agentLeads){
+      // Legacy card kept hidden — stats rendered in slim bar (_renderStatsBar)
       const card = document.getElementById("trackingAgentCard");
-      const nameEl = document.getElementById("trackingAgentCardName");
-      const statsEl = document.getElementById("trackingAgentCardStats");
-      const pillsEl = document.getElementById("trackingAgentCardPills");
-      if(!card) return;
-      const agentName = this._selectedAgentName();
-      if(!agentName || !agentLeads.length){
+      if(card){
         card.style.display = "none";
+        card.hidden = true;
+      }
+    },
+
+    _renderStatsBar(baseLeads, rowsCount, dateLabel){
+      const bar = document.getElementById("trackingStatsBar");
+      if(!bar) return;
+      if(!this._isAgentFilterActive()){
+        bar.hidden = true;
+        bar.innerHTML = "";
         return;
       }
-      const statuses = ["new","in_progress","no_answer","agent_appointment","closed","irrelevant"];
-      const labels = { new:"חדש", in_progress:"בטיפול", no_answer:"אין מענה", agent_appointment:"מינוי סוכן", closed:"נסגר", irrelevant:"לא רלוונטי" };
-      const tones = { new:"new", in_progress:"progress", no_answer:"noanswer", agent_appointment:"appt", closed:"closed", irrelevant:"irr" };
-      const counts = {};
-      statuses.forEach((s) => { counts[s] = agentLeads.filter((l) => l.status === s).length; });
-      if(nameEl) nameEl.textContent = agentName;
-      if(statsEl) statsEl.textContent = `סה"כ ${agentLeads.length} לידים`;
-      if(pillsEl){
-        pillsEl.innerHTML = statuses
-          .filter((s) => counts[s] > 0)
-          .map((s) =>
-            `<div class="lcTrackAgentCard__pill lcTrackAgentCard__pill--${tones[s]}">
-              <span class="lcTrackAgentCard__pillCount">${counts[s]}</span>
-              <span class="lcTrackAgentCard__pillLabel">${labels[s]}</span>
-            </div>`
-          ).join("");
-      }
-      card.style.display = "";
+      const statuses = [
+        { key:"new", label:"חדש", tone:"new" },
+        { key:"in_progress", label:"בטיפול", tone:"progress" },
+        { key:"no_answer", label:"אין מענה", tone:"noanswer" },
+        { key:"agent_appointment", label:"מינוי סוכן", tone:"appt" },
+        { key:"closed", label:"נסגר", tone:"closed" },
+        { key:"irrelevant", label:"לא רלוונטי", tone:"irr" }
+      ];
+      const pills = statuses.map((s) => {
+        const n = (baseLeads || []).filter((l) => l.status === s.key).length;
+        return `<span class="lcTrackStatPill lcTrackStatPill--${s.tone}"><strong>${n}</strong> ${s.label}</span>`;
+      }).join("");
+      bar.innerHTML =
+        `<span class="lcTrackScreen__statsTotal">${escapeHtml(dateLabel)} · סה״כ <strong>${(baseLeads || []).length}</strong> לידים · מוצגים: <strong>${rowsCount}</strong></span>` +
+        `<span class="lcTrackScreen__statsPills">${pills}</span>`;
+      bar.hidden = false;
     },
 
     init(){
@@ -67097,24 +67109,16 @@ const CampaignLeadsStore = {
         : [];
       const dateLabel = formatCampaignLeadMonthLabel(monthStr);
       if(this.els.summary){
-        if(!this._isAgentFilterActive()){
-          this.els.summary.textContent = `${dateLabel} | בחר נציג מהרשימה כדי להציג לידים`;
-        } else {
-          const closedCount = base.filter((l) => l.status === "closed").length;
-          const irrelevantCount = base.filter((l) => l.status === "irrelevant").length;
-          const inProgressCount = base.filter((l) => l.status === "in_progress").length;
-          const noAnswerCount = base.filter((l) => l.status === "no_answer").length;
-          const agentApptCount = base.filter((l) => l.status === "agent_appointment").length;
-          const newCount = base.filter((l) => l.status === "new").length;
-          this.els.summary.textContent = `${dateLabel} | סה"כ ${base.length} לידים | חדשים: ${newCount} | בטיפול: ${inProgressCount} | אין מענה: ${noAnswerCount} | מינוי סוכן: ${agentApptCount} | נסגרו: ${closedCount} | לא רלוונטי: ${irrelevantCount} | מוצגים: ${rows.length}`;
-        }
+        this.els.summary.hidden = true;
+        this.els.summary.textContent = "";
       }
 
       // Build agent select from date-scoped leads
       this._buildAgentChips(monthScopedLeads);
 
-      // Agent card
+      // Agent card (hidden) + slim stats bar
       this._renderAgentCard(agentScopedLeads);
+      this._renderStatsBar(base, rows.length, dateLabel);
 
       if(!this._isAgentFilterActive()){
         this.els.tbody.innerHTML = '<tr><td colspan="11" class="muted">בחר נציג כדי להציג את הלידים</td></tr>';

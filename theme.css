@@ -1214,35 +1214,19 @@ input:not(#\9):not(#\9)::placeholder, textarea:not(#\9):not(#\9)::placeholder{ c
 
 /* =====================================================================
    17. LOGIN SCREEN
+   BUILD: 20260731-login-white-v1
+   רקע לבן / אוף־ווייט + כרטיס לבן עם נגיעות כחול עדינות
    ===================================================================== */
 
-body.lcAuthLock:not(#\9):not(#\9){ background: var(--gi-navy) !important; }
-
-.lcLogin__card:not(#\9):not(#\9){
-  background: var(--gi-surface) !important;
-  border: 1px solid var(--gi-border) !important;
-  border-radius: var(--gi-r-card) !important;
-  box-shadow: var(--gi-sh-lg) !important;
-  padding: var(--gi-s7) var(--gi-s6) var(--gi-s6) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  transform: none !important;
-}
-
-.lcLogin__card:hover:not(#\9):not(#\9){
-  transform: none !important;
-  box-shadow: var(--gi-sh-lg) !important;
-}
-
-/* The legacy card builds its frosted-glass look from two overlays */
-.lcLogin__card:not(#\9):not(#\9)::before,
-.lcLogin__card:not(#\9):not(#\9)::after{
-  content: none !important;
-  display: none !important;
+body.lcAuthLock:not(#\9):not(#\9){
+  background: #F8FAFC !important;
 }
 
 .lcLogin:not(#\9):not(#\9){
-  background: var(--gi-navy) !important;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(37,99,235,.10), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(56,112,237,.06), transparent 55%),
+    #F8FAFC !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -1251,6 +1235,50 @@ body.lcAuthLock:not(#\9):not(#\9){ background: var(--gi-navy) !important; }
 .lcLogin:not(#\9):not(#\9)::after{
   content: none !important;
   display: none !important;
+}
+
+.lcLogin__card:not(#\9):not(#\9){
+  position: relative !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 1px 2px rgba(15,23,42,.04),
+    0 12px 32px rgba(37,99,235,.08),
+    0 28px 64px rgba(15,23,42,.06) !important;
+  padding: var(--gi-s7) var(--gi-s6) var(--gi-s6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+/* פס כחול דק בראש הכרטיס — נגיעה של מותג בלי רקע כחול מלא */
+.lcLogin__card:not(#\9):not(#\9)::before{
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, #2563EB, #60A5FA 55%, #3870ED) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+
+.lcLogin__card:not(#\9):not(#\9)::after{
+  content: none !important;
+  display: none !important;
+}
+
+.lcLogin__card:hover:not(#\9):not(#\9){
+  transform: none !important;
+  box-shadow:
+    0 1px 2px rgba(15,23,42,.04),
+    0 14px 36px rgba(37,99,235,.10),
+    0 28px 64px rgba(15,23,42,.07) !important;
 }
 
 .lcLogin__brand:not(#\9):not(#\9){
@@ -1304,16 +1332,16 @@ body.lcAuthLock:not(#\9):not(#\9){ background: var(--gi-navy) !important; }
   padding: var(--gi-s1) var(--gi-s3) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
-  color: var(--gi-success) !important;
-  background: var(--gi-success-soft) !important;
-  border: 1px solid rgba(22,163,74,.20) !important;
+  color: #1D4ED8 !important;
+  background: #EFF6FF !important;
+  border: 1px solid #BFDBFE !important;
   border-radius: var(--gi-r-pill) !important;
 }
 
 .lcLogin__secureDot:not(#\9):not(#\9){
   width: 6px !important;
   height: 6px !important;
-  background: var(--gi-success) !important;
+  background: #2563EB !important;
   box-shadow: none !important;
   animation: none !important;
 }
@@ -1336,16 +1364,16 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   gap: var(--gi-s3) !important;
   height: 48px !important;
   padding: 0 var(--gi-s3) !important;
-  border: 1px solid var(--gi-border) !important;
+  border: 1px solid #E5E7EB !important;
   border-radius: var(--gi-r-ctl) !important;
-  background: var(--gi-surface) !important;
+  background: #FFFFFF !important;
   box-shadow: none !important;
   transition: border-color .15s ease, box-shadow .15s ease !important;
 }
 
 .lcLogin__field:focus-within:not(#\9):not(#\9){
-  border-color: var(--gi-primary) !important;
-  box-shadow: var(--focus) !important;
+  border-color: #2563EB !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.16) !important;
 }
 
 .lcLogin__fieldIcon:not(#\9):not(#\9){
@@ -1366,7 +1394,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
 
 .lcLogin__fieldIconSvg:not(#\9):not(#\9){ width: 18px !important; height: 18px !important; }
 
-.lcLogin__field:focus-within .lcLogin__fieldIcon:not(#\9):not(#\9){ color: var(--gi-primary) !important; }
+.lcLogin__field:focus-within .lcLogin__fieldIcon:not(#\9):not(#\9){ color: #2563EB !important; }
 
 .lcLogin__field > .lcLogin__input:not(#\9):not(#\9){
   flex: 1 1 auto !important;
@@ -1405,19 +1433,19 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   margin-top: var(--gi-s2) !important;
   padding: 0 var(--gi-s4) !important;
   border-radius: var(--gi-r-ctl) !important;
-  background: var(--gi-primary) !important;
-  border: 1px solid var(--gi-primary) !important;
+  background: #2563EB !important;
+  border: 1px solid #2563EB !important;
   color: #FFFFFF !important;
   font-family: var(--gi-font) !important;
   font-size: 15px !important;
   font-weight: 600 !important;
-  box-shadow: none !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,.22) !important;
   transform: none !important;
 }
 
 .lcLogin__btn:hover:not(#\9):not(#\9){
-  background: var(--gi-primary-hover) !important;
-  border-color: var(--gi-primary-hover) !important;
+  background: #1D4ED8 !important;
+  border-color: #1D4ED8 !important;
   transform: none !important;
 }
 
@@ -1440,7 +1468,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   background: none !important;
   border: 0 !important;
   box-shadow: none !important;
-  color: var(--gi-primary) !important;
+  color: #2563EB !important;
   font-family: var(--gi-font) !important;
   font-size: 13px !important;
   font-weight: 500 !important;
@@ -4459,19 +4487,25 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
 
 
 /* =====================================================================
-   26. CAMPAIGN TRACKING — גובה טבלה + בורר נציג
-   BUILD: 20260731-track-agent-v1
-
-   העיצוב החדש (טופ־בר גבוה יותר + padding ב-.content) צמצם את אזור
-   הטבלה. כאן מחזירים שרשרת flex מלאה כך שהטבלה תופסת את כל הגובה
-   הפנוי מתחת לסרגלי הסינון.
+   26. CAMPAIGN TRACKING — מוקאפ exact (no topbar, table-first)
+   BUILD: 20260731-track-mockup-v1
    ===================================================================== */
+
+body.view-campaignLeads-active .topbar:not(#\9):not(#\9){
+  display: none !important;
+}
+
+body.view-campaignLeads-active .main:not(#\9):not(#\9){
+  padding: 0 !important;
+}
 
 body.view-campaignLeads-active .content:not(#\9):not(#\9){
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
+  padding: 12px 16px 12px !important;
+  background: var(--gi-bg) !important;
 }
 
 #view-campaignLeads.is-visible:not(#\9):not(#\9){
@@ -4479,45 +4513,304 @@ body.view-campaignLeads-active .content:not(#\9):not(#\9){
   min-height: 0 !important;
   height: auto !important;
   max-height: 100% !important;
-}
-
-#view-campaignLeads > .lcCampaignCard:not(#\9):not(#\9){
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-}
-
-#campaignLeadsTrackingPanel:not(#\9):not(#\9){
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
 }
 
-#campaignLeadsTrackingPanel .lcCampaign__tableWrap:not(#\9):not(#\9),
-#campaignLeadsTrackingPanel .tableWrap:not(#\9):not(#\9){
+#view-campaignLeads > .lcCampaignCard:not(#\9):not(#\9){
   flex: 1 1 auto !important;
-  min-height: 240px !important;
-  max-height: none !important;
-  overflow: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#campaignLeadsTrackingPanel.lcTrackScreen:not(#\9):not(#\9),
+#campaignLeadsTrackingPanel:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  gap: 10px !important;
+  background: transparent !important;
+}
+#campaignLeadsTrackingPanel:not([hidden]):not(#\9):not(#\9){
+  display: flex !important;
+}
+#campaignLeadsTrackingPanel[hidden]:not(#\9):not(#\9){
+  display: none !important;
+}
+
+.lcTrackScreen__head:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  flex-shrink: 0 !important;
+  min-height: 44px;
+}
+
+.lcTrackScreen__title:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: var(--gi-text) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+.lcTrackScreen__actions:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.lcTrackScreen__actions .lcCampaign__datePicker:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+.lcTrackScreen__month:not(#\9):not(#\9){
+  height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--gi-border) !important;
+  background: #fff !important;
+  font-size: 13px !important;
+}
+
+.lcTrackScreen__btn:not(#\9):not(#\9){
+  height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--gi-border) !important;
+  background: #fff !important;
+  color: var(--gi-text-2) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+}
+
+.lcTrackScreen__btn--primary:not(#\9):not(#\9),
+.lcTrackScreen__btn--accent:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #fff !important;
+}
+
+.lcTrackScreen__btn--accent:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.lcTrackScreen__filters:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  flex-shrink: 0 !important;
+  padding: 8px 10px !important;
+  background: #fff !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: 12px !important;
+}
+
+.lcTrackScreen__filters .lcTracking__agentFilter:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+}
+
+.lcTrackScreen__filters .lcTracking__filters:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex: 1 1 auto !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+}
+
+.lcTrackScreen__filters .mcSearch__chip:not(#\9):not(#\9){
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border: 1px solid var(--gi-border) !important;
+  background: #fff !important;
+  color: var(--gi-text-2) !important;
+}
+
+.lcTrackScreen__filters .mcSearch__chip.is-active:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+  color: #fff !important;
+}
+
+.lcTrackScreen__filters .lcTracking__search:not(#\9):not(#\9){
+  flex: 0 1 260px !important;
+  min-width: 180px !important;
+  margin: 0 !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--gi-border) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.lcTrackScreen__filters .lcTracking__search .search__input:not(#\9):not(#\9){
+  padding: 0 !important;
+  font-size: 13px !important;
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
 }
 
 .lcTracking__agentSelect:not(#\9):not(#\9){
-  min-width: 200px;
-  max-width: 280px;
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 10px;
-  background: var(--gi-surface);
-  border: 1px solid var(--gi-border);
-  color: var(--gi-text);
-  font-family: var(--gi-font);
-  font-size: 13px;
+  min-width: 180px !important;
+  max-width: 240px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  border: 1px solid var(--gi-border) !important;
+  color: var(--gi-text) !important;
+  font-size: 13px !important;
 }
 
-.lcTracking__agentFilter:not(#\9):not(#\9){
-  width: auto;
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
+.lcTrackScreen__stats:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  flex-shrink: 0 !important;
+  min-height: 32px;
+  padding: 0 2px !important;
+}
+
+.lcTrackScreen__stats[hidden]:not(#\9):not(#\9){ display: none !important; }
+
+.lcTrackScreen__statsTotal:not(#\9):not(#\9){
+  font-size: 12.5px !important;
+  color: var(--gi-text-3) !important;
+  white-space: nowrap !important;
+}
+
+.lcTrackScreen__statsPills:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+.lcTrackStatPill:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border: 1px solid transparent !important;
+  white-space: nowrap !important;
+}
+
+.lcTrackStatPill strong:not(#\9):not(#\9){ font-weight: 800 !important; }
+
+.lcTrackStatPill--new:not(#\9):not(#\9){ background:#EFF6FF; color:#1D4ED8; border-color:#BFDBFE; }
+.lcTrackStatPill--progress:not(#\9):not(#\9){ background:#FFFBEB; color:#92400E; border-color:#FDE68A; }
+.lcTrackStatPill--noanswer:not(#\9):not(#\9){ background:#F8FAFC; color:#64748B; border-color:#E2E8F0; }
+.lcTrackStatPill--appt:not(#\9):not(#\9){ background:#F5F3FF; color:#5B21B6; border-color:#DDD6FE; }
+.lcTrackStatPill--closed:not(#\9):not(#\9){ background:#ECFDF5; color:#166534; border-color:#A7F3D0; }
+.lcTrackStatPill--irr:not(#\9):not(#\9){ background:#FEF2F2; color:#991B1B; border-color:#FECACA; }
+
+#campaignLeadsTrackingPanel .lcCampaign__tableWrap:not(#\9):not(#\9),
+#campaignLeadsTrackingPanel .tableWrap:not(#\9):not(#\9),
+.lcTrackScreen__table:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: auto !important;
+  background: #fff !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+}
+
+.lcTrackScreen__tableEl:not(#\9):not(#\9){
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  table-layout: fixed !important;
+}
+
+.lcTrackScreen__tableEl thead th:not(#\9):not(#\9){
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+  background: #F8FAFC !important;
+  padding: 10px 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text-3) !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+  white-space: nowrap !important;
+}
+
+.lcTrackScreen__tableEl tbody td:not(#\9):not(#\9){
+  padding: 9px 8px !important;
+  font-size: 13px !important;
+  color: var(--gi-text) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  background: #fff !important;
+  vertical-align: middle !important;
+}
+
+.lcTrackScreen__tableEl tbody tr:hover td:not(#\9):not(#\9){
+  background: #F8FAFC !important;
+}
+
+.lcTrackScreen .lcTrackRow td:not(#\9):not(#\9){
+  background: #fff !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+  border-right: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.lcTrackScreen .lcTrackBadge:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#campaignLeadsTrackingPanel .lcTrackAgentCard:not(#\9):not(#\9),
+#trackingSummary:not(#\9):not(#\9){
+  display: none !important;
 }

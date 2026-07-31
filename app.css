@@ -39053,7 +39053,8 @@ body.view-settings-active.lcSettingsRubric-systemUpdates .main{ overflow-y: auto
   z-index:1;
   flex-shrink:0;
 }
-#campaignLeadsTrackingPanel .lcCampaign__tableWrap{
+#campaignLeadsTrackingPanel .lcCampaign__tableWrap,
+#campaignLeadsTrackingPanel .lcTrackScreen__table{
   flex:1 1 auto;
   min-height:0;
   max-height:none !important;
