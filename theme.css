@@ -4456,3 +4456,68 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   .giUserMenu__chev:not(#\9):not(#\9){ display: none; }
   .topbar__actions:not(#\9):not(#\9){ gap: var(--gi-s2) !important; }
 }
+
+
+/* =====================================================================
+   26. CAMPAIGN TRACKING — גובה טבלה + בורר נציג
+   BUILD: 20260731-track-agent-v1
+
+   העיצוב החדש (טופ־בר גבוה יותר + padding ב-.content) צמצם את אזור
+   הטבלה. כאן מחזירים שרשרת flex מלאה כך שהטבלה תופסת את כל הגובה
+   הפנוי מתחת לסרגלי הסינון.
+   ===================================================================== */
+
+body.view-campaignLeads-active .content:not(#\9):not(#\9){
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+#view-campaignLeads.is-visible:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+}
+
+#view-campaignLeads > .lcCampaignCard:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+#campaignLeadsTrackingPanel:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+#campaignLeadsTrackingPanel .lcCampaign__tableWrap:not(#\9):not(#\9),
+#campaignLeadsTrackingPanel .tableWrap:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 240px !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+.lcTracking__agentSelect:not(#\9):not(#\9){
+  min-width: 200px;
+  max-width: 280px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: var(--gi-surface);
+  border: 1px solid var(--gi-border);
+  color: var(--gi-text);
+  font-family: var(--gi-font);
+  font-size: 13px;
+}
+
+.lcTracking__agentFilter:not(#\9):not(#\9){
+  width: auto;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}

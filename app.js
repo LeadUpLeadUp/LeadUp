@@ -66912,28 +66912,46 @@ const CampaignLeadsStore = {
     },
 
     _buildAgentChips(monthScopedLeads){
-      const agentChipsEl = document.getElementById("trackingAgentChips");
+      const agentSelectEl = document.getElementById("trackingAgentSelect");
       const agentFilterEl = document.getElementById("trackingAgentFilter");
-      if(!agentChipsEl) return;
+      if(!agentSelectEl) return;
       const agents = Array.isArray(State.data?.agents) ? State.data.agents : [];
+      // רק נציגים שמופיעים בפועל על לידים בתקופה — לא כל משתמשי המערכת
       const namesSet = new Set();
-      monthScopedLeads.forEach((l) => {
+      (monthScopedLeads || []).forEach((l) => {
+        if(isGoldMirrorCampaignLead(l)) return;
         campaignLeadAllAgentNames(l, agents).forEach((n) => {
           if(n && n !== "—") namesSet.add(n);
         });
       });
       const names = Array.from(namesSet).sort((a,b) => a.localeCompare(b, "he"));
-      if(!names.length){
-        if(agentFilterEl) agentFilterEl.style.display = "none";
-        return;
-      }
       if(agentFilterEl) agentFilterEl.style.display = "";
-      const cur = this.agentFilter;
-      agentChipsEl.innerHTML =
-        `<button class="mcSearch__chip${!cur ? " is-active" : ""}" data-track-agent="">הכל</button>` +
+
+      const prev = safeTrim(this.agentFilter);
+      // אם הנציג שנבחר כבר לא קיים בתקופה — מאפסים
+      if(prev && !names.includes(prev)) this.agentFilter = "";
+
+      const cur = safeTrim(this.agentFilter);
+      agentSelectEl.innerHTML =
+        `<option value="">— בחר נציג —</option>` +
+        `<option value="__ALL__"${cur === "__ALL__" ? " selected" : ""}>הכל</option>` +
         names.map((n) =>
-          `<button class="mcSearch__chip${n === cur ? " is-active" : ""}" data-track-agent="${escapeHtml(n)}">${escapeHtml(n)}</button>`
+          `<option value="${escapeHtml(n)}"${n === cur ? " selected" : ""}>${escapeHtml(n)}</option>`
         ).join("");
+    },
+
+    _isAgentFilterActive(){
+      return !!safeTrim(this.agentFilter);
+    },
+
+    _wantsAllAgents(){
+      return safeTrim(this.agentFilter) === "__ALL__";
+    },
+
+    _selectedAgentName(){
+      const v = safeTrim(this.agentFilter);
+      if(!v || v === "__ALL__") return "";
+      return v;
     },
 
     _renderAgentCard(agentLeads){
@@ -66942,7 +66960,8 @@ const CampaignLeadsStore = {
       const statsEl = document.getElementById("trackingAgentCardStats");
       const pillsEl = document.getElementById("trackingAgentCardPills");
       if(!card) return;
-      if(!this.agentFilter || !agentLeads.length){
+      const agentName = this._selectedAgentName();
+      if(!agentName || !agentLeads.length){
         card.style.display = "none";
         return;
       }
@@ -66951,7 +66970,7 @@ const CampaignLeadsStore = {
       const tones = { new:"new", in_progress:"progress", no_answer:"noanswer", agent_appointment:"appt", closed:"closed", irrelevant:"irr" };
       const counts = {};
       statuses.forEach((s) => { counts[s] = agentLeads.filter((l) => l.status === s).length; });
-      if(nameEl) nameEl.textContent = this.agentFilter;
+      if(nameEl) nameEl.textContent = agentName;
       if(statsEl) statsEl.textContent = `סה"כ ${agentLeads.length} לידים`;
       if(pillsEl){
         pillsEl.innerHTML = statuses
@@ -66989,13 +67008,10 @@ const CampaignLeadsStore = {
         this.renderList();
       });
 
-      // Agent chips — event delegation on the chips container
-      const agentChipsEl = document.getElementById("trackingAgentChips");
-      if(agentChipsEl) on(agentChipsEl, "click", (ev) => {
-        const chip = ev.target.closest("[data-track-agent]");
-        if(!chip) return;
-        this.agentFilter = chip.getAttribute("data-track-agent") || "";
-        agentChipsEl.querySelectorAll(".mcSearch__chip").forEach((c) => c.classList.toggle("is-active", c === chip));
+      // Agent select — בחירת נציג במקום צ'יפים של כל המערכת
+      const agentSelectEl = document.getElementById("trackingAgentSelect");
+      if(agentSelectEl) on(agentSelectEl, "change", () => {
+        this.agentFilter = safeTrim(agentSelectEl.value);
         this.renderList();
       });
 
@@ -67039,9 +67055,12 @@ const CampaignLeadsStore = {
       const monthStr = this.monthFilter === "ALL" ? "ALL" : this._activeMonthIL();
       let list = this._leadsForMonth(CampaignLeadsStore.leads || [], monthStr)
         .filter((l) => !isGoldMirrorCampaignLead(l));
+      // בלי בחירת נציג — לא מציגים את כל רשומות המערכת
+      if(!this._isAgentFilterActive()) return [];
       const agents = Array.isArray(State.data?.agents) ? State.data.agents : [];
-      if(this.agentFilter){
-        list = list.filter((l) => campaignLeadMatchesAgentFilter(l, this.agentFilter, agents));
+      const agentName = this._selectedAgentName();
+      if(agentName){
+        list = list.filter((l) => campaignLeadMatchesAgentFilter(l, agentName, agents));
       }
       // Step 3: status filter
       if(this.filter === "closed") list = list.filter((l) => l.status === "closed");
@@ -67066,29 +67085,42 @@ const CampaignLeadsStore = {
     renderList(){
       if(!this.els.tbody) return;
       const monthStr = this.monthFilter === "ALL" ? "ALL" : this._activeMonthIL();
-      const monthScopedLeads = this._leadsForMonth(CampaignLeadsStore.leads || [], monthStr);
+      const monthScopedLeads = this._leadsForMonth(CampaignLeadsStore.leads || [], monthStr)
+        .filter((l) => !isGoldMirrorCampaignLead(l));
       const agents = Array.isArray(State.data?.agents) ? State.data.agents : [];
-      const agentScopedLeads = this.agentFilter
-        ? monthScopedLeads.filter((l) => campaignLeadMatchesAgentFilter(l, this.agentFilter, agents))
+      const selectedAgent = this._selectedAgentName();
+      const agentScopedLeads = selectedAgent
+        ? monthScopedLeads.filter((l) => campaignLeadMatchesAgentFilter(l, selectedAgent, agents))
         : [];
       const rows = this.getFilteredLeads();
-      const base = monthScopedLeads;
+      const base = this._isAgentFilterActive()
+        ? (selectedAgent ? agentScopedLeads : monthScopedLeads)
+        : [];
       const dateLabel = formatCampaignLeadMonthLabel(monthStr);
       if(this.els.summary){
-        const closedCount = base.filter((l) => l.status === "closed").length;
-        const irrelevantCount = base.filter((l) => l.status === "irrelevant").length;
-        const inProgressCount = base.filter((l) => l.status === "in_progress").length;
-        const noAnswerCount = base.filter((l) => l.status === "no_answer").length;
-        const agentApptCount = base.filter((l) => l.status === "agent_appointment").length;
-        const newCount = base.filter((l) => l.status === "new").length;
-        this.els.summary.textContent = `${dateLabel} | סה"כ ${base.length} לידים | חדשים: ${newCount} | בטיפול: ${inProgressCount} | אין מענה: ${noAnswerCount} | מינוי סוכן: ${agentApptCount} | נסגרו: ${closedCount} | לא רלוונטי: ${irrelevantCount} | מוצגים: ${rows.length}`;
+        if(!this._isAgentFilterActive()){
+          this.els.summary.textContent = `${dateLabel} | בחר נציג מהרשימה כדי להציג לידים`;
+        } else {
+          const closedCount = base.filter((l) => l.status === "closed").length;
+          const irrelevantCount = base.filter((l) => l.status === "irrelevant").length;
+          const inProgressCount = base.filter((l) => l.status === "in_progress").length;
+          const noAnswerCount = base.filter((l) => l.status === "no_answer").length;
+          const agentApptCount = base.filter((l) => l.status === "agent_appointment").length;
+          const newCount = base.filter((l) => l.status === "new").length;
+          this.els.summary.textContent = `${dateLabel} | סה"כ ${base.length} לידים | חדשים: ${newCount} | בטיפול: ${inProgressCount} | אין מענה: ${noAnswerCount} | מינוי סוכן: ${agentApptCount} | נסגרו: ${closedCount} | לא רלוונטי: ${irrelevantCount} | מוצגים: ${rows.length}`;
+        }
       }
 
-      // Build agent chips from date-scoped leads
+      // Build agent select from date-scoped leads
       this._buildAgentChips(monthScopedLeads);
 
       // Agent card
       this._renderAgentCard(agentScopedLeads);
+
+      if(!this._isAgentFilterActive()){
+        this.els.tbody.innerHTML = '<tr><td colspan="11" class="muted">בחר נציג כדי להציג את הלידים</td></tr>';
+        return;
+      }
 
       if(!rows.length){
         this.els.tbody.innerHTML = '<tr><td colspan="11" class="muted">אין לידים בסינון הנוכחי</td></tr>';
