@@ -48,6 +48,15 @@
   // מנה גדולה יותר עלולה להיתקל שוב באותו קיר.
   const PAYLOAD_HYDRATION_BATCH_SIZE = 40;
   const PAYLOAD_HYDRATION_TIMEOUT_MS = 30000;
+  /* GI-PERF 2026-07-31 (שלב ז'): ריסון הרענון בזמן מילוי ה-payload.
+     קודם onBatch ירה refreshViewsAfterDeferredSessionLoad אחרי כל מנה של 40 —
+     ~26 רינדורים מלאים של המסך הפעיל על 1,035 לקוחות, כל אחד עם
+     invalidateMetricsCache. זה התהליך שהקפיא את המערכת בזמן עבודה.
+     עכשיו: רענון אחד לכל היותר בכל MIN_GAP_MS, דרך המסלול השקט, ורענון
+     מאולץ אחד בסיום. */
+  const PAYLOAD_HYDRATION_REFRESH_MIN_GAP_MS = 1500;
+  // תקרה לדחיות רצופות בגלל אינטראקציה, כדי שלא נדחה לנצח.
+  const PAYLOAD_HYDRATION_REFRESH_MAX_DEFERRALS = 8;
 
   // GI-PERF 2026-07-31 (שלב ד'): עימוד בשליפת טבלאות.
   // קודם: _loadTableRowsUnscoped ו-_fetchTableRowsInColumn עשו select() אחד בלי
@@ -14281,7 +14290,14 @@ UsersGateUI.init();
     },
 
     buildCustomerQuietSig(rec){
+      /* GI-PERF 2026-07-31 (שלב ז'): סמן נוכחות payload.
+         בלעדיו לקוח שה-payload שלו הגיע אך לא הניב סקטורים היה שומר על אותה
+         חתימה, patchCustomerRowQuiet היה מדלג עליו, ועמודת הפרמיה נשארת ריקה.
+         עם הסמן, המסלול השקט קולט כל מילוי payload — וזה מה שמאפשר לוותר
+         על הרינדור המלא בזמן ההידרציה. */
+      const hasPayload = (rec && rec.payload && typeof rec.payload === "object" && Object.keys(rec.payload).length) ? "1" : "0";
       return [
+        hasPayload,
         safeTrim(rec?.fullName),
         safeTrim(rec?.idNumber),
         safeTrim(rec?.phone),
@@ -59907,6 +59923,60 @@ const ClalRiskLifePdf = {
       return next;
     },
 
+    _userIsInteractingNow(){
+      try {
+        if(LiveRefresh?.isUserInteracting?.()) return true;
+        if(HeavySyncGate?.recentlyInteracted?.()) return true;
+      } catch(_e) {}
+      return false;
+    },
+
+    cancelHydrationViewRefresh(){
+      if(this._hydrationRefreshHandle){
+        try { window.clearTimeout(this._hydrationRefreshHandle); } catch(_e) {}
+        this._hydrationRefreshHandle = null;
+      }
+      this._hydrationRefreshDeferrals = 0;
+    },
+
+    /** רענון מרוסן בזמן מילוי payload. force=true לרענון הסופי. */
+    scheduleHydrationViewRefresh(options = {}){
+      const force = options.force === true;
+      if(this._hydrationRefreshHandle){
+        if(!force) return;
+        try { window.clearTimeout(this._hydrationRefreshHandle); } catch(_e) {}
+        this._hydrationRefreshHandle = null;
+      }
+      const since = Date.now() - (Number(this._hydrationRefreshLastAt) || 0);
+      /* delayMs מפורש נדרש למסלול הדחייה בגלל אינטראקציה. בלעדיו החישוב
+         max(0, MIN_GAP - since) מחזיר 0 כשהרענון האחרון ישן, הטיימר נורה מיד,
+         מונה הדחיות נשרף בלולאה הדוקה והדחייה לא מגינה על כלום. */
+      const explicitDelay = Number(options.delayMs);
+      const wait = force
+        ? 0
+        : (Number.isFinite(explicitDelay) && explicitDelay >= 0
+            ? explicitDelay
+            : Math.max(0, PAYLOAD_HYDRATION_REFRESH_MIN_GAP_MS - since));
+      this._hydrationRefreshHandle = window.setTimeout(() => {
+        this._hydrationRefreshHandle = null;
+        if(!Auth?.current){ this._hydrationRefreshDeferrals = 0; return; }
+        // לא דורסים מסך תחת ידיו של המשתמש באמצע הקלדה — נדחה, עד לתקרה.
+        const deferrals = Number(this._hydrationRefreshDeferrals) || 0;
+        if(!force && deferrals < PAYLOAD_HYDRATION_REFRESH_MAX_DEFERRALS && this._userIsInteractingNow()){
+          this._hydrationRefreshDeferrals = deferrals + 1;
+          this.scheduleHydrationViewRefresh({ delayMs: PAYLOAD_HYDRATION_REFRESH_MIN_GAP_MS });
+          return;
+        }
+        this._hydrationRefreshDeferrals = 0;
+        this._hydrationRefreshLastAt = Date.now();
+        GiPerf.run("hydration:viewRefresh", () => {
+          try { DashboardUI.invalidateMetricsCache?.(); } catch(_e) {}
+          // המסלול השקט: מטליא תאים קיימים במקום לבנות את הטבלה מחדש.
+          try { LiveRefresh.renderActiveView(); } catch(_e) {}
+        });
+      }, wait);
+    },
+
     startPayloadHydration(){
       if(this._payloadHydrationStarted) return;
       // GI-FIX 2026-07-31: השער הקודם היה `if(!Storage._lastLoadWasLight) return`,
@@ -59920,13 +59990,15 @@ const ClalRiskLifePdf = {
       void (async () => {
         try {
           UI.renderSyncStatus("טוען פרטי לקוחות ברקע…", "warn");
-          const res = await Storage.hydratePayloads({
+          const res = await GiPerf.runAsync("hydration:total", () => Storage.hydratePayloads({
             onBatch: () => {
-              try { this.refreshViewsAfterDeferredSessionLoad(); } catch(_e) {}
+              // מרוסן: לכל היותר רענון אחד ב-PAYLOAD_HYDRATION_REFRESH_MIN_GAP_MS.
+              try { this.scheduleHydrationViewRefresh(); } catch(_e) {}
             }
-          });
+          }));
           if(res?.filled){
-            try { this.refreshViewsAfterDeferredSessionLoad(); } catch(_e) {}
+            // רענון סופי מאולץ — מבטיח שהמסך תואם למצב הסופי גם אם דחינו בדרך.
+            try { this.scheduleHydrationViewRefresh({ force: true }); } catch(_e) {}
             // רק עכשיו יש payload מלא — שווה לשמור למטמון לפתיחה הבאה.
             try { Storage.scheduleFullIdbCacheSave(State.data); } catch(_e) {}
           }
@@ -59938,6 +60010,8 @@ const ClalRiskLifePdf = {
           }
         } catch(err) {
           try { console.error("PAYLOAD_HYDRATION_FAILED:", err); } catch(_e) {}
+          // גם בכישלון — מה שכן התמלא צריך להופיע על המסך.
+          try { this.scheduleHydrationViewRefresh({ force: true }); } catch(_e) {}
         } finally {
           this._payloadHydrationStarted = false;
         }
