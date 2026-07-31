@@ -39046,15 +39046,7 @@ body.view-settings-active.lcSettingsRubric-systemUpdates .main{ overflow-y: auto
   flex-direction:column;
   overflow:hidden;
   position:relative;
-}
-#campaignLeadsTrackingPanel::before{
-  content:"";
-  position:absolute;
-  inset:-20px;
-  background:url('./tracking-bg.png') center/cover no-repeat;
-  opacity:.10;
-  pointer-events:none;
-  z-index:0;
+  background:transparent;
 }
 #campaignLeadsTrackingPanel > *{
   position:relative;
