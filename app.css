@@ -8037,100 +8037,10 @@ body.view-mirrors-active .mirrorsScriptBody{letter-spacing:.1px;}
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  min-height:58px;
+  min-height:40px;
   overflow: visible;
 }
 
-#view-customers .lcCustomerFolderBtn{
-  position:relative;
-  width:132px;
-  height:64px;
-  padding:0;
-  border:0;
-  background:transparent;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  overflow:visible;
-  isolation:isolate;
-}
-
-#view-customers .lcCustomerFolderBtn__glow{
-  position:absolute;
-  inset:auto 18px 7px 18px;
-  height:14px;
-  border-radius:999px;
-  background: radial-gradient(circle, rgba(17,53,107,.26) 0%, rgba(17,53,107,.11) 46%, transparent 76%);
-  filter: blur(9px);
-  opacity:.32;
-  transform: scale(.9);
-  transition: opacity .26s ease, transform .26s ease, filter .26s ease;
-  z-index:0;
-  pointer-events:none;
-}
-
-#view-customers .lcCustomerFolderBtn__img{
-  position:relative;
-  z-index:1;
-  display:block;
-  width:112px;
-  max-width:100%;
-  height:auto;
-  object-fit:contain;
-  transform-origin: 50% 50%;
-  filter: drop-shadow(0 10px 18px rgba(10,31,74,.18));
-  transition: transform .28s ease, filter .28s ease;
-  user-select:none;
-  -webkit-user-drag:none;
-  pointer-events:none;
-}
-
-#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn__img,
-#view-customers .lcCustomerFolderBtn:hover .lcCustomerFolderBtn__img,
-#view-customers .lcCustomerFolderBtn:focus-visible .lcCustomerFolderBtn__img{
-  animation: lcFolderOpenClose .85s ease-in-out 1;
-  transform: translateY(-2px) scale(1.035);
-  filter: drop-shadow(0 14px 26px rgba(10,31,74,.24));
-}
-
-#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn__glow,
-#view-customers .lcCustomerFolderBtn:hover .lcCustomerFolderBtn__glow,
-#view-customers .lcCustomerFolderBtn:focus-visible .lcCustomerFolderBtn__glow{
-  opacity:.62;
-  transform: scale(1.04);
-  filter: blur(11px);
-}
-
-#view-customers .lcCustomerFolderBtn:focus-visible{
-  outline:none;
-}
-
-#view-customers .lcCustomerFolderBtn:focus-visible::after{
-  content:"";
-  position:absolute;
-  inset:6px 10px;
-  border-radius:18px;
-  box-shadow: 0 0 0 3px rgba(58,108,255,.18);
-}
-
-@keyframes lcFolderOpenClose{
-  0%   { transform: translateY(0) scale(1); }
-  24%  { transform: translateY(-1px) scale(1.015); }
-  48%  { transform: translateY(-3px) scale(1.035); }
-  72%  { transform: translateY(-2px) scale(1.026); }
-  100% { transform: translateY(-2px) scale(1.035); }
-}
-
-@media (max-width: 980px){
-  #view-customers .lcCustomerFolderBtn{
-    width:108px;
-    height:56px;
-  }
-  #view-customers .lcCustomerFolderBtn__img{
-    width:92px;
-  }
-}
 
 /* BUILD: 20260318-2009 • login background - reka.png with milky frosted overlay */
 body.lcAuthLock .lcLogin{
@@ -14574,99 +14484,69 @@ body.view-mirrors-active .mirrorsScriptBody{letter-spacing:.1px;}
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  min-height:58px;
+  min-height:40px;
   overflow: visible;
 }
 
+/* ===============================
+   Customers: "פתח תיק" row button
+   GI-DESIGN 2026-07-31 — PNG + glow replaced by a token-driven SVG control.
+   Single source of truth: the duplicate copy of this block was removed.
+=============================== */
 #view-customers .lcCustomerFolderBtn{
   position:relative;
-  width:132px;
-  height:64px;
+  width:32px;
+  height:32px;
   padding:0;
   border:0;
-  background:transparent;
+  border-radius: var(--gi-r-ctl, 8px);
+  background: var(--gi-primary-soft, #EFF6FF);
+  color: var(--gi-primary, #2563EB);
   cursor:pointer;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  overflow:visible;
-  isolation:isolate;
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
 }
 
-#view-customers .lcCustomerFolderBtn__glow{
-  position:absolute;
-  inset:auto 18px 7px 18px;
-  height:14px;
-  border-radius:999px;
-  background: radial-gradient(circle, rgba(17,53,107,.26) 0%, rgba(17,53,107,.11) 46%, transparent 76%);
-  filter: blur(9px);
-  opacity:.32;
-  transform: scale(.9);
-  transition: opacity .26s ease, transform .26s ease, filter .26s ease;
-  z-index:0;
-  pointer-events:none;
-}
-
-#view-customers .lcCustomerFolderBtn__img{
-  position:relative;
-  z-index:1;
+#view-customers .lcCustomerFolderBtn__icon{
   display:block;
-  width:112px;
-  max-width:100%;
-  height:auto;
-  object-fit:contain;
-  transform-origin: 50% 50%;
-  filter: drop-shadow(0 10px 18px rgba(10,31,74,.18));
-  transition: transform .28s ease, filter .28s ease;
-  user-select:none;
-  -webkit-user-drag:none;
+  width:17px;
+  height:17px;
   pointer-events:none;
 }
 
-#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn__img,
-#view-customers .lcCustomerFolderBtn:hover .lcCustomerFolderBtn__img,
-#view-customers .lcCustomerFolderBtn:focus-visible .lcCustomerFolderBtn__img{
-  animation: lcFolderOpenClose .85s ease-in-out 1;
-  transform: translateY(-2px) scale(1.035);
-  filter: drop-shadow(0 14px 26px rgba(10,31,74,.24));
+#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn,
+#view-customers .lcCustomerFolderBtn:hover{
+  background: var(--gi-primary, #2563EB);
+  color:#FFFFFF;
 }
 
-#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn__glow,
-#view-customers .lcCustomerFolderBtn:hover .lcCustomerFolderBtn__glow,
-#view-customers .lcCustomerFolderBtn:focus-visible .lcCustomerFolderBtn__glow{
-  opacity:.62;
-  transform: scale(1.04);
-  filter: blur(11px);
+#view-customers .lcCustomerFolderBtn:active{
+  background: var(--gi-primary-hover, #1D4ED8);
+  color:#FFFFFF;
 }
 
 #view-customers .lcCustomerFolderBtn:focus-visible{
   outline:none;
-}
-
-#view-customers .lcCustomerFolderBtn:focus-visible::after{
-  content:"";
-  position:absolute;
-  inset:6px 10px;
-  border-radius:18px;
-  box-shadow: 0 0 0 3px rgba(58,108,255,.18);
-}
-
-@keyframes lcFolderOpenClose{
-  0%   { transform: translateY(0) scale(1); }
-  24%  { transform: translateY(-1px) scale(1.015); }
-  48%  { transform: translateY(-3px) scale(1.035); }
-  72%  { transform: translateY(-2px) scale(1.026); }
-  100% { transform: translateY(-2px) scale(1.035); }
+  background: var(--gi-primary, #2563EB);
+  color:#FFFFFF;
+  box-shadow: 0 0 0 3px var(--gi-primary-ring, rgba(37,99,235,.18));
 }
 
 @media (max-width: 980px){
   #view-customers .lcCustomerFolderBtn{
-    width:108px;
-    height:56px;
+    width:30px;
+    height:30px;
   }
-  #view-customers .lcCustomerFolderBtn__img{
-    width:92px;
+  #view-customers .lcCustomerFolderBtn__icon{
+    width:16px;
+    height:16px;
   }
+}
+
+@media (prefers-reduced-motion: reduce){
+  #view-customers .lcCustomerFolderBtn{ transition:none; }
 }
 
 /* BUILD: 20260318-2009 • login background - reka.png with milky frosted overlay */
@@ -44335,3 +44215,15 @@ body.view-elementaryMirror-active .pageTitle{ /* keep default */ }
   .mcSumChoice .mcPayConfirm{ justify-content: center; }
 }
 /* ===== /GI-SUMMARY-UI ====================================================== */
+
+
+/* ===============================
+   Customer loader icon — SVG (GI-DESIGN 2026-07-31)
+   Was ./folder-customer.png. Sizing and float animation are inherited from
+   .customerLoader__iconImg above; only paint is restated here.
+=============================== */
+.customerLoader__iconImg{
+  color: var(--gi-primary, #2563EB);
+  object-fit: initial;
+  filter: none;
+}
