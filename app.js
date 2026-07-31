@@ -1330,8 +1330,14 @@
   const GI_SERVER_CACHE_TTL_MS = 1000 * 60 * 5;
   const GI_FULL_IDB_NAME = "gemel_invest_state_cache";
   const GI_FULL_IDB_STORE = "full_state";
-  const GI_FULL_IDB_TTL_MS = 1000 * 60 * 60; // 1h — fast reopen for large admin sessions
-  const GI_FULL_IDB_READ_BUDGET_MS = 700;
+  // GI-PERF 2026-07-31 (שלב א'): stale-while-revalidate.
+  // TTL ארוך אינו פוגע בטריות — הצביעה מהמטמון היא זמנית בלבד, וכל טעינה מריצה
+  // סנכרון שרת מיד אחריה. TTL של שעה גרם לכך שכניסה בבוקר (מעל שעה מהיציאה)
+  // לא צבעה כלום, והמשתמש חיכה לטעינה מלאה מול מסך ריק.
+  const GI_FULL_IDB_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7d
+  // קריאה + deserialize של payload בגודל עשרות MB מ-IndexedDB בנייד חורגת בקלות
+  // מ-700ms, ואז ה-race החזיר null והצביעה לא קרתה כלל.
+  const GI_FULL_IDB_READ_BUDGET_MS = 4000;
   const GI_NETWORK_TIMEOUT_MS = 12000;
   const GI_NETWORK_RETRY_COUNT = 2;
   const GI_NETWORK_RETRY_DELAY_MS = 900;
@@ -7958,8 +7964,11 @@
         this._fullIdbWriteHandle = null;
         void this.saveFullIdbCache(payload);
       };
+      // GI-PERF 2026-07-31 (שלב א'): מעגל קסמים — הטעינה איטית, המשתמש מרענן לפני
+      // ש-idle הגיע, המטמון לא נכתב, ובפעם הבאה שוב אין ממה לצבוע. timeout קצר
+      // מבטיח שהכתיבה תקרה גם כשהדפדפן עסוק, בלי לוותר על ההגנה מפני jank.
       if(typeof requestIdleCallback === "function"){
-        this._fullIdbWriteHandle = requestIdleCallback(run, { timeout: 4000 });
+        this._fullIdbWriteHandle = requestIdleCallback(run, { timeout: 1500 });
       } else {
         this._fullIdbWriteHandle = window.setTimeout(run, 400);
       }
@@ -7988,6 +7997,42 @@
         return { at: Number(entry.at || Date.now()), payload: entry.payload };
       } catch(_e) {
         return null;
+      }
+    },
+
+    // GI-SEC 2026-07-31 (שלב א'): המטמון נשמר 7 ימים ושורד יציאה מהמערכת — זו כל
+    // הנקודה, אחרת כניסה בבוקר חוזרת להיות טעינה מלאה. הסיכון האמיתי הוא מכשיר
+    // שעבר בין סוכנים: ספר הלקוחות של הקודם נשאר ב-IndexedDB. לכן בכל כניסה
+    // מוחקים את המטמון של *כל* המשתמשים האחרים, ומשאירים רק את הנוכחי.
+    async purgeOtherUserIdbCaches(){
+      const keepKey = this.fullCacheUserKey();
+      if(!keepKey) return false;
+      try {
+        const db = await this._openFullIdb();
+        if(!db) return false;
+        await new Promise((resolve) => {
+          try {
+            const tx = db.transaction(GI_FULL_IDB_STORE, "readwrite");
+            const store = tx.objectStore(GI_FULL_IDB_STORE);
+            const req = store.getAllKeys();
+            req.onsuccess = () => {
+              try {
+                (req.result || []).forEach((k) => {
+                  if(safeTrim(k) !== keepKey) store.delete(k);
+                });
+              } catch(_e) {}
+            };
+            req.onerror = () => {};
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+            tx.onabort = () => resolve(false);
+          } catch(_e) {
+            resolve(false);
+          }
+        });
+        return true;
+      } catch(_e) {
+        return false;
       }
     },
 
@@ -59384,6 +59429,8 @@ const ClalRiskLifePdf = {
 
     async reloadSessionState(options = {}){
       if(!Auth.current) return { ok:false, error:"NO_SESSION" };
+      // מנקה מטמון של משתמשים אחרים על אותו מכשיר (לא חוסם — רץ ברקע).
+      try { void Storage.purgeOtherUserIdbCaches(); } catch(_e) {}
       const applyOpts = options.skipLoginSideEffects === true
         ? { skipNavigation: true, skipLoginSideEffects: true, skipNormalize: true }
         : {};
@@ -59428,21 +59475,39 @@ const ClalRiskLifePdf = {
           paintedFromFullCache = paintFromLocalCache(memPayload, "נטען ממטמון · מסנכרן מהשרת…");
         }
       } catch(_e) {}
+      // GI-PERF 2026-07-31 (שלב א'): אם קריאת ה-IDB חורגת מהתקציב, לא מוותרים עליה —
+      // ממשיכים לחכות לה ברקע, וצובעים כשהיא מגיעה כל עוד השרת עוד לא ענה.
+      // קודם: ה-race החזיר null, הצביעה בוטלה, והמשתמש נשאר מול מסך ריק עד סוף הטעינה המלאה.
+      let serverSyncApplied = false;
+      const adoptIdbEntry = (entry) => {
+        if(!entry?.payload) return false;
+        try {
+          Storage._memoryCache = {
+            at: Number(entry.at || Date.now()),
+            payload: entry.payload,
+            userKey: Storage.fullCacheUserKey()
+          };
+        } catch(_e) {}
+        return true;
+      };
       if(!paintedFromFullCache){
         try {
+          const idbPromise = Storage.loadFullIdbCache(GI_FULL_IDB_TTL_MS);
           const idbEntry = await Promise.race([
-            Storage.loadFullIdbCache(GI_FULL_IDB_TTL_MS),
+            idbPromise,
             Storage.sleep(GI_FULL_IDB_READ_BUDGET_MS).then(() => null)
           ]);
           if(idbEntry?.payload){
             paintedFromFullCache = paintFromLocalCache(idbEntry.payload, "נטען ממטמון · מסנכרן מהשרת…");
-            try {
-              Storage._memoryCache = {
-                at: Number(idbEntry.at || Date.now()),
-                payload: idbEntry.payload,
-                userKey: Storage.fullCacheUserKey()
-              };
-            } catch(_e) {}
+            adoptIdbEntry(idbEntry);
+          } else {
+            // חריגה מהתקציב — צביעה מאוחרת, רק אם השרת טרם החזיר תשובה.
+            idbPromise.then((late) => {
+              if(serverSyncApplied || paintedFromFullCache) return;
+              if(!late?.payload) return;
+              paintedFromFullCache = paintFromLocalCache(late.payload, "נטען ממטמון · מסנכרן מהשרת…");
+              adoptIdbEntry(late);
+            }).catch(() => {});
           }
         } catch(_e) {}
       }
@@ -59497,6 +59562,8 @@ const ClalRiskLifePdf = {
         } catch(_e) {}
       }
       if (r.ok) {
+        // חוסם צביעה מאוחרת מהמטמון אחרי שהשרת כבר החזיר נתונים טריים.
+        serverSyncApplied = true;
         this.applyLoadResult(r, paintedFromFullCache ? "סונכרן מהשרת" : "נתוני משתמש נטענו", applyOpts);
         this._fullDataReady = true;
         this._sessionDataScoped = !!Auth.current && !Auth.canViewAllCustomers();
