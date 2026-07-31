@@ -3859,3 +3859,282 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   font-weight: 700 !important;
   color: var(--gi-text) !important;
 }
+
+
+/* =====================================================================
+   20. USER MANAGEMENT — screen + edit modal
+   GI-DESIGN 2026-07-31
+
+   שכבת עיצוב בלבד. אין כאן שינוי מבנה, מזהים, טקסטים או לוגיקה.
+   הטבלה, הכפתורים, התגיות והמודאל הגנריים כבר מטופלים בסעיפים 10–14;
+   כאן רק מה שייחודי למסך ניהול המשתמשים.
+
+   כל סלקטור נושא :not(#\9):not(#\9) לפי הקונבנציה בראש הקובץ.
+   ===================================================================== */
+
+/* --- 20.1 סרגל הפעולות --- */
+
+.lcUsers__actions:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gi-s2) !important;
+  padding: var(--gi-s4) var(--gi-s5) !important;
+  border-bottom: 1px solid var(--gi-border-soft) !important;
+}
+
+/* החיפוש והסינון נדחפים לקצה, כדי שפעולות היצירה יישארו יחד */
+.lcUsers__search:not(#\9):not(#\9){
+  margin-inline-start: auto !important;
+  flex: 0 1 220px !important;
+  min-width: 160px;
+}
+
+.lcUsers__filter:not(#\9):not(#\9){
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 120px;
+}
+
+.lcUsers__actions .input:not(#\9):not(#\9){
+  height: 36px !important;
+  padding-block: 0 !important;
+}
+
+.lcUsers__syncStatus:not(#\9):not(#\9){
+  font-size: 12px !important;
+  color: var(--gi-text-3) !important;
+}
+
+/* אייקון בתוך כפתור — נטען מ-currentColor, בלי קובץ תמונה */
+.lcUsers__actions .btn:not(#\9):not(#\9){
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--gi-s2);
+  height: 36px !important;
+}
+
+.lcUsers__btnIcon:not(#\9):not(#\9){
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+/* --- 20.2 פעולות בשורה --- */
+
+.lcUsers__rowActions:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  gap: var(--gi-s2) !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+}
+
+.lcUsers__rowActions .btn:not(#\9):not(#\9){
+  padding: 6px var(--gi-s3) !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+/* השבתה היא פעולה הרסנית — ולכן אדומה, אבל שקטה עד שנוגעים בה.
+   הפעלה מחדש אינה הרסנית ומקבלת את סגנון הכפתור הרגיל (ראה app.js). */
+.lcUsers__rowActions .btn--danger:not(#\9):not(#\9){
+  background: var(--gi-danger-soft) !important;
+  border-color: transparent !important;
+  color: var(--gi-danger) !important;
+}
+
+.lcUsers__rowActions .btn--danger:hover:not(#\9):not(#\9){
+  background: var(--gi-danger) !important;
+  border-color: var(--gi-danger) !important;
+  color: #FFFFFF !important;
+}
+
+/* --- 20.3 מודאל המשתמש --- */
+
+.lcUserModal__panel:not(#\9):not(#\9){
+  width: min(760px, calc(100vw - 32px)) !important;
+  max-height: min(88vh, 880px) !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lcUserModal__head:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gi-s4);
+}
+
+.lcUserModal__headMeta:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  gap: var(--gi-s2);
+  margin-top: var(--gi-s2);
+}
+
+.lcUserModal__roleBadge:not(#\9):not(#\9){
+  padding: var(--gi-s1) var(--gi-s3) !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-primary-soft) !important;
+  color: var(--gi-primary) !important;
+  border: none !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.lcUserModal__statusDot:not(#\9):not(#\9){
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: var(--gi-success) !important;
+  box-shadow: none !important;
+  margin-inline-start: var(--gi-s2);
+}
+
+.lcUserModal__statusDot.is-off:not(#\9):not(#\9){ background: var(--gi-text-muted) !important; }
+
+.lcUserModal__statusText:not(#\9):not(#\9){
+  font-size: 12px !important;
+  color: var(--gi-text-3) !important;
+}
+
+/* --- 20.4 סקשנים בגוף המודאל --- */
+
+.lcUserModal__sections:not(#\9):not(#\9){
+  gap: var(--gi-s5) !important;
+  padding: var(--gi-s5) !important;
+}
+
+.lcUserModal__section:not(#\9):not(#\9){
+  gap: var(--gi-s3) !important;
+}
+
+/* כותרת סקשן עם קו מפריד שממלא את הרוחב הפנוי —
+   מגדיר היררכיה בלי להוסיף עוד משטח או מסגרת. */
+.lcUserModal__sectionTitle:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  gap: var(--gi-s3);
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-3) !important;
+  letter-spacing: 0 !important;
+}
+
+.lcUserModal__sectionTitle:not(#\9):not(#\9)::after{
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--gi-border-soft);
+}
+
+.lcUserModal__grid:not(#\9):not(#\9){
+  padding: 0 !important;
+  gap: var(--gi-s4) !important;
+}
+
+.lcUserModal__grid .field .help:not(#\9):not(#\9){
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  color: var(--gi-text-3) !important;
+}
+
+/* --- 20.5 בוחר הנציגים --- */
+
+.lcUserModal__teamToolbar:not(#\9):not(#\9){
+  gap: var(--gi-s2) !important;
+  margin-bottom: var(--gi-s3) !important;
+}
+
+.lcUserModal__teamSearch:not(#\9):not(#\9){
+  height: 36px !important;
+  padding-block: 0 !important;
+}
+
+.lcUserModal__teamSelectAll:not(#\9):not(#\9){
+  padding: var(--gi-s1) var(--gi-s2) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  color: var(--gi-primary) !important;
+  font-weight: 600 !important;
+}
+
+.lcUserModal__teamSelectAll:hover:not(#\9):not(#\9){
+  background: var(--gi-primary-soft) !important;
+  text-decoration: none !important;
+}
+
+.lcUserModal__teamBadge:not(#\9):not(#\9){
+  background: var(--gi-surface-3) !important;
+  border: none !important;
+  color: var(--gi-text-2) !important;
+  font-weight: 600 !important;
+}
+
+/* הרשימה הייתה משטח צף בתוך הטופס. עכשיו היא תיבה מתוחמת כמו כל שדה. */
+.lcTeamAgentsPick:not(#\9):not(#\9){
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: var(--gi-surface) !important;
+  padding: var(--gi-s2) !important;
+  box-shadow: none !important;
+}
+
+.lcTeamAgentsPick__item:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center;
+  gap: var(--gi-s2) !important;
+  padding: var(--gi-s2) var(--gi-s3) !important;
+  border-radius: var(--gi-r-ctl) !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 13px !important;
+  color: var(--gi-text-2) !important;
+  cursor: pointer;
+}
+
+.lcTeamAgentsPick__item:hover:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+}
+
+.lcTeamAgentsPick__empty:not(#\9):not(#\9){
+  padding: var(--gi-s4) !important;
+  font-size: 13px !important;
+  color: var(--gi-text-3) !important;
+  text-align: center;
+}
+
+/* --- 20.6 תחתית --- */
+
+.lcUserModal__foot:not(#\9):not(#\9){
+  background: var(--gi-surface-2) !important;
+  border-top: 1px solid var(--gi-border-soft) !important;
+  box-shadow: none !important;
+  gap: var(--gi-s4) !important;
+}
+
+.lcUserModal__toggleTrack:not(#\9):not(#\9){
+  background: var(--gi-border-strong) !important;
+}
+
+.lcUserModal__toggle input:checked ~ .lcUserModal__toggleTrack:not(#\9):not(#\9){
+  background: var(--gi-primary) !important;
+}
+
+.lcUserModal__toggle input:focus-visible ~ .lcUserModal__toggleTrack:not(#\9):not(#\9){
+  box-shadow: 0 0 0 3px var(--gi-primary-ring) !important;
+}
+
+.lcUserModal__toggleLabel:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--gi-text-2) !important;
+}
+
+@media (max-width: 720px){
+  .lcUserModal__grid--basic:not(#\9):not(#\9){ grid-template-columns: 1fr !important; }
+  .lcUserModal__teamPick:not(#\9):not(#\9){ grid-template-columns: 1fr !important; }
+  .lcUsers__search:not(#\9):not(#\9){ margin-inline-start: 0 !important; flex: 1 1 100% !important; }
+}

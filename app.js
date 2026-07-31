@@ -12984,9 +12984,40 @@ UsersGateUI.init();
 
       on(E.wrap, "keydown", (ev) => {
         if(ev.key === "Escape"){ ev.preventDefault(); closeFn(); }
+        // GI-FIX 2026-07-31: keep Tab inside the dialog while it is open.
+        if(ev.key === "Tab"){
+          const panel = E.wrap ? E.wrap.querySelector(".modal__panel") : null;
+          if(panel){
+            const focusables = $$([
+              'a[href]','button:not([disabled])','input:not([disabled])',
+              'select:not([disabled])','textarea:not([disabled])','[tabindex]:not([tabindex="-1"])'
+            ].join(","), panel).filter((el) => {
+              if(el.hidden) return false;
+              const r = el.getBoundingClientRect();
+              return !!(r.width || r.height);
+            });
+            if(focusables.length){
+              const first = focusables[0];
+              const last = focusables[focusables.length - 1];
+              if(ev.shiftKey && document.activeElement === first){
+                ev.preventDefault(); last.focus();
+              } else if(!ev.shiftKey && document.activeElement === last){
+                ev.preventDefault(); first.focus();
+              }
+            }
+          }
+        }
         if(ev.key === "Enter"){
-          const tag = (ev.target && ev.target.tagName) ? ev.target.tagName.toLowerCase() : "";
-          if(tag === "input" || tag === "select"){
+          const t = ev.target;
+          const tag = (t && t.tagName) ? t.tagName.toLowerCase() : "";
+          // GI-FIX 2026-07-31: the team-agent search box is an <input>, so Enter
+          // used to submit the entire user record while the manager was merely
+          // filtering the list. Search and free-text fields are now exempt.
+          const isSearch = !!t && (
+            t.id === "lcUserTeamAgentsSearch" ||
+            (t.getAttribute && t.getAttribute("type") === "search")
+          );
+          if(!isSearch && (tag === "input" || tag === "select")){
             ev.preventDefault();
             this._saveFromModal();
           }
@@ -13080,6 +13111,12 @@ UsersGateUI.init();
       this._renderTeamAgentsPick(user);
       this._syncTeamAssignFieldsVisibility();
       this._updateModalHeadMeta(user);
+
+      // GI-FIX 2026-07-31: remember what opened the dialog so focus can return.
+      try {
+        const opener = document.activeElement;
+        this._modalOpener = (opener && opener !== document.body) ? opener : null;
+      } catch(_e) { this._modalOpener = null; }
 
       if(E.wrap){
         E.wrap.classList.add("is-open");
@@ -13210,6 +13247,15 @@ UsersGateUI.init();
         E.wrap.setAttribute("aria-hidden","true");
         try { document.body.classList.remove("lcUserModalOpen"); } catch(_e) {}
       }
+      // GI-FIX 2026-07-31: hand focus back to the row button that opened this,
+      // instead of dropping the caret on <body>.
+      try {
+        const opener = this._modalOpener;
+        this._modalOpener = null;
+        if(opener && document.contains(opener) && typeof opener.focus === "function"){
+          opener.focus();
+        }
+      } catch(_e) {}
     },
 
     _showErr(el, msg){
@@ -13480,12 +13526,12 @@ UsersGateUI.init();
             <td>${escapeHtml(formatBirthDateDisplay(a.birthDate))}</td>
             <td>${escapeHtml(targetText)}</td>
             <td>${mfaBadge}</td>
-            <td><span class="badge">${status}</span></td>
+            <td><span class="badge${a.active===false ? "" : " badge--ok"}">${status}</span></td>
             <td>
               <div class="lcUsers__rowActions">
                 <button class="btn" data-act="edit" data-id="${escapeHtml(a.id)}">ערוך</button>
                 <button class="btn" data-act="security" data-id="${escapeHtml(a.id)}">2FA</button>
-                <button class="btn btn--danger" data-act="toggle" data-id="${escapeHtml(a.id)}">${a.active===false ? "הפעל" : "השבת"}</button>
+                <button class="btn${a.active===false ? "" : " btn--danger"}" data-act="toggle" data-id="${escapeHtml(a.id)}">${a.active===false ? "הפעל" : "השבת"}</button>
               </div>
             </td>
           </tr>`;
