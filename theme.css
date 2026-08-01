@@ -6753,3 +6753,48 @@ body.lcSettingsRubric-systemUpdates #view-settings .lcSettingsHub__content:not(#
   gap: 10px !important;
   margin-top: 14px !important;
 }
+
+/* =====================================================================
+   GI-FEAT 2026-08-01 — תגי סטטוס לפוליסות קיימות בתיק הלקוח
+
+   הסטטוס מגיע משלב 2 של אשף בריאות וסיכונים. הבסיס ב-app.css הוא ירוק אחיד
+   ובשורה אחת; כאן מוסיפים צבע לכל סטטוס ותמיכה בתג דו-שורתי ("ללא שינוי /
+   לבקשת הלקוח") בלי שהעמודה תימתח.
+   ===================================================================== */
+
+.cfFile__statusBadge:not(#\9):not(#\9),
+#customerFull .customerPolicyRow__status:not(#\9):not(#\9){
+  display: inline-block !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  max-width: 130px !important;
+}
+
+/* ביטול מלא — אדום */
+.cfFile__statusBadge.is-cancel-full:not(#\9):not(#\9),
+#customerFull .customerPolicyRow__status.is-cancel-full:not(#\9):not(#\9){
+  background: rgba(220,38,38,.12) !important;
+  color: #b91c1c !important;
+}
+
+/* ביטול חלקי — כתום */
+.cfFile__statusBadge.is-cancel-partial:not(#\9):not(#\9),
+#customerFull .customerPolicyRow__status.is-cancel-partial:not(#\9):not(#\9){
+  background: rgba(217,119,6,.14) !important;
+  color: #b45309 !important;
+}
+
+/* ללא שינוי (לבקשת הלקוח / קולקטיב) — אפור ניטרלי */
+.cfFile__statusBadge.is-nochange:not(#\9):not(#\9),
+#customerFull .customerPolicyRow__status.is-nochange:not(#\9):not(#\9){
+  background: rgba(100,116,139,.14) !important;
+  color: #475569 !important;
+}
+
+/* מינוי סוכן — כחול */
+.cfFile__statusBadge.is-appoint:not(#\9):not(#\9),
+#customerFull .customerPolicyRow__status.is-appoint:not(#\9):not(#\9){
+  background: rgba(42,92,245,.12) !important;
+  color: #1e40af !important;
+}

@@ -15041,6 +15041,62 @@ UsersGateUI.init();
       });
     },
 
+    /* GI-FEAT 2026-08-01 — סטטוס הפוליסה הקיימת בתיק הלקוח.
+       מקור האמת הוא מה שהנציג סימן בשלב 2 של אשף בריאות וסיכונים
+       (getExistingPolicyCancelOptions), והתוויות כאן זהות לו מילה במילה.
+       שתי התוויות הארוכות נשברות לשתי שורות בנקודת המקף, כדי שהתג לא ימתח
+       את העמודה. badgeText נשאר שורה אחת עבור מסכים אחרים (למשל כותרת
+       חלון פרטי הפוליסה), ו-badgeLines משמש רק בטבלאות. */
+    /* GI-FEAT 2026-08-01 — זיהוי רכיב סיעודי בתוך פוליסה.
+       בייבוא מהר הביטוח, פוליסה שמכילה כמה מוצרים מקובצת ל-type
+       "פוליסה משולבת" (ראו רשימת העדיפויות ב-buildHarPolicies), והסיעוד
+       נבלע בתוכה. הרכיבים עצמם שמורים ב-premiumBreakdown / includedProducts /
+       covers, ומשם אפשר לשחזר אותו. */
+    policyHasNursingComponent(p){
+      if(!p || typeof p !== "object") return false;
+      const re = /סיעוד/;
+      if(re.test(safeTrim(p.type))) return true;
+      const buckets = [
+        Array.isArray(p.premiumBreakdown) ? p.premiumBreakdown.map((x) => `${safeTrim(x?.label)} ${safeTrim(x?.rawType)}`) : [],
+        Array.isArray(p.includedProducts) ? p.includedProducts.map((x) => safeTrim(typeof x === "string" ? x : (x?.label || x?.name || ""))) : [],
+        Array.isArray(p.covers) ? p.covers.map((x) => safeTrim(typeof x === "string" ? x : (x?.label || ""))) : [],
+        Array.isArray(p.sourceTypes) ? p.sourceTypes.map((x) => safeTrim(x)) : []
+      ];
+      return buckets.some((list) => list.some((txt) => re.test(txt)));
+    },
+
+    /** תווית המוצר לתצוגה — מפרטת סיעוד שנבלע בפוליסה משולבת. */
+    getPolicyTypeDisplay(p){
+      const type = safeTrim(p?.type) || "פוליסה";
+      if(!this.policyHasNursingComponent(p)) return type;
+      if(/סיעוד/.test(type)) return type;
+      return `${type} · כולל סיעודי`;
+    },
+
+    getExistingPolicyStatusPresentation(status){
+      const key = safeTrim(status);
+      const map = {
+        full:                { lines: ["ביטול מלא"],                    cls: "is-cancel-full" },
+        partial_health:      { lines: ["ביטול חלקי"],                   cls: "is-cancel-partial" },
+        nochange_client:     { lines: ["ללא שינוי", "לבקשת הלקוח"],     cls: "is-nochange" },
+        nochange_collective: { lines: ["ללא שינוי", "קולקטיב"],         cls: "is-nochange" },
+        agent_appoint:       { lines: ["מינוי סוכן"],                   cls: "is-appoint" }
+      };
+      const hit = map[key];
+      if(hit) return { lines: hit.lines, text: hit.lines.join(" – "), cls: hit.cls };
+      // לא סומן כלום בשלב 2 — הפוליסה פשוט הגיעה עם הלקוח.
+      return { lines: ["הגיעה עם הלקוח"], text: "הגיעה עם הלקוח", cls: "is-existing" };
+    },
+
+    /** תוכן התג לטבלה — שתי שורות כשצריך, עם escape על כל שורה בנפרד. */
+    renderStatusBadgeInner(policy){
+      const lines = Array.isArray(policy?.badgeLines) && policy.badgeLines.length
+        ? policy.badgeLines
+        : [safeTrim(policy?.badgeText)].filter(Boolean);
+      if(!lines.length) return "";
+      return lines.map((line) => escapeHtml(safeTrim(line))).join("<br/>");
+    },
+
     normalizeExistingPolicyStatus(value){
       const raw = safeTrim(value).toLowerCase().replace(/[\s_\-]+/g, '');
       const map = {
@@ -15684,6 +15740,12 @@ UsersGateUI.init();
           const type = safeTrim(p?.type || p?.product || "פוליסה");
           const monthlyPremium = safeTrim(p?.monthlyPremium || p?.premiumMonthly || p?.premium || p?.premiumBefore || "");
           const isAgentAppt = this.isAgentAppointmentExistingPolicy(ins, p);
+          /* GI-FEAT 2026-08-01: resolveExistingPolicyStatus כבר קורא נכון את
+             ins.data.cancellations[pid].status — מה שהנציג סימן בשלב 2. עד כה
+             הערך שימש רק כדי לזהות "מינוי סוכן", וכל שאר הסטטוסים נבלעו
+             ב-"הגיעה עם הלקוח". עכשיו הוא מוצג כפי שהוא. */
+          const resolvedStatus = isAgentAppt ? "agent_appoint" : this.resolveExistingPolicyStatus(ins, p);
+          const statusPres = this.getExistingPolicyStatusPresentation(resolvedStatus);
           const coverItems = Array.isArray(p?.covers) ? p.covers.filter(Boolean) : [];
           const coverageValue = safeTrim(p?.sumInsured || p?.compensation || p?.coverage || (coverItems.length ? coverItems.join(", ") : ""));
           const discountPct = this.getPolicyDiscountPct(p);
@@ -15713,19 +15775,20 @@ UsersGateUI.init();
             coverageValue,
             coverItems,
             subtitle: safeTrim(p?.policyNumber) ? `פוליסה ${p.policyNumber}` : insuredLabel,
-            badgeText: isAgentAppt ? "מינוי סוכן" : "הגיעה עם הלקוח",
-            badgeClass: isAgentAppt ? "is-appoint" : "is-existing",
-            existingStatus: isAgentAppt ? "agent_appoint" : safeTrim(p?.existingStatus || p?.status || ""),
+            badgeText: statusPres.text,
+            badgeLines: statusPres.lines,
+            badgeClass: statusPres.cls,
+            existingStatus: resolvedStatus,
             ctaText: "פרטי פוליסה",
             details: {
-              "סטטוס": isAgentAppt ? "מינוי סוכן" : "פוליסה קיימת",
+              "סטטוס": statusPres.text,
               ...(isAgentAppt ? {
                 "מבוטחים בפוליסה": String(insuredCount || 1),
                 "שמות מבוטחים": policyInsuredNames || insuredLabel
               } : {}),
               "מבוטח": insuredLabel,
               "חברה": safeTrim(p?.company),
-              "סוג מוצר": type,
+              "סוג מוצר": typeDisplay,
               "מספר פוליסה": safeTrim(p?.policyNumber),
               "סה״כ פרמיה בתיק": monthlyPremium ? this.formatMoney(monthlyPremium) : "—",
               "הנחה": this.getPolicyDiscountDisplayText(p, { compact:true }),
@@ -16017,7 +16080,7 @@ UsersGateUI.init();
                 <span class="customerPolicyRow__company">${escapeHtml(policy.company || 'חברה')}</span>
                 <span class="customerPolicyRow__dot"></span>
                 <span class="customerPolicyRow__product">${escapeHtml(policy.type || 'פוליסה')}</span>
-                <span class="customerPolicyRow__status ${escapeHtml(policy.badgeClass)}">${escapeHtml(policy.badgeText || '')}</span>
+                <span class="customerPolicyRow__status ${escapeHtml(policy.badgeClass)}">${this.renderStatusBadgeInner(policy)}</span>
               </div>
               <div class="customerPolicyRow__line2">
                 ${secondaryMeta.length ? secondaryMeta.map(item => `<span class="customerPolicyRow__metaPill">${escapeHtml(item)}</span>`).join('') : `<span class="customerPolicyRow__metaPill">${escapeHtml(policy.subtitle || 'פרטי פוליסה')}</span>`}
@@ -16458,7 +16521,7 @@ UsersGateUI.init();
         <td><div class="cfFile__coverage">${escapeHtml(coverageText)}</div></td>
         <td><span class="cfFile__premium">${escapeHtml(policy.premiumText || '—')}</span></td>
         <td><span class="cfFile__premiumAfter">${escapeHtml(afterPremium)}</span></td>
-        <td><span class="cfFile__statusBadge ${escapeHtml(policy.badgeClass || '')}">${escapeHtml(policy.badgeText || 'חדש')}</span></td>
+        <td><span class="cfFile__statusBadge ${escapeHtml(policy.badgeClass || '')}">${this.renderStatusBadgeInner(policy) || escapeHtml('חדש')}</span></td>
         <td class="cfFile__menuCell">
           <button class="cfFile__menuBtn" type="button" aria-label="פעולות" data-policy-menu="${escapeHtml(policy.id)}">⋮</button>
           <div class="cfFile__menu" role="menu">${menuActions.join('')}</div>
@@ -25798,6 +25861,22 @@ UsersGateUI.init();
     existingCompanies: ["איילון","הראל","כלל","מגדל","מנורה","הפניקס","הכשרה","AIG","ביטוח ישיר","9 מיליון","שומרה","שלמה","ליברה","ווישור","שירביט","חקלאי","אלטשולר שחם","פסגות","דקלה"],
 
     insTypes: ["בריאות","מחלות קשות","סרטן","אובדן כושר עבודה","ריסק","ריסק משכנתא"],
+    /* GI-FEAT 2026-08-01 — סוגי מוצר לשלב "פוליסות קיימות" בלבד.
+       insTypes משמש גם את בורר המוצרים לפוליסות חדשות, ולכן לא מוסיפים לו.
+       הבעיה שהתגלתה: normalizeHarPolicyType מייצר בייבוא מהר הביטוח גם
+       "סיעודי", "תאונות אישיות", "נכויות" ו-"פוליסה משולבת" — ארבעה סוגים
+       שלא היו ברשימה. ל-<select> אין option תואם, הדפדפן מציג את הראשון
+       ("בריאות"), וברגע שהנציג נגע בשורה הסוג האמיתי נדרס. לכן פוליסה
+       סיעודית שיובאה הוצגה כבריאות. */
+    existingInsTypes: ["בריאות","סיעודי","מחלות קשות","סרטן","תאונות אישיות","אובדן כושר עבודה","נכויות","ריסק","ריסק משכנתא","פוליסה משולבת"],
+
+    /** רשימת הסוגים לשורה נתונה — כולל הסוג הנוכחי, גם אם אינו ברשימה. */
+    getExistingPolicyTypeOptions(currentType){
+      const base = Array.isArray(this.existingInsTypes) ? this.existingInsTypes.slice() : [];
+      const cur = safeTrim(currentType);
+      if(cur && !base.includes(cur)) base.push(cur);
+      return base;
+    },
     bankNames: ["בנק הפועלים","בנק לאומי","בנק דיסקונט","בנק מזרחי טפחות","הבנק הבינלאומי","בנק מרכנתיל","בנק אוצר החייל","בנק יהב","בנק מסד","בנק ירושלים","פאג\"י","בנק הדואר"],
 
     
@@ -36337,7 +36416,7 @@ if(path === "birthDate"){
       const rows = (d.existingPolicies || []).map(p => {
         const logo = this.renderCompanyLogoHtml(p.company, "mini");
         const compOpts = (this.existingCompanies || this.companies).map(x => `<option value="${escapeHtml(x)}"${p.company===x?" selected":""}>${escapeHtml(x)}</option>`).join("");
-        const typeOpts = this.insTypes.map(x => `<option value="${escapeHtml(x)}"${p.type===x?" selected":""}>${escapeHtml(x)}</option>`).join("");
+        const typeOpts = this.getExistingPolicyTypeOptions(p.type).map(x => `<option value="${escapeHtml(x)}"${p.type===x?" selected":""}>${escapeHtml(x)}</option>`).join("");
         const isRisk = (p.type === "ריסק" || p.type === "ריסק משכנתא" || p.type === "אובדן כושר עבודה");
         const isCI = (p.type === "מחלות קשות" || p.type === "סרטן");
         const isHealth = (p.type === "בריאות");
