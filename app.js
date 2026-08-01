@@ -74768,10 +74768,10 @@ const CampaignLeadsStore = {
       }
     },
 
-    _mirrorReportOntoReferral(rec, report, options = {}){
+    async _mirrorReportOntoReferral(rec, report, options = {}){
       try{
         const referral = this._findMirrorReportReferral(rec);
-        if(!referral) return;
+        if(!referral) return false;
         const payload = referral.payload && typeof referral.payload === "object"
           ? JSON.parse(JSON.stringify(referral.payload))
           : {};
@@ -74782,9 +74782,50 @@ const CampaignLeadsStore = {
           : (this._pickPreferReport(report, prev) || this._cloneReport(report) || {});
         payload.mirrorFlow.elementaryReport = next;
         patchElementaryReferral(referral.id, { payload });
-        schedulePersistElementaryReferralsQuiet("דוח שיקוף אלמנטרי נשמר בהפניה");
+        // שמירה סופית — await מיידי (לא דיליי 350ms שמתחרה בליד זהב)
+        if(options.awaitPersist === true){
+          await persistElementaryReferralsQuiet("דוח שיקוף אלמנטרי נשמר בהפניה");
+        } else {
+          schedulePersistElementaryReferralsQuiet("דוח שיקוף אלמנטרי נשמר בהפניה");
+        }
+        return true;
       }catch(err){
         try{ console.warn("[ElementaryMirrorUI] referral report sync failed", err); }catch(_e){}
+        return false;
+      }
+    },
+
+    /** קריאת דוח שמור בלי ליצור {} ריק על הרשומה (יוצרת {} הייתה נשמרת ודורסת) */
+    _peekSavedReport(rec){
+      const report = rec?.payload?.mirrorFlow?.elementaryReport;
+      if(!report || typeof report !== "object") return null;
+      if(!Object.keys(report).length) return null;
+      return report;
+    },
+
+    async _verifyElementaryReportOnServer(customerId, expectedUpdatedAt){
+      const cid = safeTrim(customerId);
+      const expectAt = safeTrim(expectedUpdatedAt);
+      if(!cid || !expectAt || String(cid).startsWith("emref_")) return false;
+      const expectMs = this._reportUpdatedAtMs({ updatedAt: expectAt });
+      try{
+        const verify = await Storage.verifySavedRow(
+          SUPABASE_TABLES.customers,
+          cid,
+          {
+            payload: (payload) => {
+              const at = safeTrim(payload?.mirrorFlow?.elementaryReport?.updatedAt);
+              if(!at) return false;
+              if(at === expectAt) return true;
+              return this._reportUpdatedAtMs({ updatedAt: at }) >= expectMs;
+            }
+          },
+          { selectExpr: "id,payload,updated_at", retries: 3, delayMs: 450 }
+        );
+        return !!verify?.ok;
+      }catch(err){
+        try{ console.error("[ElementaryMirrorUI] verify elementaryReport failed", err); }catch(_e){}
+        return false;
       }
     },
 
@@ -74865,7 +74906,10 @@ const CampaignLeadsStore = {
       if(reportSnap) this._setElementaryReportOnRec(live, reportSnap);
       const report = live?.payload?.mirrorFlow?.elementaryReport;
       if(report && typeof report === "object"){
-        this._mirrorReportOntoReferral(live, report, { force: options.forceReport === true });
+        await this._mirrorReportOntoReferral(live, report, {
+          force: options.forceReport === true,
+          awaitPersist: options.forceReport === true
+        });
       }
       if(!isFresh()) return { ok: false, skipped: true, stale: true };
 
@@ -74886,13 +74930,37 @@ const CampaignLeadsStore = {
       }
       if(!isFresh()) return { ok: false, skipped: true, stale: true, upsertOk, persistRes };
 
-      // שמירה סופית: upsert חוזר אחרי persist — מתקן אם המיזוג העלה גרסה ישנה לשרת
+      // שמירה סופית: upsert חוזר + אימות מול השרת
+      let verified = false;
       if(options.forceReport === true && reportSnap && isFresh()){
         const repaired = await this._upsertCustomerDirect(live, {
           persistGen: gen,
           reportSnap
         });
         if(repaired) upsertOk = true;
+        verified = await this._verifyElementaryReportOnServer(
+          safeTrim(live?.id) || this.selectedCustomerId,
+          reportSnap.updatedAt
+        );
+        if(!verified && isFresh()){
+          await this._upsertCustomerDirect(live, { persistGen: gen, reportSnap });
+          verified = await this._verifyElementaryReportOnServer(
+            safeTrim(live?.id) || this.selectedCustomerId,
+            reportSnap.updatedAt
+          );
+        }
+        live = this._getCustomer(safeTrim(rec.id) || this.selectedCustomerId) || live;
+        this._setElementaryReportOnRec(live, reportSnap);
+        const persistOk = !!(persistRes && persistRes.ok);
+        const customersWarn = safeTrim(persistRes?.customersSyncWarning);
+        return {
+          ok: !!verified,
+          upsertOk,
+          verified: !!verified,
+          persistOk,
+          customersWarn,
+          persistRes
+        };
       }
 
       const persistOk = !!(persistRes && persistRes.ok);
@@ -74900,6 +74968,7 @@ const CampaignLeadsStore = {
       return {
         ok: upsertOk || (persistOk && !customersWarn),
         upsertOk,
+        verified: false,
         persistOk,
         customersWarn,
         persistRes
@@ -74930,7 +74999,7 @@ const CampaignLeadsStore = {
     async _hydrateCustomerForMirror(rec){
       if(!rec || typeof rec !== "object") return null;
       const local = ensureCustomerInActiveList(rec) || rec;
-      const localReportSnap = this._cloneReport(local?.payload?.mirrorFlow?.elementaryReport)
+      const localReportSnap = this._cloneReport(this._peekSavedReport(local))
         || this._cloneReport(this._readReportFromReferral(local));
       const localId = safeTrim(local.id);
       const localIdNumber = safeTrim(local.idNumber);
@@ -74950,7 +75019,7 @@ const CampaignLeadsStore = {
         if(localReportSnap) this._setElementaryReportOnRec(local, localReportSnap);
         return local;
       }
-      const serverReport = serverRec?.payload?.mirrorFlow?.elementaryReport;
+      const serverReport = this._peekSavedReport(serverRec);
       const referralReport = this._readReportFromReferral(serverRec) || this._readReportFromReferral(local);
       const best = this._pickPreferReport(
         this._pickPreferReport(localReportSnap, serverReport),
@@ -75324,6 +75393,16 @@ const CampaignLeadsStore = {
       this._callRunning = true;
       this._callPaused = false;
       this._callSeconds = 0;
+      // לפני מוטציות callSession — לשמור דוח קיים עם חותמת (לא לדרוס ב־persist של תחילת שיחה)
+      const existingReport = this._peekSavedReport(rec);
+      if(existingReport && safeTrim(existingReport.updatedAt)){
+        this._setElementaryReportOnRec(rec, existingReport);
+      } else if(this.reportDraft && safeTrim(this.reportDraft.updatedAt)){
+        const snap = { ...this.reportDraft };
+        delete snap.harPolicies;
+        delete snap.history;
+        this._setElementaryReportOnRec(rec, snap);
+      }
       const store = this._getCallStore(rec);
       const startedAt = nowISO();
       store.active = true;
@@ -75347,6 +75426,15 @@ const CampaignLeadsStore = {
       }catch(_e){}
       if(State?.data?.meta) State.data.meta.updatedAt = startedAt;
       rec.updatedAt = startedAt;
+      // אחרי עדכון callSession — להצמיד שוב את הדוח השמור
+      if(existingReport && safeTrim(existingReport.updatedAt)){
+        this._setElementaryReportOnRec(rec, existingReport);
+      } else if(this.reportDraft && safeTrim(this.reportDraft.updatedAt)){
+        const snap = { ...this.reportDraft };
+        delete snap.harPolicies;
+        delete snap.history;
+        this._setElementaryReportOnRec(rec, snap);
+      }
       this._syncCallChrome();
       this._startTimerLoop();
       this._persist("שיחת שיקוף אלמנטרי התחילה").catch(() => {});
@@ -75548,12 +75636,14 @@ const CampaignLeadsStore = {
 
     buildReportDraft(rec){
       const { data, referral, payload } = this._pickElementaryData(rec);
-      const savedCustomer = this._getReportStore(rec);
+      // בלי _getReportStore — לא ליצור {} ריק שעלול להישמר ולדרוס דוח בשרת
+      const savedCustomer = this._peekSavedReport(rec);
       const savedReferral = this._readReportFromReferral(rec)
         || (referral?.payload?.mirrorFlow?.elementaryReport && typeof referral.payload.mirrorFlow.elementaryReport === "object"
           ? referral.payload.mirrorFlow.elementaryReport
           : null);
       const saved = this._pickPreferReport(savedCustomer, savedReferral) || {};
+      const savedHasStamp = !!safeTrim(saved?.updatedAt);
       const quote = this._selectedQuoteInfo(referral);
       const products = [];
       try{ products.push(...(CustomersUI?.collectElementaryProducts?.(rec) || [])); }catch(_e){}
@@ -75662,10 +75752,12 @@ const CampaignLeadsStore = {
         if(k === "harPolicies" || k === "history") return;
         if(typeof saved[k] === "boolean"){ merged[k] = !!saved[k]; return; }
         if(typeof base[k] === "boolean"){ merged[k] = !!saved[k]; return; }
-        if(safeTrim(String(saved[k])) !== "" || typeof base[k] === "boolean") merged[k] = saved[k];
+        // דוח עם updatedAt = מקור אמת גם לערכים שרוקנו במכוון
+        if(savedHasStamp || safeTrim(String(saved[k])) !== "" || typeof base[k] === "boolean") merged[k] = saved[k];
       });
       merged.harPolicies = harPolicies;
       merged.history = history;
+      if(savedHasStamp) merged.updatedAt = saved.updatedAt;
       if(!safeTrim(merged.agentName)) merged.agentName = this._agentLabel();
       if(!safeTrim(merged.customerName)) merged.customerName = fullName || "לקוח";
       if(!safeTrim(merged.policyEnd) && safeTrim(merged.policyStart)) merged.policyEnd = this._addOneYearDmy(merged.policyStart);
@@ -76191,23 +76283,23 @@ const CampaignLeadsStore = {
           let variant = "success";
           if(persistOk && goldOk){
             text = interest === "not_interested"
-              ? "הדוח נשמר · עודכן בממתינים כלא מעוניין"
-              : "הדוח נשמר · ליד זהב נוסף לממתינים לטיפול";
+              ? "הדוח נשמר בשרת · עודכן בממתינים כלא מעוניין"
+              : "הדוח נשמר בשרת · ליד זהב נוסף לממתינים לטיפול";
             if(opts.pdf && !pdfOk) text += " · PDF נכשל";
           } else if(persistOk && !goldOk){
-            text = "הדוח נשמר, אך עדכון ממתינים נכשל";
+            text = "הדוח נשמר בשרת, אך עדכון ממתינים נכשל";
             variant = "warn";
           } else if(!persistOk && goldOk){
-            text = "ליד זהב עודכן בממתינים, אך שמירת הדוח לשרת נכשלה";
+            text = "ליד זהב עודכן בממתינים, אך שמירת הדוח לשרת נכשלה / לא אומתה";
             variant = "warn";
           } else {
-            text = "השמירה נכשלה · נסה שוב";
+            text = "השמירה לשרת נכשלה · הדוח לא אומת · נסה שוב";
             variant = "danger";
           }
           window.showToast?.({ title: "שיקוף אלמנטרי", text, variant, durationMs: 7200 });
         }catch(_e){}
       }
-      return persistOk || goldOk;
+      return !!persistOk;
     },
 
     _captureReportFromDom(){
