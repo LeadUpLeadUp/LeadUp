@@ -50,6 +50,16 @@
   // ל-"מערכת" כשהערך חסר, אז ההסרה אינה משנה התנהגות.
   const CUSTOMER_LIGHT_COLUMNS = "id,status,full_name,id_number,phone,email,city,agent_name,agent_id,agent_role,insured_count,existing_policies_count,new_policies_count,created_at,updated_at";
   const PROPOSAL_LIGHT_COLUMNS = "id,status,full_name,id_number,phone,email,city,agent_name,agent_id,agent_role,current_step,insured_count,created_at,updated_at";
+
+  /* GI-FIX 2026-08-01 — טעינה ראשונית מלאה (כולל payload).
+     הרקע: כל תיק לקוח (CustomerEditUI.open) וכל טיוטת הצעה (Wizard.loadDraftData)
+     קוראים rec.payload מהזיכרון באופן סינכרוני. אין בקוד שליפת payload לפי דרישה.
+     כל עוד זה המצב, טעינה רזה אומרת שרשומה שטרם מולאה ברקע נפתחת ריקה —
+     ובאשף זה מסוכן במיוחד, כי _triggerAutoSave דורס את השורה בשרת עם payload ריק.
+     לכן המסלול הרזה מושבת עד שיוקשחו שני מסלולי הפתיחה. השליפות הרזות של מסך
+     הלקוחות (10 אחרונים / חיפוש) ממשיכות לעבוד — הן ממזגות לתוך רשומות קיימות
+     ו-_ingestServerRows שומר על ה-payload הקיים. */
+  const LIGHT_INITIAL_LOAD_ENABLED = false;
   // מנה של 40 מזהים ≈ 2.5MB. השורה הכבדה ביותר במסד היא 1.8MB דחוסים, אז
   // מנה גדולה יותר עלולה להיתקל שוב באותו קיר.
   const PAYLOAD_HYDRATION_BATCH_SIZE = 40;
@@ -10228,18 +10238,21 @@
         }
 
         // GI-PERF 2026-07-31 (שלב ג'): שלב 1 — הכל חוץ מ-payload.
+        // GI-FIX 2026-08-01: מושבת זמנית — ראה LIGHT_INITIAL_LOAD_ENABLED.
+        const initialCustomerColumns = LIGHT_INITIAL_LOAD_ENABLED ? CUSTOMER_LIGHT_COLUMNS : "*";
+        const initialProposalColumns = LIGHT_INITIAL_LOAD_ENABLED ? PROPOSAL_LIGHT_COLUMNS : "*";
         const [metaRes, agentsRes, customersLightRes, proposalsLightRes] = await Promise.all([
           this.loadMetaRow(),
           this.loadTableRows(SUPABASE_TABLES.agents),
-          this.loadTableRows(SUPABASE_TABLES.customers, CUSTOMER_LIGHT_COLUMNS),
-          this.loadTableRows(SUPABASE_TABLES.proposals, PROPOSAL_LIGHT_COLUMNS)
+          this.loadTableRows(SUPABASE_TABLES.customers, initialCustomerColumns),
+          this.loadTableRows(SUPABASE_TABLES.proposals, initialProposalColumns)
         ]);
 
         // רשת ביטחון: אם רשימת העמודות הרזה נדחתה (למשל עמודה שלא קיימת בסכימה),
         // חוזרים להתנהגות הישנה של select * במקום להיכשל.
         let customersRes = customersLightRes;
         let proposalsRes = proposalsLightRes;
-        let lightSelectUsed = true;
+        let lightSelectUsed = LIGHT_INITIAL_LOAD_ENABLED;
         if(!customersRes.ok || !proposalsRes.ok){
           try { console.warn("LIGHT_SELECT_FAILED_FALLBACK_TO_FULL:", safeTrim(customersRes.error) || safeTrim(proposalsRes.error)); } catch(_e) {}
           lightSelectUsed = false;
@@ -26452,6 +26465,7 @@ init(){
       this._operationalGuideAccepted = false;
       this.lastSavedCustomerId = null;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       this._finishing = false;
       this._harImportState = {};
       this._healthShowQuickPick = false;
@@ -26678,6 +26692,7 @@ init(){
       this._operationalGuideAccepted = false;
       this.lastSavedCustomerId = null;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       this._finishing = false;
       this._healthShowQuickPick = false;
       this._healthQuickPickDraft = null;
@@ -27071,6 +27086,7 @@ init(){
       this._elementaryReferralContinue = null;
       this.customerPurchaseMode = null;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       if(customerRec){
         this.applyCustomerRecordToElementaryWizard(customerRec);
       } else if(safeTrim(opts.prefillId)){
@@ -27122,6 +27138,7 @@ init(){
       this._lastElementaryHandoff = null;
       this.customerPurchaseMode = null;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       const payload = rec.payload && typeof rec.payload === "object" ? rec.payload : {};
       const continueStep = Math.max(3, Number(rec.continueFromStep || payload?.elementaryReferralMeta?.continueFromStep || 3) || 3);
       this.loadDraftData({
@@ -27175,6 +27192,7 @@ init(){
       };
       this.customerPurchaseMode = null;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       const payload = rec.payload && typeof rec.payload === "object" ? rec.payload : {};
       this.loadDraftData({
         id: null,
@@ -27449,6 +27467,7 @@ init(){
         // מאפסים editingDraftId כדי ש-saveCompletedCustomer לא ימחק את ה-proposal
         // שנשמר זה עתה — הוא אמור להישאר בהצעות הנציג עם סטטוס quote_ready
         this.editingDraftId = null;
+        this._draftPayloadMissing = false;
         dismissCarClickSaveStatus();
         this._carInsuranceClickFlow = false;
         this.showFinishFlowSuccess();
@@ -27699,6 +27718,7 @@ init(){
         this._carInsuranceClickFlow = false;
         this._elementaryReferralContinue = null;
         this.editingDraftId = null;
+        this._draftPayloadMissing = false;
 
         const ins = this.insureds[0];
         const d = ins?.data || {};
@@ -28005,6 +28025,7 @@ init(){
       this._operationalGuideAccepted = false;
       this.lastSavedCustomerId = id;
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       this._finishing = false;
       this.customerPurchaseMode = {
         active: true,
@@ -46580,8 +46601,24 @@ if(path === "birthDate"){
 
     openDraft(rec){
       if(!rec) return;
+      /* GI-FIX 2026-08-01: אם הטיוטה נפתחה בלי payload (למשל מנת מילוי-רקע שנכשלה),
+         האשף נטען ריק — ו-_triggerAutoSave היה דורס את השורה בשרת ומוחק את ההצעה.
+         מסמנים את המצב בפתיחה וחוסמים כל שמירה עד לרענון. */
+      this._draftPayloadMissing = !!safeTrim(rec?.id) && Storage.payloadIsEmpty(rec);
       this.loadDraftData(rec);
       this.open();
+      if(this._draftPayloadMissing){
+        this.setHint("פרטי ההצעה טרם נטענו מהשרת — רענן את הדף לפני עריכה");
+        try {
+          window.showToast?.({
+            title: "ההצעה לא נטענה במלואה",
+            text: "תוכן ההצעה לא הגיע מהשרת. השמירה נחסמה כדי לא לדרוס את הנתונים. רענן את הדף ונסה שוב.",
+            variant: "warn",
+            durationMs: 7000
+          });
+        } catch(_e) {}
+        return;
+      }
       this.setHint("ההצעה נטענה מהמקום שבו נשמרה");
     },
 
@@ -46662,6 +46699,11 @@ if(path === "birthDate"){
 
     async saveDraft(){
       if(!Auth.current) return;
+      if(this._draftPayloadMissing){
+        try { console.warn("SAVE_BLOCKED_DRAFT_PAYLOAD_MISSING:", this.editingDraftId); } catch(_e) {}
+        SaveStatusUI.error('לא ניתן לשמור את ההצעה', 'תוכן ההצעה לא נטען מהשרת. רענן את הדף ופתח את ההצעה מחדש.');
+        return;
+      }
       try{
       const payload = this.getDraftPayload();
       if(!this.isCustomerPurchaseMode() && this.blockIfAgentDuplicateId()){
@@ -50758,6 +50800,7 @@ if(path === "birthDate"){
       if(draftProposalId){
         State.data.proposals = State.data.proposals.filter(x => String(x.id) !== String(draftProposalId));
         this.editingDraftId = null;
+        this._draftPayloadMissing = false;
       }
       State.data.meta.updatedAt = nowISO();
       refreshStateShadows();
@@ -57517,6 +57560,7 @@ const ClalRiskLifePdf = {
       try{ Wizard?.close?.(); }catch(_e){}
       this.state = newAgentApptState();
       this.editingDraftId = null;
+      this._draftPayloadMissing = false;
       this.step = 1;
       this._finishing = false;
       this._showPanel();
@@ -57575,12 +57619,25 @@ const ClalRiskLifePdf = {
     },
     openDraft(rec){
       if(!rec) return;
+      /* GI-FIX 2026-08-01: אם הטיוטה נפתחה בלי payload (למשל מנת מילוי-רקע שנכשלה),
+         האשף נטען ריק — ו-_triggerAutoSave היה דורס את השורה בשרת ומוחק את ההצעה.
+         מסמנים את המצב בפתיחה וחוסמים כל שמירה עד לרענון. */
+      this._draftPayloadMissing = !!safeTrim(rec?.id) && Storage.payloadIsEmpty(rec);
       this._clearLocalDraft();
       try{ Wizard?.close?.(); }catch(_e){}
       this.loadDraftData(rec);
       this._finishing = false;
       this._showPanel();
       this.render();
+      if(this._draftPayloadMissing){
+        window.showToast?.({
+          title: "ההצעה לא נטענה במלואה",
+          text: "תוכן ההצעה לא הגיע מהשרת. השמירה נחסמה כדי לא לדרוס את הנתונים. רענן את הדף ונסה שוב.",
+          variant: "warn",
+          durationMs: 7000
+        });
+        return;
+      }
       window.showToast?.({ title: "ההצעה נטענה", text: "מינוי סוכן — המשך מהמקום שבו נשמרת", variant: "success", durationMs: 4200 });
     },
     close(){
@@ -58129,6 +58186,13 @@ const ClalRiskLifePdf = {
     },
     async saveDraft(){
       if(!Auth.current) return;
+      if(this._draftPayloadMissing){
+        try { console.warn("AGENT_APPT_SAVE_BLOCKED_DRAFT_PAYLOAD_MISSING:", this.editingDraftId); } catch(_e) {}
+        try {
+          window.showToast?.({ title: "לא ניתן לשמור", text: "תוכן ההצעה לא נטען מהשרת. רענן את הדף ופתח את ההצעה מחדש.", variant: "warn", durationMs: 6000 });
+        } catch(_e) {}
+        return;
+      }
       try{
         const payload = this.buildCustomerPayload();
         const c = this.state.customer;
