@@ -145,7 +145,7 @@
 </span>
 <span class="nav__label">הצוות שלי</span>
 </button>
-<button class="nav__item" data-view="dailyReport" id="navDailyReport" type="button">
+<button class="nav__item" data-view="reportsHub" id="navDailyReport" type="button">
 <span class="nav__icon" aria-hidden="true">
 <svg class="nav__iconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
 <path d="M14.5 3H21v6.5"></path>
@@ -489,16 +489,37 @@
 </div>
 </div>
 </section>
+<section class="view" id="view-reportsHub">
+<div class="giReportsHub">
+<div class="giReportsHub__intro">
+<div class="giReportsHub__title">דוחות</div>
+<div class="giReportsHub__sub">בחר דוח להצגה</div>
+</div>
+<div class="giReportsHub__grid" role="group" aria-label="בחירת דוח">
+<button class="giReportsHub__opt" data-report-open="daily" id="btnReportsHubSales" type="button">
+<span class="giReportsHub__optTitle">דוח מכירות</span>
+<span class="giReportsHub__optHint">נתוני מכירות מהדוח היומי</span>
+</button>
+<button class="giReportsHub__opt" data-report-open="cancellations" id="btnReportsHubCancellations" type="button">
+<span class="giReportsHub__optTitle">דוח ביטולים</span>
+<span class="giReportsHub__optHint">נתוני ביטולים מהקובץ</span>
+</button>
+</div>
+</div>
+</section>
 <section class="view" id="view-dailyReport">
+<div class="lcReportNav" id="reportNav">
+<button class="lcReportNav__back" id="btnReportsHubBack" type="button">← חזרה לדוחות</button>
 <div class="lcReportRubrics" id="reportRubrics" role="tablist" aria-label="מעבר בין דוחות">
-<button class="lcReportRubrics__tab is-active" id="rubricTabDaily" type="button" role="tab" aria-selected="true" data-rubric="daily">דוח יומי</button>
-<button class="lcReportRubrics__tab" id="rubricTabCancellations" type="button" role="tab" aria-selected="false" data-rubric="cancellations">ביטולים</button>
+<button class="lcReportRubrics__tab is-active" id="rubricTabDaily" type="button" role="tab" aria-selected="true" data-rubric="daily">דוח מכירות</button>
+<button class="lcReportRubrics__tab" id="rubricTabCancellations" type="button" role="tab" aria-selected="false" data-rubric="cancellations">דוח ביטולים</button>
+</div>
 </div>
 <div class="lcReportPanel is-active" id="dailyReportPanelDaily">
 <div class="card lcDailyReportCard">
 <div class="card__head lcDailyReportCard__head">
 <div>
-<div class="card__title" id="dailyReportTitle">דוח יומי</div>
+<div class="card__title" id="dailyReportTitle">דוח מכירות</div>
 <div class="lcDailyReport__asOf" hidden id="dailyReportAsOfLine"></div>
 <div class="card__hint" id="dailyReportHint">דוח שנקלט מתוך Excel — הנציגים רואים רק את השורות עם שמם בעמודת "נציג"</div>
 </div>
@@ -535,7 +556,7 @@
 <div class="card lcDailyReportCard lcCancellationsCard">
 <div class="card__head lcDailyReportCard__head">
 <div>
-<div class="card__title" id="cancellationsTitle">ביטולים</div>
+<div class="card__title" id="cancellationsTitle">דוח ביטולים</div>
 <div class="lcDailyReport__asOf" hidden id="cancellationsAsOfLine"></div>
 <div class="card__hint" id="cancellationsHint">דוח ביטולים שנקלט מתוך Excel — הנציגים רואים רק את השורות עם שמם בעמודת "נציג"</div>
 </div>

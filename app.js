@@ -12182,6 +12182,7 @@ this.els.syncDot = $("#syncDot");
           if(v === "campaignLeads" && !Auth.canAccessCampaignLeadsInbox()) return;
           if(v === "campaignMyLeads" && !Auth.canAccessCampaignMyLeads()) return;
           if(v === "dailyReport" && !Auth.current) return;
+          if(v === "reportsHub" && !Auth.current) return;
           if(v === "activityLog" && !Auth.canViewActivityLog()) return;
           this.goView(v);
         });
@@ -12357,7 +12358,8 @@ UsersGateUI.init();
     },
 
     setActiveNav(view){
-      $$(".nav__item").forEach(b => b.classList.toggle("is-active", b.getAttribute("data-view") === view));
+      const navView = (view === "dailyReport") ? "reportsHub" : view;
+      $$(".nav__item").forEach(b => b.classList.toggle("is-active", b.getAttribute("data-view") === navView));
     },
 
     goView(view, options = {}){
@@ -12388,6 +12390,7 @@ UsersGateUI.init();
       if(safe === "campaignLeads" && !Auth.canAccessCampaignLeadsInbox()) safe = "dashboard";
       if(safe === "campaignMyLeads" && !Auth.canAccessCampaignMyLeads()) safe = "dashboard";
       if(safe === "dailyReport" && !Auth.current) safe = "dashboard";
+      if(safe === "reportsHub" && !Auth.current) safe = "dashboard";
       if(safe === "myTeam" && !Auth.isTeamManager()) safe = "dashboard";
       if(safe === "activityLog" && !Auth.canViewActivityLog()) safe = "dashboard";
       if(safe === "attendanceReport" && !Auth.canViewAttendanceReport()) safe = "dashboard";
@@ -12423,7 +12426,8 @@ UsersGateUI.init();
           systemUpdates: "עדכוני מערכת",
           campaignLeads: "לידים מקמפיין",
           campaignMyLeads: "הלידים שלי",
-          dailyReport: "דוח יומי",
+          reportsHub: "דוחות",
+          dailyReport: (typeof DailyReportUI !== "undefined" && DailyReportUI.activeRubric === "cancellations") ? "דוח ביטולים" : "דוח מכירות",
           dailySales: "מעקב מכירות יומי",
           myTeam: "הצוות שלי",
           activityLog: "לוג פעילות",
@@ -12433,7 +12437,7 @@ UsersGateUI.init();
       }
 
       this.setActiveNav(safe);
-      document.body.classList.remove("view-users-active","view-dashboard-active","view-settings-active","view-myTools-active","view-customers-active","view-archivedCustomers-active","view-proposals-active","view-elementaryProposals-active","view-elementaryPending-active","view-agentElementaryTracking-active","view-myProcesses-active","view-mirrorCall-active","view-elementaryMirror-active","view-mirrorAssignments-active","view-systemUpdates-active","view-campaignLeads-active","view-campaignMyLeads-active","view-dailyReport-active","view-dailySales-active","view-myTeam-active","view-activityLog-active","view-attendanceReport-active");
+      document.body.classList.remove("view-users-active","view-dashboard-active","view-settings-active","view-myTools-active","view-customers-active","view-archivedCustomers-active","view-proposals-active","view-elementaryProposals-active","view-elementaryPending-active","view-agentElementaryTracking-active","view-myProcesses-active","view-mirrorCall-active","view-elementaryMirror-active","view-mirrorAssignments-active","view-systemUpdates-active","view-campaignLeads-active","view-campaignMyLeads-active","view-reportsHub-active","view-dailyReport-active","view-dailySales-active","view-myTeam-active","view-activityLog-active","view-attendanceReport-active");
       document.body.classList.add("view-" + safe + "-active");
       if(safe !== "settings"){
         ["connection","version","campaigns","landing","security","systemUpdates","activityLog","attendanceReport","archivedCustomers"].forEach((name) => {
@@ -64683,9 +64687,42 @@ const CampaignLeadsStore = {
       this._rubricEls.tabCancellations = document.getElementById("rubricTabCancellations");
       this._rubricEls.panelDaily = document.getElementById("dailyReportPanelDaily");
       this._rubricEls.panelCancellations = document.getElementById("dailyReportPanelCancellations");
+      this._rubricEls.btnBack = document.getElementById("btnReportsHubBack");
       if(this._rubricEls.tabDaily) on(this._rubricEls.tabDaily, "click", () => this.switchRubric("daily"));
       if(this._rubricEls.tabCancellations) on(this._rubricEls.tabCancellations, "click", () => this.switchRubric("cancellations"));
+      if(this._rubricEls.btnBack) on(this._rubricEls.btnBack, "click", () => {
+        try { UI.goView("reportsHub"); } catch(_e) {}
+      });
+      this.initReportsHub();
       this.applyRubricUi();
+    },
+
+    initReportsHub(){
+      if(this._reportsHubBound) return;
+      const hub = document.getElementById("view-reportsHub");
+      if(!hub) return;
+      this._reportsHubBound = true;
+      hub.querySelectorAll("[data-report-open]").forEach((btn) => {
+        on(btn, "click", () => {
+          const which = safeTrim(btn.getAttribute("data-report-open"));
+          this.openFromHub(which);
+        });
+      });
+    },
+
+    openFromHub(rubric){
+      const next = rubric === "cancellations" ? "cancellations" : "daily";
+      this.activeRubric = next;
+      this.applyRubricUi();
+      try { UI.goView("dailyReport"); } catch(_e) {}
+    },
+
+    syncPageTitle(){
+      try {
+        if(!UI?.els?.pageTitle) return;
+        if(LiveRefresh.getCurrentView?.() !== "dailyReport" && !document.getElementById("view-dailyReport")?.classList.contains("is-visible")) return;
+        UI.els.pageTitle.textContent = this.activeRubric === "cancellations" ? "דוח ביטולים" : "דוח מכירות";
+      } catch(_e) {}
     },
 
     applyRubricUi(){
@@ -64707,6 +64744,7 @@ const CampaignLeadsStore = {
         panelCancellations.hidden = !isCancellations;
         panelCancellations.classList.toggle("is-active", isCancellations);
       }
+      this.syncPageTitle();
     },
 
     switchRubric(rubric){

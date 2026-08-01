@@ -2556,6 +2556,98 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   font-weight: 600 !important;
 }
 
+.lcReportNav:not(#\9):not(#\9){
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: var(--gi-s3) var(--gi-s4) !important;
+  margin: 0 0 var(--gi-s5) !important;
+}
+
+.lcReportNav .lcReportRubrics:not(#\9):not(#\9){
+  margin-bottom: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.lcReportNav__back:not(#\9):not(#\9){
+  appearance: none !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface, #fff) !important;
+  color: var(--gi-text-3) !important;
+  font-family: var(--gi-font) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: var(--gi-s3) var(--gi-s4) !important;
+  border-radius: var(--gi-radius, 10px) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.lcReportNav__back:hover:not(#\9):not(#\9){
+  color: var(--gi-primary) !important;
+  border-color: var(--gi-primary) !important;
+}
+
+.giReportsHub:not(#\9):not(#\9){
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  padding: var(--gi-s4) 0 var(--gi-s6) !important;
+}
+
+.giReportsHub__title:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.giReportsHub__sub:not(#\9):not(#\9){
+  margin-top: 4px !important;
+  font-size: 14px !important;
+  color: var(--gi-text-3) !important;
+}
+
+.giReportsHub__grid:not(#\9):not(#\9){
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: var(--gi-s3) !important;
+}
+
+.giReportsHub__opt:not(#\9):not(#\9){
+  appearance: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  width: 100% !important;
+  text-align: right !important;
+  padding: 18px !important;
+  border-radius: var(--gi-radius, 10px) !important;
+  border: 1px solid var(--gi-border) !important;
+  background: var(--gi-surface, #fff) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: border-color .15s ease, background .15s ease !important;
+}
+
+.giReportsHub__opt:hover:not(#\9):not(#\9){
+  border-color: var(--gi-primary) !important;
+}
+
+.giReportsHub__optTitle:not(#\9):not(#\9){
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text) !important;
+}
+
+.giReportsHub__optHint:not(#\9):not(#\9){
+  font-size: 13px !important;
+  color: var(--gi-text-3) !important;
+}
+
+@media (max-width: 640px){
+  .giReportsHub__grid:not(#\9):not(#\9){ grid-template-columns: 1fr !important; }
+}
+
 /* --- ?????? ?????? --- */
 .lcDailyReportCard:not(#\9):not(#\9),
 .lcCancellationsCard:not(#\9):not(#\9){

@@ -39891,14 +39891,104 @@ body.view-dailyReport-active .content{
 }
 
 /* ===== Report rubrics (Daily / Cancellations) ===== */
+.lcReportNav{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px 14px;
+  margin:0;
+}
+.lcReportNav__back{
+  appearance:none;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.72);
+  color:var(--muted);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  padding:9px 14px;
+  border-radius:var(--radius2);
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease, border-color .15s ease;
+}
+.lcReportNav__back:hover{
+  color:var(--brandB);
+  border-color:rgba(37,99,235,.35);
+  background:rgba(59,130,246,.08);
+}
 .lcReportRubrics{
   display:flex;
   gap:8px;
-  margin:0 0 16px;
+  margin:0;
   padding:6px;
   border-radius:var(--radius2);
   border:1px solid var(--line);
   background:rgba(255,255,255,.72);
+  flex:1 1 auto;
+}
+
+/* ===== Reports hub (lightweight picker) ===== */
+.giReportsHub{
+  max-width:720px;
+  margin:0 auto;
+  padding:12px 4px 24px;
+}
+.giReportsHub__intro{
+  margin:0 0 18px;
+}
+.giReportsHub__title{
+  font-size:22px;
+  font-weight:800;
+  color:var(--text, #0f172a);
+  line-height:1.25;
+}
+.giReportsHub__sub{
+  margin-top:4px;
+  font-size:14px;
+  color:var(--muted);
+}
+.giReportsHub__grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+}
+.giReportsHub__opt{
+  appearance:none;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:6px;
+  width:100%;
+  text-align:right;
+  padding:18px 18px 16px;
+  border-radius:var(--radius2);
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.88);
+  cursor:pointer;
+  transition:border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .12s ease;
+}
+.giReportsHub__opt:hover{
+  border-color:rgba(37,99,235,.38);
+  background:#fff;
+  box-shadow:0 6px 18px rgba(15,23,42,.06);
+  transform:translateY(-1px);
+}
+.giReportsHub__opt:active{
+  transform:translateY(0);
+}
+.giReportsHub__optTitle{
+  font-size:16px;
+  font-weight:800;
+  color:var(--text, #0f172a);
+}
+.giReportsHub__optHint{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.35;
+}
+@media (max-width:640px){
+  .giReportsHub__grid{ grid-template-columns:1fr; }
+  .lcReportNav{ flex-direction:column; align-items:stretch; }
 }
 .lcReportRubrics__tab{
   appearance:none;
