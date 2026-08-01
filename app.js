@@ -9506,6 +9506,94 @@
       return { ok:true, rows: mapped };
     },
 
+    /** GI-PERF: 10 אחרונים בלבד למסך לקוחות — בלי לטעון את כל הטבלה. */
+    async loadLatestCustomers(limit = 10){
+      const take = Math.max(1, Math.min(50, Number(limit) || 10));
+      // over-fetch קל לסינון ארכיון/הרשאות בצד לקוח
+      const fetchLimit = Math.min(80, take * 4);
+      const selectExpr = CUSTOMER_LIGHT_COLUMNS;
+      try {
+        const connection = await this.waitForConnection({ retries: 2, delayMs: 600 });
+        if(!connection?.ok) return { ok:false, error: connection?.error || "NO_CONNECTION", data: [] };
+        const client = this.getClient();
+        let data = null;
+        try {
+          let builder = client.from(SUPABASE_TABLES.customers)
+            .select(selectExpr)
+            .order("created_at", { ascending: false })
+            .limit(fetchLimit);
+          builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
+          const { data: rows, error } = await this.withRetry(() => builder, "טעינת 10 לקוחות אחרונים");
+          if(error) throw error;
+          data = rows || [];
+        } catch(primaryErr) {
+          let path = SUPABASE_TABLES.customers
+            + "?select=" + encodeURIComponent(selectExpr)
+            + "&order=created_at.desc"
+            + "&limit=" + fetchLimit;
+          path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
+          data = await this.restRequest(path, { method: "GET" }) || [];
+        }
+        const mapped = (Array.isArray(data) ? data : [])
+          .map((row, idx) => this.mapCustomerRow(row, idx))
+          .filter((rec) => rec && !isServerArchivedCustomerRecord(rec));
+        return { ok:true, data: mapped };
+      } catch(err) {
+        return { ok:false, error: String(err?.message || err), data: [] };
+      }
+    },
+
+    /** חיפוש לקוחות בשרת (רק כשהמשתמש מחפש). */
+    async searchCustomers(query, limit = 40){
+      const raw = safeTrim(query);
+      if(!raw) return this.loadLatestCustomers(10);
+      const take = Math.max(1, Math.min(60, Number(limit) || 40));
+      const fetchLimit = Math.min(80, take * 2);
+      const selectExpr = CUSTOMER_LIGHT_COLUMNS;
+      const safeLike = raw.replace(/[%_,.()]/g, " ").replace(/\s+/g, " ").trim();
+      if(!safeLike) return this.loadLatestCustomers(10);
+      const pattern = "\"%" + safeLike.replace(/"/g, "") + "%\"";
+      const orFilter = [
+        "full_name.ilike." + pattern,
+        "id_number.ilike." + pattern,
+        "phone.ilike." + pattern,
+        "agent_name.ilike." + pattern,
+        "email.ilike." + pattern,
+        "city.ilike." + pattern
+      ].join(",");
+      try {
+        const connection = await this.waitForConnection({ retries: 2, delayMs: 600 });
+        if(!connection?.ok) return { ok:false, error: connection?.error || "NO_CONNECTION", data: [] };
+        const client = this.getClient();
+        let data = null;
+        try {
+          let builder = client.from(SUPABASE_TABLES.customers)
+            .select(selectExpr)
+            .or(orFilter)
+            .order("created_at", { ascending: false })
+            .limit(fetchLimit);
+          builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
+          const { data: rows, error } = await this.withRetry(() => builder, "חיפוש לקוחות");
+          if(error) throw error;
+          data = rows || [];
+        } catch(primaryErr) {
+          let path = SUPABASE_TABLES.customers
+            + "?select=" + encodeURIComponent(selectExpr)
+            + "&or=" + encodeURIComponent("(" + orFilter + ")")
+            + "&order=created_at.desc"
+            + "&limit=" + fetchLimit;
+          path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
+          data = await this.restRequest(path, { method: "GET" }) || [];
+        }
+        const mapped = (Array.isArray(data) ? data : [])
+          .map((row, idx) => this.mapCustomerRow(row, idx))
+          .filter((rec) => rec && !isServerArchivedCustomerRecord(rec));
+        return { ok:true, data: mapped };
+      } catch(err) {
+        return { ok:false, error: String(err?.message || err), data: [] };
+      }
+    },
+
     async loadCampaignLeadRows(scope = "all", selectExpr = "*"){
       const useMineScope = scope === "mine";
       const pageSize = 1000;
@@ -12236,7 +12324,8 @@ this.els.syncDot = $("#syncDot");
       });
       on(this.els.usersSearch, "input", perfDebounce(() => UsersUI.render(), 250));
       on(this.els.usersFilter, "change", () => UsersUI.render());
-      on(this.els.customersSearch, "input", perfDebounce(() => CustomersUI.render(), 250));
+      on(this.els.customersSearch, "input", perfDebounce(() => CustomersUI.render({ forceServer: true }), 400));
+      on($("#customersSearchBtn"), "click", () => CustomersUI.render({ forceServer: true }));
       on(this.els.archivedCustomersSearch, "input", perfDebounce(() => ArchivedCustomersUI.render(), 250));
       ArchivedCustomersUI.init();
       on(this.els.btnCustomersExport, "click", () => CustomersUI.exportToExcel());
@@ -12484,7 +12573,11 @@ UsersGateUI.init();
         if (safe === "users") UsersUI.render();
         if (safe === "customers") {
           if(UI.els.customersSearch) UI.els.customersSearch.value = "";
-          CustomersUI.render();
+          try {
+            CustomersUI._viewMode = "latest";
+            CustomersUI._viewQuery = "";
+          } catch(_e) {}
+          CustomersUI.render({ forceServer: true });
         }
         if (safe === "proposals") ProposalsUI.render();
         if (safe === "elementaryProposals") ElementaryProposalsUI.render();
@@ -14051,6 +14144,12 @@ UsersGateUI.init();
     els: {},
     policyModal: {},
     _policyCollectCache: null,
+    _viewRows: null,
+    _viewMode: "latest",
+    _viewQuery: "",
+    _listFetchToken: 0,
+    _lastLatestFetchAt: 0,
+    _listBusy: false,
 
     invalidatePolicyCollectCache(customerIds){
       if(!this._policyCollectCache) return;
@@ -14254,13 +14353,129 @@ UsersGateUI.init();
       return visible;
     },
 
+    /** שורות מוצגות במסך לקוחות — מגיעות מהשרת (10 אחרונים / חיפוש). */
     filtered(){
-      const q = safeTrim(UI.els.customersSearch?.value).toLowerCase();
-      const rows = this.list();
-      if(q){
-        return rows.filter(rec => [rec.fullName, rec.idNumber, rec.phone, rec.agentName, rec.email, rec.city].some(v => safeTrim(v).toLowerCase().includes(q)));
+      if(Array.isArray(this._viewRows)) return this._viewRows.slice();
+      // נפילה רכה עד שהשרת עונה: 10 אחרונים מקומיים בלבד (בלי חיפוש מקומי מלא)
+      const q = safeTrim(UI.els.customersSearch?.value);
+      if(q) return [];
+      return this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+    },
+
+    _scopeServerRows(rows){
+      const list = Array.isArray(rows) ? rows.filter(Boolean) : [];
+      let visible;
+      if(Auth.isElementary()){
+        visible = list.filter((rec) => this.customerHasElementaryProducts(rec));
+      } else if(Auth.canViewAllCustomers()){
+        visible = list.slice();
+      } else {
+        visible = list.filter((rec) => customerVisibleToCurrentUser(rec));
       }
-      return rows.slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+      visible.sort((a,b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0));
+      return visible;
+    },
+
+    _ingestServerRows(rows){
+      const out = [];
+      State.data.customers = Array.isArray(State.data.customers) ? State.data.customers : [];
+      (Array.isArray(rows) ? rows : []).forEach((rec) => {
+        if(!rec || !rec.id || isServerArchivedCustomerRecord(rec)) return;
+        try {
+          const idx = State.data.customers.findIndex((row) => String(row?.id) === String(rec.id));
+          if(idx >= 0){
+            const existing = State.data.customers[idx];
+            const incomingEmpty = Storage.payloadIsEmpty(rec);
+            const keepPayload = incomingEmpty && !Storage.payloadIsEmpty(existing);
+            const merged = normalizeCustomerRecord({
+              ...existing,
+              ...rec,
+              payload: keepPayload ? existing.payload : (rec.payload || existing.payload || {})
+            }, idx);
+            State.data.customers[idx] = merged;
+            out.push(merged);
+          } else {
+            const inserted = ensureCustomerInActiveList(rec) || rec;
+            out.push(inserted);
+          }
+        } catch(_e) {
+          out.push(rec);
+        }
+      });
+      try { refreshStateShadows({ skipNormalize: true, lightShadows: true }); } catch(_e) {}
+      return this._scopeServerRows(out);
+    },
+
+    _showListLoading(){
+      if(!UI.els.customersTbody) return;
+      UI.els.customersTbody.innerHTML = `<tr><td colspan="8" class="muted">טוען לקוחות…</td></tr>`;
+      if(UI.els.customersCountBadge) UI.els.customersCountBadge.textContent = "טוען…";
+    },
+
+    async syncListFromServer(options = {}){
+      if(!Auth?.current) return;
+      const force = options.force === true;
+      const q = safeTrim(UI.els.customersSearch?.value);
+      const token = (Number(this._listFetchToken) || 0) + 1;
+      this._listFetchToken = token;
+      this._listBusy = true;
+      try {
+        if(!q){
+          const age = Date.now() - (Number(this._lastLatestFetchAt) || 0);
+          if(!force && this._viewMode === "latest" && Array.isArray(this._viewRows) && this._viewRows.length && age < 20000){
+            this.paintTable();
+            return;
+          }
+          if(!this._viewRows?.length) this._showListLoading();
+          const res = await Storage.loadLatestCustomers(CUSTOMERS_DEFAULT_VISIBLE);
+          if(token !== this._listFetchToken) return;
+          if(!res?.ok){
+            // נפילה למקומי אם יש
+            this._viewRows = this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+            this._viewMode = "latest";
+            this._viewQuery = "";
+            this.paintTable();
+            return;
+          }
+          const scoped = this._ingestServerRows(res.data).slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+          this._viewRows = scoped;
+          this._viewMode = "latest";
+          this._viewQuery = "";
+          this._lastLatestFetchAt = Date.now();
+          this.paintTable();
+          return;
+        }
+
+        this._showListLoading();
+        const res = await Storage.searchCustomers(q, 40);
+        if(token !== this._listFetchToken) return;
+        if(!res?.ok){
+          this._viewRows = [];
+          this._viewMode = "search";
+          this._viewQuery = q;
+          this.paintTable();
+          try {
+            window.showToast?.({ title: "חיפוש נכשל", text: safeTrim(res?.error) || "לא ניתן לחפש כרגע בשרת.", variant: "warn", durationMs: 4200 });
+          } catch(_e){}
+          return;
+        }
+        const scoped = this._ingestServerRows(res.data).slice(0, 40);
+        this._viewRows = scoped;
+        this._viewMode = "search";
+        this._viewQuery = q;
+        this.paintTable();
+      } catch(err) {
+        if(token !== this._listFetchToken) return;
+        try { console.warn("CUSTOMERS_LIST_SYNC_FAILED:", err); } catch(_e) {}
+        if(!q){
+          this._viewRows = this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+          this._viewMode = "latest";
+          this._viewQuery = "";
+          this.paintTable();
+        }
+      } finally {
+        if(token === this._listFetchToken) this._listBusy = false;
+      }
     },
 
     handleOpenCustomerClick(ev, customerId){
@@ -14455,8 +14670,9 @@ UsersGateUI.init();
 
     quietRefresh(){
       if(!UI.els.customersTbody) return true;
-      const q = safeTrim(UI.els.customersSearch?.value).toLowerCase();
-      const totalVisible = this.list().length;
+      const q = safeTrim(UI.els.customersSearch?.value);
+      // בזמן חיפוש/טעינה מהשרת — לא לדרוס עם נתונים מקומיים חלקיים
+      if(this._listBusy || (q && this._viewMode !== "search")) return true;
       const rows = this.filtered();
       const domRows = Array.from(UI.els.customersTbody.querySelectorAll('tr.lcCustomerRow'));
       if(domRows.length !== rows.length) return false;
@@ -14468,8 +14684,8 @@ UsersGateUI.init();
         if(this.patchCustomerRowQuiet(tr, rows[idx])) changed = true;
       });
       if(UI.els.customersCountBadge){
-        const badgeText = (!q && totalVisible > CUSTOMERS_DEFAULT_VISIBLE)
-          ? rows.length + " מתוך " + totalVisible + " לקוחות"
+        const badgeText = this._viewMode === "search"
+          ? rows.length + " תוצאות"
           : rows.length + " לקוחות";
         if(UI.els.customersCountBadge.textContent !== badgeText) UI.els.customersCountBadge.textContent = badgeText;
       }
@@ -14477,15 +14693,13 @@ UsersGateUI.init();
       return true;
     },
 
-    render(){
+    paintTable(){
       if(!UI.els.customersTbody) return;
-      try { App.ensureAdminCustomersLoaded("customers_view"); } catch(_e) {}
-      const q = safeTrim(UI.els.customersSearch?.value).toLowerCase();
-      const totalVisible = this.list().length;
+      const q = safeTrim(UI.els.customersSearch?.value);
       const rows = this.filtered();
       if(UI.els.customersCountBadge){
-        if(!q && totalVisible > CUSTOMERS_DEFAULT_VISIBLE){
-          UI.els.customersCountBadge.textContent = rows.length + " מתוך " + totalVisible + " לקוחות";
+        if(this._viewMode === "search" || q){
+          UI.els.customersCountBadge.textContent = rows.length + " תוצאות";
         } else {
           UI.els.customersCountBadge.textContent = rows.length + " לקוחות";
         }
@@ -14498,7 +14712,6 @@ UsersGateUI.init();
           return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
         } catch(_e){ return '—'; }
       };
-      // PERF: compute premium once per row (was inline IIFE per cell in template string)
       const premiumCellHtml = (rec) => this.premiumCellHtml(rec);
       const sectorCellHtml = (rec) => this.sectorCellHtml(rec);
       UI.els.customersTbody.innerHTML = rows.length ? rows.map(rec => {
@@ -14524,6 +14737,16 @@ UsersGateUI.init();
         : `<tr><td colspan="8"><div class="emptyState"><div class="emptyState__icon">🗂️</div><div class="emptyState__title">עדיין אין לקוחות</div><div class="emptyState__text">ברגע שמסיימים הקמת לקוח, הלקוח יישמר כאן אוטומטית ויהיה אפשר לפתוח את תיק הלקוח המלא.</div></div></td></tr>`);
 
       this.bindRowActionButtons();
+    },
+
+    render(options = {}){
+      if(!UI.els.customersTbody) return;
+      try { App.ensureAdminCustomersLoaded("customers_view"); } catch(_e) {}
+      // צביעה מיידית ממה שיש (מטמון תצוגה / 10 מקומיים) — בלי לחכות לשרת
+      this.paintTable();
+      if(options.skipServerFetch === true) return;
+      // forceServer: ניווט/חיפוש. אחרת (שמירה/שינוי מקומי) — גם מרעננים מהשרת את ה-10.
+      void this.syncListFromServer({ force: true });
     },
 
     showLoader(){
@@ -21231,7 +21454,7 @@ UsersGateUI.init();
           } catch(_e) {}
           try {
             if(LiveRefresh.getCurrentView?.() === "customers" && customerIds.length){
-              if(!CustomersUI.quietRefresh?.()) CustomersUI.render?.();
+              if(!CustomersUI.quietRefresh?.()) CustomersUI.render?.({ skipServerFetch: true });
             }
           } catch(_e) {}
           try {
@@ -21462,7 +21685,7 @@ UsersGateUI.init();
         return;
       }
       if(view === "customers"){
-        if(!CustomersUI.quietRefresh()) CustomersUI.render();
+        if(!CustomersUI.quietRefresh()) CustomersUI.render({ skipServerFetch: true });
         return;
       }
       if(view === "elementaryPending"){
@@ -23347,37 +23570,6 @@ UsersGateUI.init();
       bd.classList.toggle("bankKpiToday__breakdown--open", open);
       bd.classList.toggle("bankKpiToday__breakdown--collapsed", !open);
       btn.textContent = open ? "הסתר פירוט ▴" : "הצג פירוט ▾";
-    },
-
-    getInvestNewsItems(){
-      return [
-        {
-          image: "./invest-news-car-click.png",
-          category: "חדשות מוצר",
-          date: "18.05.2026",
-          title: "מהיום הכי נוח ובקליק ניתן לקבל הצעה ולהפיק פוליסה לרכב מבלי להתאמץ",
-          summary: "שירות חדש מאפשר קבלת הצעה והפקת פוליסה במהירות ובקלות — ישירות מהטלפון הנייד או מהמחשב."
-        }
-      ];
-    },
-
-    renderInvestNewsFeed(){
-      const calIcon = `<svg class="bankInvestNewsCard__calIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M8 3.5v3M16 3.5v3M3.5 9.5h17"></path></svg>`;
-      return this.getInvestNewsItems().map((item, i) => `
-        <article class="bankInvestNewsCard${i ? " bankInvestNewsCard--sep" : ""}">
-          <div class="bankInvestNewsCard__thumbWrap">
-            <img class="bankInvestNewsCard__thumb" src="${escapeHtml(item.image)}" alt="" loading="lazy" decoding="async"/>
-          </div>
-          <div class="bankInvestNewsCard__body">
-            <div class="bankInvestNewsCard__meta">
-              <span class="bankInvestNewsCard__tag">${escapeHtml(item.category)}</span>
-              <span class="bankInvestNewsCard__date">${calIcon}${escapeHtml(item.date)}</span>
-            </div>
-            <h3 class="bankInvestNewsCard__title">${escapeHtml(item.title)}</h3>
-            <p class="bankInvestNewsCard__summary">${escapeHtml(item.summary)}</p>
-            <span class="bankInvestNewsCard__more" aria-hidden="true">קרא עוד ›</span>
-          </div>
-        </article>`).join("");
     },
 
     shouldShowPerformanceBoard(){
@@ -25300,20 +25492,6 @@ UsersGateUI.init();
                 <div class="bankLeader__empty" hidden></div>
               </article>`;
           })()}
-
-          </div>
-
-          <div class="bankDash__row bankDash__row--activityChart">
-
-          <article class="bankSide card bankInvestNews">
-              <header class="bankInvestNews__head">
-                <h2 class="bankSide__title bankInvestNews__title">חדשות INVEST</h2>
-                <span class="bankInvestNews__headLine" aria-hidden="true"></span>
-              </header>
-              <div class="bankInvestNews__list" aria-live="polite">
-                ${this.renderInvestNewsFeed()}
-              </div>
-            </article>
 
           </div>
 
@@ -59677,7 +59855,7 @@ const ClalRiskLifePdf = {
           }
           return;
         }
-        if(view === "customers"){ try { CustomersUI.render(); } catch(_e) {} return; }
+        if(view === "customers"){ try { CustomersUI.render({ skipServerFetch: true }); } catch(_e) {} return; }
         if(view === "proposals"){ try { ProposalsUI.render(); } catch(_e) {} return; }
         if(view === "elementaryProposals"){ try { ElementaryProposalsUI.render(); } catch(_e) {} return; }
         if(view === "campaignLeads"){ try { void CampaignLeadsUI.render(); } catch(_e) {} return; }
@@ -59939,7 +60117,7 @@ const ClalRiskLifePdf = {
             return;
           }
           if(view === "users") { try { UsersUI.render(); } catch(_e) {} return; }
-          if(view === "customers") { try { CustomersUI.render(); } catch(_e) {} return; }
+          if(view === "customers") { try { CustomersUI.render({ skipServerFetch: true }); } catch(_e) {} return; }
           if(view === "archivedCustomers" || view === "systemUpdates" || view === "activityLog" || view === "attendanceReport") {
             try { UI._settingsRubric = view; UI.goView("settings"); } catch(_e) {}
             return;
