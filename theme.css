@@ -1797,7 +1797,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
 .bankDash__topStatsGreeting:not(#\9):not(#\9){
   display: block !important;
   padding: 0 !important;
-  margin-bottom: var(--gi-s1) !important;
+  margin-bottom: var(--gi-s2) !important;
   text-align: right;
   background: none !important;
   border: none !important;
@@ -1807,14 +1807,26 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   text-shadow: none !important;
 }
 
-/* GI-FIX 2026-08-01: the ::before heading rendered as "??? ????" (the Hebrew
-   string was lost when this file was saved as ASCII). Per user request the
-   dashboard now shows only the greeting + user name, so both the heading and
-   the accent rule below it are removed and the KPI cards move up. */
-.bankDash__topStatsGreeting:not(#\9):not(#\9)::before,
+/* Heading text lives here rather than in app.js, so no script is touched */
+.bankDash__topStatsGreeting:not(#\9):not(#\9)::before{
+  content: "??? ????";
+  display: block;
+  margin-bottom: 2px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+  color: var(--gi-text);
+}
+
 .bankDash__topStatsGreeting:not(#\9):not(#\9)::after{
-  content: none !important;
-  display: none !important;
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  margin-top: var(--gi-s2);
+  border-radius: var(--gi-r-pill);
+  background: var(--gi-primary);
 }
 
 /* The dynamic greeting drops from headline to subtitle */
@@ -2098,41 +2110,27 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   box-shadow: 0 0 0 3px var(--gi-primary-ring);
 }
 
-/* GI-FIX 2026-08-01 (rev 2): the global input[type="search"] rule in section 13
-   ships border/padding/background with !important. Both rules being !important
-   means specificity decides, and that one scores (2,1,1) against this rule's
-   (2,1,0) — the trailing `input` element selector wins it. A third :not(#\9)
-   raises this to (3,1,0); the ID column outranks everything below it. */
-.giTopSearch__input:not(#\9):not(#\9):not(#\9){
+.giTopSearch__input:not(#\9):not(#\9){
   flex: 1 1 auto;
   min-width: 0;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  outline: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  font-family: var(--gi-font) !important;
-  font-size: 14px !important;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--gi-font);
+  font-size: 14px;
   font-weight: 400;
   line-height: 1;
-  color: var(--gi-text) !important;
+  color: var(--gi-text);
   text-align: start;
   -webkit-appearance: none;
   appearance: none;
 }
 
-/* Same story for focus: `input:focus:not(#\9):not(#\9)` scores (2,2,1). */
-.giTopSearch__input:focus:not(#\9):not(#\9):not(#\9){
-  border: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-  background: transparent !important;
-}
-
-.giTopSearch__input:not(#\9):not(#\9):not(#\9)::placeholder{
+.giTopSearch__input:not(#\9):not(#\9)::placeholder{
   color: var(--gi-text-muted);
   opacity: 1;
 }
@@ -6687,114 +6685,4 @@ body.lcSettingsRubric-systemUpdates #view-settings .lcSettingsHub__content:not(#
   .lcNewCustomerTypeCard__text:not(#\9):not(#\9){
     display: none !important;
   }
-}
-
-/* =====================================================================
-   GI-FIX 2026-08-01 — כפתורי השמירה בשיקוף שיחה אלמנטרי
-
-   הכפתור "שמור דוח והפק PDF" (‎#emMirrorSaveReportBtn‎) היה בלתי נראה: קיים,
-   תופס מקום וניתן ללחיצה, אבל בלי צבע. ב-app.css הוא מוגדר עם
-   ‎background: linear-gradient(135deg, var(--emBrandB), var(--emBrandC))‎
-   וטקסט לבן. שני המשתנים מוגדרים על ‎.emMirror‎ בלבד, ולא גלובלית. אם הם לא
-   מגיעים לכפתור, הגרדיאנט הופך לערך לא חוקי, הרקע נופל לשקוף — ונשאר טקסט לבן
-   על ‎.emMirror__doc‎ שהוא ‎#fff‎.
-
-   התיקון מטפל בשתי האפשרויות בבת אחת: צבעים מפורשים בלי משתני CSS (חסין
-   לבעיית scope) בספציפיות ‎(3,1,0)‎ עם ‎!important‎ (חסין לבעיית דריסה).
-   הערכים זהים לגוון המקורי — ‎#0b1f4a‎ ו-‎#2a5cf5‎ — כדי שהעיצוב לא ישתנה.
-   ===================================================================== */
-
-.emMirror__saveBtn:not(#\9):not(#\9):not(#\9){
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: 42px !important;
-  padding: 0 22px !important;
-  border: 0 !important;
-  border-radius: 12px !important;
-  background-color: #2a5cf5 !important;                 /* fallback אם הגרדיאנט לא נתמך */
-  background-image: linear-gradient(135deg, #0b1f4a, #2a5cf5) !important;
-  color: #ffffff !important;
-  font: inherit !important;
-  font-weight: 800 !important;
-  text-shadow: 0 1px 1px rgba(0,0,0,.18) !important;    /* קריאוּת גם אם הרקע ייכשל */
-  box-shadow: 0 10px 22px rgba(42,92,245,.30) !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  cursor: pointer !important;
-}
-
-.emMirror__saveBtn:not(#\9):not(#\9):not(#\9):hover{
-  background-color: #1e49d8 !important;
-  background-image: linear-gradient(135deg, #0a1a3f, #1e49d8) !important;
-}
-
-.emMirror__saveBtn:not(#\9):not(#\9):not(#\9):focus-visible{
-  outline: 3px solid rgba(42,92,245,.45) !important;
-  outline-offset: 2px !important;
-}
-
-/* וריאנט הסירוב ("שמור תיעוד וסיים שיחה") — אותה בעיה, גוון אדום. */
-.emMirror__saveBtn--danger:not(#\9):not(#\9):not(#\9){
-  background-color: #dc2626 !important;
-  background-image: linear-gradient(135deg, #991b1b, #dc2626) !important;
-  box-shadow: 0 10px 22px rgba(220,38,38,.30) !important;
-}
-
-.emMirror__saveBtn--danger:not(#\9):not(#\9):not(#\9):hover{
-  background-color: #b91c1c !important;
-  background-image: linear-gradient(135deg, #7f1d1d, #b91c1c) !important;
-}
-
-/* שורת הכפתור עצמה — שלא תתמוטט לגובה אפס אם flex נדרס. */
-.emMirror__saveRow:not(#\9):not(#\9):not(#\9){
-  display: flex !important;
-  justify-content: flex-end !important;
-  gap: 10px !important;
-  margin-top: 14px !important;
-}
-
-/* =====================================================================
-   GI-FEAT 2026-08-01 — תגי סטטוס לפוליסות קיימות בתיק הלקוח
-
-   הסטטוס מגיע משלב 2 של אשף בריאות וסיכונים. הבסיס ב-app.css הוא ירוק אחיד
-   ובשורה אחת; כאן מוסיפים צבע לכל סטטוס ותמיכה בתג דו-שורתי ("ללא שינוי /
-   לבקשת הלקוח") בלי שהעמודה תימתח.
-   ===================================================================== */
-
-.cfFile__statusBadge:not(#\9):not(#\9),
-#customerFull .customerPolicyRow__status:not(#\9):not(#\9){
-  display: inline-block !important;
-  text-align: center !important;
-  line-height: 1.25 !important;
-  white-space: normal !important;
-  max-width: 130px !important;
-}
-
-/* ביטול מלא — אדום */
-.cfFile__statusBadge.is-cancel-full:not(#\9):not(#\9),
-#customerFull .customerPolicyRow__status.is-cancel-full:not(#\9):not(#\9){
-  background: rgba(220,38,38,.12) !important;
-  color: #b91c1c !important;
-}
-
-/* ביטול חלקי — כתום */
-.cfFile__statusBadge.is-cancel-partial:not(#\9):not(#\9),
-#customerFull .customerPolicyRow__status.is-cancel-partial:not(#\9):not(#\9){
-  background: rgba(217,119,6,.14) !important;
-  color: #b45309 !important;
-}
-
-/* ללא שינוי (לבקשת הלקוח / קולקטיב) — אפור ניטרלי */
-.cfFile__statusBadge.is-nochange:not(#\9):not(#\9),
-#customerFull .customerPolicyRow__status.is-nochange:not(#\9):not(#\9){
-  background: rgba(100,116,139,.14) !important;
-  color: #475569 !important;
-}
-
-/* מינוי סוכן — כחול */
-.cfFile__statusBadge.is-appoint:not(#\9):not(#\9),
-#customerFull .customerPolicyRow__status.is-appoint:not(#\9):not(#\9){
-  background: rgba(42,92,245,.12) !important;
-  color: #1e40af !important;
 }
