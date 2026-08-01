@@ -8277,7 +8277,13 @@
       const userKey = this.fullCacheUserKey();
       if(isFresh(this._memoryCache)){
         if(!userKey || !this._memoryCache.userKey || this._memoryCache.userKey === userKey){
-          return normalizeState(this._memoryCache.payload);
+          // אותה בדיקה גם על מטמון הזיכרון: saveServerCache שומר את State.data
+          // כמות שהוא, כך שאם הסשן עצמו הגיע ממקור מקוצץ — הוא יישמר מקוצץ.
+          if(!this.sessionPayloadLooksLight(this._memoryCache.payload)){
+            return normalizeState(this._memoryCache.payload);
+          }
+          try { console.warn("MEMORY_CACHE_LOOKS_LIGHT_IGNORED — going to server instead"); } catch(_e) {}
+          this._memoryCache = null;
         }
       }
       try {
@@ -8287,9 +8293,28 @@
         if(isFresh(parsed)){
           const rawPayload = parsed.payload;
           const payload = normalizeState(rawPayload);
+          const looksLight = this.sessionPayloadLooksLight(rawPayload) || this.sessionPayloadLooksLight(payload);
           // sessionStorage שומר light-cache — לא להרעיל את מטמון הזיכרון המלא
-          if(!this.sessionPayloadLooksLight(rawPayload) && !this.sessionPayloadLooksLight(payload)){
+          if(!looksLight){
             this._memoryCache = { at: Number(parsed.at || Date.now()), payload, userKey: userKey || "" };
+          }
+          /* GI-FIX 2026-08-01 — הבאג שהחזיר תיקי לקוח ריקים והעלים הצעות בריאות.
+             buildLightCachePayload כותב ל-sessionStorage גרסה מקוצצת שבה
+             ‎payload: {}‎ לכל לקוח והצעה, אבל שומרת את insuredCount /
+             existingPoliciesCount / newPoliciesCount. עד כה הפונקציה הזו זיהתה
+             את המצב — אבל רק כדי לא להרעיל את מטמון הזיכרון, ואז החזירה את
+             המטען הקצוץ בכל זאת. הקוראים (loadBackup ומסלול allowFreshCache
+             ב-loadSheets) אימצו אותו כ-State.data מלא, וכך נוצר בדיוק מה שנראה
+             במסך: "מבוטחים 2" מהמונה לצד "אין מוצרים בתיק" מה-payload הריק,
+             והצעות בריאות שנעלמו כי customerOwnedByCurrentAgent נשען על
+             payload.agentId / payload.createdByKey כשעמודת agent_id ריקה.
+             loadMemoryCacheForCurrentUser כבר נהגה נכון ומחזירה null במצב הזה;
+             כאן פשוט חסרה אותה בדיקה. מטמון קצוץ אינו מצב שמיש — עדיף לפנות
+             לשרת מאשר להציג תיקים ריקים. */
+          if(looksLight){
+            try { console.warn("SERVER_CACHE_LOOKS_LIGHT_IGNORED — going to server instead"); } catch(_e) {}
+            try { sessionStorage.removeItem(GI_SERVER_CACHE_KEY); } catch(_e) {}
+            return null;
           }
           return payload;
         }
@@ -10092,9 +10117,25 @@
       return { ok:true, record: rec };
     },
 
+    /* GI-FIX 2026-08-01: הבדיקה המקורית ראתה רק ‎{}‎ ריק לגמרי. רשומה שהגיעה
+       ממקור מקוצץ יכולה לשאת payload רדוד ("‎{createdBy:...}‎") ולעבור אותה —
+       ואז ההגנות שנשענות עליה לא נכנסות לפעולה והתיק נפתח בלי מוצרים.
+       לכן נוספה בדיקת סתירה: אם עמודות המונים אומרות שיש תוכן, אבל ב-payload
+       אין מבוטחים ואין פוליסות — הרשומה חסרה, ויש למשוך אותה מהשרת. */
     payloadIsEmpty(rec){
       const p = rec?.payload;
-      return !p || (typeof p === "object" && !Object.keys(p).length);
+      if(!p || typeof p !== "object") return true;
+      if(!Object.keys(p).length) return true;
+
+      const insureds = Array.isArray(p.insureds) ? p.insureds.length : 0;
+      const newPolicies = Array.isArray(p.newPolicies) ? p.newPolicies.length : 0;
+      const hasPrimary = !!(p.primary && typeof p.primary === "object" && Object.keys(p.primary).length);
+      if(insureds || newPolicies || hasPrimary) return false;
+
+      const expectedInsureds = Number(rec?.insuredCount || 0) || 0;
+      const expectedNew = Number(rec?.newPoliciesCount || 0) || 0;
+      const expectedExisting = Number(rec?.existingPoliciesCount || 0) || 0;
+      return (expectedInsureds + expectedNew + expectedExisting) > 0;
     },
 
     // GI-FIX 2026-07-31: מנה שנכשלת מתפצלת לשתיים ומנוסה שוב, עד רמת מזהה בודד.
