@@ -2098,11 +2098,12 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   box-shadow: 0 0 0 3px var(--gi-primary-ring);
 }
 
-/* GI-FIX 2026-08-01: the global input[type="search"] rule (section 13) ships
-   border/padding/background with !important, which drew a second frame inside
-   the .giTopSearch pill. These declarations must match that weight so only the
-   outer pill is visible. */
-.giTopSearch__input:not(#\9):not(#\9){
+/* GI-FIX 2026-08-01 (rev 2): the global input[type="search"] rule in section 13
+   ships border/padding/background with !important. Both rules being !important
+   means specificity decides, and that one scores (2,1,1) against this rule's
+   (2,1,0) — the trailing `input` element selector wins it. A third :not(#\9)
+   raises this to (3,1,0); the ID column outranks everything below it. */
+.giTopSearch__input:not(#\9):not(#\9):not(#\9){
   flex: 1 1 auto;
   min-width: 0;
   height: 100% !important;
@@ -2123,15 +2124,15 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   appearance: none;
 }
 
-/* The focus ring belongs to the outer pill (.giTopSearch:focus-within) */
-.giTopSearch__input:focus:not(#\9):not(#\9){
+/* Same story for focus: `input:focus:not(#\9):not(#\9)` scores (2,2,1). */
+.giTopSearch__input:focus:not(#\9):not(#\9):not(#\9){
   border: 0 !important;
   box-shadow: none !important;
   outline: none !important;
   background: transparent !important;
 }
 
-.giTopSearch__input:not(#\9):not(#\9)::placeholder{
+.giTopSearch__input:not(#\9):not(#\9):not(#\9)::placeholder{
   color: var(--gi-text-muted);
   opacity: 1;
 }

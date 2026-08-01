@@ -10111,6 +10111,42 @@
       }
     },
 
+    /* GI-FIX 2026-08-01 (תוכנית 1): שליפת payload לפי דרישה.
+       תיק לקוח וטיוטת הצעה קוראים rec.payload מהזיכרון. אם הרשומה נטענה רזה
+       (או שמנת מילוי-הרקע נכשלה), היא נפתחת ריקה. כאן שולפים מהשרת את השורה
+       הבודדת וממזגים אותה לתוך State.data — Object.assign כדי לשמור על זהות
+       האובייקט, שהפניות שמוחזקות בתצוגות לא יתיישנו. */
+    async ensureRecordPayload(stateKey, id){
+      const key = stateKey === "proposals" ? "proposals" : "customers";
+      const table = key === "proposals" ? SUPABASE_TABLES.proposals : SUPABASE_TABLES.customers;
+      const normalize = key === "proposals" ? normalizeProposalRecord : normalizeCustomerRecord;
+      const safeId = safeTrim(id);
+      if(!safeId) return { ok:false, error:"MISSING_ID" };
+
+      const list = Array.isArray(State.data?.[key]) ? State.data[key] : [];
+      const idx = list.findIndex((row) => String(row?.id) === String(safeId));
+      const rec = idx >= 0 ? list[idx] : null;
+      if(rec && !this.payloadIsEmpty(rec)) return { ok:true, record: rec, cached:true };
+
+      const res = await this.loadSingleRow(table, safeId, "id,payload");
+      if(!res?.ok) return { ok:false, error: res?.error || "טעינת פרטי הרשומה נכשלה" };
+
+      let payload = res.data?.payload;
+      if(typeof payload === "string"){
+        try { payload = JSON.parse(safeTrim(payload) || "{}"); } catch(_e) { payload = null; }
+      }
+      if(!payload || typeof payload !== "object"){
+        return { ok:false, error:"EMPTY_PAYLOAD_ON_SERVER", record: rec };
+      }
+      if(!rec) return { ok:true, record: null, payload };
+      try {
+        Object.assign(rec, normalize({ ...rec, payload }, idx));
+      } catch(_e) {
+        rec.payload = payload;
+      }
+      return { ok:true, record: rec };
+    },
+
     payloadIsEmpty(rec){
       const p = rec?.payload;
       return !p || (typeof p === "object" && !Object.keys(p).length);
@@ -16853,8 +16889,70 @@ UsersGateUI.init();
       return chips.join('') || '<span class="muted small">אין פרטי זיהוי</span>';
     },
 
+    /* GI-FIX 2026-08-01 (תוכניות 1+3): תיק לקוח לא נפתח ריק.
+       אם ה-payload חסר — מציגים "טוען פרטי תיק…" ומושכים את השורה מהשרת
+       לפני הרינדור, במקום להציג תיק בלי פוליסות שנראה כאילו הנתונים נמחקו. */
     openById(id, opts={}){
       const rec = this.byId(id);
+      if(!rec || !this.els.wrap) return;
+      // הקורא (openWithLoader) עוטף ב-try/catch סינכרוני, שלא תופס דחיית Promise —
+      // לכן בולעים כאן ומדווחים ללוג, במקום unhandled rejection.
+      if(Storage.payloadIsEmpty(rec)){
+        return Promise.resolve()
+          .then(() => this._openByIdAfterPayload(id, opts))
+          .catch((err) => { try { console.error("CUSTOMER_OPEN_AFTER_PAYLOAD_FAILED", err, id); } catch(_e) {} });
+      }
+      return this._openByIdResolved(rec, opts);
+    },
+
+    _showFileLoading(rec){
+      if(!this.els.wrap) return;
+      if(this.els.name) this.els.name.textContent = safeTrim(rec?.fullName) || "תיק לקוח";
+      if(this.els.meta) this.els.meta.innerHTML = "";
+      if(this.els.dash) this.els.dash.innerHTML = "";
+      if(this.els.side) this.els.side.innerHTML = "";
+      if(this.els.tabs) this.els.tabs.innerHTML = "";
+      if(this.els.main){
+        this.els.main.innerHTML = `<div class="muted" style="padding:32px;text-align:center;">טוען פרטי תיק…</div>`;
+      }
+      this.els.wrap.classList.add("is-open");
+      this.els.wrap.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    },
+
+    _showFileLoadError(rec, message){
+      if(!this.els.main) return;
+      const name = escapeHtml(safeTrim(rec?.fullName) || "הלקוח");
+      this.els.main.innerHTML = `<div class="muted" style="padding:32px;text-align:center;line-height:1.7;">`
+        + `לא ניתן לטעון כרגע את פרטי התיק של ${name} מהשרת.<br/>`
+        + `הנתונים לא נמחקו — הם פשוט לא הגיעו. נסה שוב בעוד רגע או רענן את הדף.`
+        + (safeTrim(message) ? `<br/><span style="font-size:12px;opacity:.7;">${escapeHtml(safeTrim(message))}</span>` : "")
+        + `</div>`;
+    },
+
+    async _openByIdAfterPayload(id, opts={}){
+      const pending = this.byId(id);
+      if(!pending) return;
+      this._showFileLoading(pending);
+      let res = null;
+      try {
+        res = await Storage.ensureRecordPayload("customers", id);
+      } catch(err) {
+        res = { ok:false, error: String(err?.message || err) };
+      }
+      // המשתמש עשוי היה לסגור את החלון או לעבור לתיק אחר בינתיים.
+      if(!this.els.wrap?.classList.contains("is-open")) return;
+      const rec = this.byId(id);
+      if(!rec) return;
+      if(!res?.ok){
+        try { console.warn("CUSTOMER_FILE_PAYLOAD_FETCH_FAILED:", id, res?.error); } catch(_e) {}
+        this._showFileLoadError(rec, res?.error);
+        return;
+      }
+      return this._openByIdResolved(rec, opts);
+    },
+
+    _openByIdResolved(rec, opts={}){
       if(!rec || !this.els.wrap) return;
       return GiPerf.run("openCustomer", () => {
       try {
@@ -17801,9 +17899,33 @@ UsersGateUI.init();
       return { payload, primary, insureds, newPolicies };
     },
 
-    open(id){
-      const rec = this.byId(id);
+    /* GI-FIX 2026-08-01 (תוכניות 1+3): buildDraft קורא rec.payload סינכרונית,
+       אז חובה לוודא שהוא קיים לפני פתיחת מסך העריכה. */
+    async open(id){
+      let rec = this.byId(id);
       if(!rec || !this.els.wrap) return;
+      if(Storage.payloadIsEmpty(rec)){
+        let res = null;
+        try {
+          res = await Storage.ensureRecordPayload("customers", id);
+        } catch(err) {
+          res = { ok:false, error: String(err?.message || err) };
+        }
+        if(!res?.ok){
+          try { console.warn("CUSTOMER_EDIT_PAYLOAD_FETCH_FAILED:", id, res?.error); } catch(_e) {}
+          try {
+            window.showToast?.({
+              title: "לא ניתן לפתוח לעריכה",
+              text: "פרטי הלקוח לא הגיעו מהשרת. הנתונים לא נמחקו — נסה שוב בעוד רגע או רענן את הדף.",
+              variant: "warn",
+              durationMs: 7000
+            });
+          } catch(_e) {}
+          return;
+        }
+        rec = this.byId(id);
+        if(!rec) return;
+      }
       this.currentId = rec.id;
       try{
         this.draft = this.buildDraft(rec);
@@ -19396,9 +19518,38 @@ UsersGateUI.init();
         </tr>`;
     },
 
-    openById(id){
-      const rec = (State.data?.proposals || []).find(x => String(x.id) === String(id));
+    /* GI-FIX 2026-08-01 (תוכניות 1+3): טיוטה לא נפתחת בלי תוכן.
+       מלבד תיק ריק, payload חסר גם שובר את הניתוב כאן — הבדיקה של flowType
+       הייתה מפילה כל הצעת מינוי-סוכן לאשף הרגיל. */
+    async openById(id){
+      const findRec = () => (State.data?.proposals || []).find(x => String(x.id) === String(id)) || null;
+      let rec = findRec();
       if(!rec) return;
+      if(Storage.payloadIsEmpty(rec)){
+        let res = null;
+        try {
+          window.showToast?.({ title: "טוען את ההצעה…", text: "מושך את תוכן ההצעה מהשרת", variant: "info", durationMs: 2500 });
+        } catch(_e) {}
+        try {
+          res = await Storage.ensureRecordPayload("proposals", id);
+        } catch(err) {
+          res = { ok:false, error: String(err?.message || err) };
+        }
+        if(!res?.ok){
+          try { console.warn("PROPOSAL_PAYLOAD_FETCH_FAILED:", id, res?.error); } catch(_e) {}
+          try {
+            window.showToast?.({
+              title: "לא ניתן לפתוח את ההצעה",
+              text: "תוכן ההצעה לא הגיע מהשרת. הנתונים לא נמחקו — נסה שוב בעוד רגע או רענן את הדף.",
+              variant: "warn",
+              durationMs: 7000
+            });
+          } catch(_e) {}
+          return;
+        }
+        rec = findRec();
+        if(!rec) return;
+      }
       const flow = safeTrim(rec?.payload?.flowType).toLowerCase();
       if(flow === "agent_appointment" || rec?.payload?.agentAppointmentMeta){
         AgentAppointmentWizard.openDraft(rec);
