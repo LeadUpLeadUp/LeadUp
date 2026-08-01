@@ -1797,7 +1797,7 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
 .bankDash__topStatsGreeting:not(#\9):not(#\9){
   display: block !important;
   padding: 0 !important;
-  margin-bottom: var(--gi-s2) !important;
+  margin-bottom: var(--gi-s1) !important;
   text-align: right;
   background: none !important;
   border: none !important;
@@ -1807,26 +1807,14 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
   text-shadow: none !important;
 }
 
-/* Heading text lives here rather than in app.js, so no script is touched */
-.bankDash__topStatsGreeting:not(#\9):not(#\9)::before{
-  content: "??? ????";
-  display: block;
-  margin-bottom: 2px;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: -.01em;
-  color: var(--gi-text);
-}
-
+/* GI-FIX 2026-08-01: the ::before heading rendered as "??? ????" (the Hebrew
+   string was lost when this file was saved as ASCII). Per user request the
+   dashboard now shows only the greeting + user name, so both the heading and
+   the accent rule below it are removed and the KPI cards move up. */
+.bankDash__topStatsGreeting:not(#\9):not(#\9)::before,
 .bankDash__topStatsGreeting:not(#\9):not(#\9)::after{
-  content: "";
-  display: block;
-  width: 40px;
-  height: 3px;
-  margin-top: var(--gi-s2);
-  border-radius: var(--gi-r-pill);
-  background: var(--gi-primary);
+  content: none !important;
+  display: none !important;
 }
 
 /* The dynamic greeting drops from headline to subtitle */
@@ -2110,24 +2098,37 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   box-shadow: 0 0 0 3px var(--gi-primary-ring);
 }
 
+/* GI-FIX 2026-08-01: the global input[type="search"] rule (section 13) ships
+   border/padding/background with !important, which drew a second frame inside
+   the .giTopSearch pill. These declarations must match that weight so only the
+   outer pill is visible. */
 .giTopSearch__input:not(#\9):not(#\9){
   flex: 1 1 auto;
   min-width: 0;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: none;
-  background: transparent;
-  box-shadow: none;
-  font-family: var(--gi-font);
-  font-size: 14px;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: var(--gi-font) !important;
+  font-size: 14px !important;
   font-weight: 400;
   line-height: 1;
-  color: var(--gi-text);
+  color: var(--gi-text) !important;
   text-align: start;
   -webkit-appearance: none;
   appearance: none;
+}
+
+/* The focus ring belongs to the outer pill (.giTopSearch:focus-within) */
+.giTopSearch__input:focus:not(#\9):not(#\9){
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
 }
 
 .giTopSearch__input:not(#\9):not(#\9)::placeholder{
