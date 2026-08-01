@@ -42,7 +42,13 @@
   // שמתנפחים ל-60MB+ ברשת ולא מסוגלים להסתיים בתוך ה-timeout. אותן 1,035 שורות
   // בלי payload שוקלות ~300KB. לכן: קודם טוענים הכל חוץ מ-payload (מסך שמיש
   // תוך שנייה), ואז ממלאים payload ברקע במנות קטנות.
-  const CUSTOMER_LIGHT_COLUMNS = "id,status,full_name,id_number,phone,email,city,agent_name,agent_id,agent_role,insured_count,existing_policies_count,new_policies_count,created_at,updated_at,updated_by";
+  // GI-FIX 2026-08-01: העמודה updated_by אינה קיימת בטבלת customers (buildCustomerRows
+  // מעולם לא כתב אותה), ולכן כל שליפה רזה נדחתה עם
+  // "column customers.updated_by does not exist". loadFullState הסתירה את זה
+  // בנפילה ל-select *, ומסך הלקוחות נפל לתמונה שבזיכרון — אבל החיפוש, שאין לו
+  // גיבוי, פשוט נשבר. הקוראים היחידים (ייחוס "מי העביר לארכיון") כבר נופלים
+  // ל-"מערכת" כשהערך חסר, אז ההסרה אינה משנה התנהגות.
+  const CUSTOMER_LIGHT_COLUMNS = "id,status,full_name,id_number,phone,email,city,agent_name,agent_id,agent_role,insured_count,existing_policies_count,new_policies_count,created_at,updated_at";
   const PROPOSAL_LIGHT_COLUMNS = "id,status,full_name,id_number,phone,email,city,agent_name,agent_id,agent_role,current_step,insured_count,created_at,updated_at";
   // מנה של 40 מזהים ≈ 2.5MB. השורה הכבדה ביותר במסד היא 1.8MB דחוסים, אז
   // מנה גדולה יותר עלולה להיתקל שוב באותו קיר.
@@ -9506,33 +9512,55 @@
       return { ok:true, rows: mapped };
     },
 
+    /* GI-FIX 2026-08-01: זיהוי דחייה בגלל עמודה חסרה (PostgreSQL 42703).
+       loadFullState כבר ידעה לנסות שוב עם select *, אבל שליפות מסך הלקוחות לא —
+       ולכן עמודה אחת שגויה שברה את החיפוש בשקט. */
+    _isMissingColumnError(err){
+      if(!err) return false;
+      const code = safeTrim(err?.code);
+      if(code === "42703") return true;
+      const msg = safeTrim(err?.message || err).toLowerCase();
+      return msg.includes("does not exist") && msg.includes("column");
+    },
+
     /** GI-PERF: 10 אחרונים בלבד למסך לקוחות — בלי לטעון את כל הטבלה. */
     async loadLatestCustomers(limit = 10){
       const take = Math.max(1, Math.min(50, Number(limit) || 10));
       // over-fetch קל לסינון ארכיון/הרשאות בצד לקוח
       const fetchLimit = Math.min(80, take * 4);
-      const selectExpr = CUSTOMER_LIGHT_COLUMNS;
       try {
         const connection = await this.waitForConnection({ retries: 2, delayMs: 600 });
         if(!connection?.ok) return { ok:false, error: connection?.error || "NO_CONNECTION", data: [] };
         const client = this.getClient();
+        // שליפה אחת מהשרת עם רשימת עמודות נתונה. הנתונים תמיד מהשרת —
+        // אין כאן שום מסלול מטמון.
+        const fetchWithColumns = async (selectExpr) => {
+          try {
+            let builder = client.from(SUPABASE_TABLES.customers)
+              .select(selectExpr)
+              .order("created_at", { ascending: false })
+              .limit(fetchLimit);
+            builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
+            const { data: rows, error } = await this.withRetry(() => builder, "טעינת 10 לקוחות אחרונים");
+            if(error) throw error;
+            return rows || [];
+          } catch(primaryErr) {
+            if(this._isMissingColumnError(primaryErr)) throw primaryErr;
+            let path = SUPABASE_TABLES.customers
+              + "?select=" + encodeURIComponent(selectExpr)
+              + "&order=created_at.desc"
+              + "&limit=" + fetchLimit;
+            path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
+            return await this.restRequest(path, { method: "GET" }) || [];
+          }
+        };
         let data = null;
         try {
-          let builder = client.from(SUPABASE_TABLES.customers)
-            .select(selectExpr)
-            .order("created_at", { ascending: false })
-            .limit(fetchLimit);
-          builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
-          const { data: rows, error } = await this.withRetry(() => builder, "טעינת 10 לקוחות אחרונים");
-          if(error) throw error;
-          data = rows || [];
-        } catch(primaryErr) {
-          let path = SUPABASE_TABLES.customers
-            + "?select=" + encodeURIComponent(selectExpr)
-            + "&order=created_at.desc"
-            + "&limit=" + fetchLimit;
-          path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
-          data = await this.restRequest(path, { method: "GET" }) || [];
+          data = await fetchWithColumns(CUSTOMER_LIGHT_COLUMNS);
+        } catch(lightErr) {
+          if(!this._isMissingColumnError(lightErr)) throw lightErr;
+          try { console.warn("LATEST_CUSTOMERS_LIGHT_SELECT_REJECTED_RETRYING_FULL:", String(lightErr?.message || lightErr)); } catch(_e) {}
+          data = await fetchWithColumns("*");
         }
         const mapped = (Array.isArray(data) ? data : [])
           .map((row, idx) => this.mapCustomerRow(row, idx))
@@ -9549,7 +9577,6 @@
       if(!raw) return this.loadLatestCustomers(10);
       const take = Math.max(1, Math.min(60, Number(limit) || 40));
       const fetchLimit = Math.min(80, take * 2);
-      const selectExpr = CUSTOMER_LIGHT_COLUMNS;
       const safeLike = raw.replace(/[%_,.()]/g, " ").replace(/\s+/g, " ").trim();
       if(!safeLike) return this.loadLatestCustomers(10);
       const pattern = "\"%" + safeLike.replace(/"/g, "") + "%\"";
@@ -9565,25 +9592,37 @@
         const connection = await this.waitForConnection({ retries: 2, delayMs: 600 });
         if(!connection?.ok) return { ok:false, error: connection?.error || "NO_CONNECTION", data: [] };
         const client = this.getClient();
+        // החיפוש רץ תמיד מול השרת. אם רשימת העמודות הרזה נדחית — מנסים שוב
+        // מול השרת עם select *, ולא נופלים לחיפוש מקומי.
+        const fetchWithColumns = async (selectExpr) => {
+          try {
+            let builder = client.from(SUPABASE_TABLES.customers)
+              .select(selectExpr)
+              .or(orFilter)
+              .order("created_at", { ascending: false })
+              .limit(fetchLimit);
+            builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
+            const { data: rows, error } = await this.withRetry(() => builder, "חיפוש לקוחות");
+            if(error) throw error;
+            return rows || [];
+          } catch(primaryErr) {
+            if(this._isMissingColumnError(primaryErr)) throw primaryErr;
+            let path = SUPABASE_TABLES.customers
+              + "?select=" + encodeURIComponent(selectExpr)
+              + "&or=" + encodeURIComponent("(" + orFilter + ")")
+              + "&order=created_at.desc"
+              + "&limit=" + fetchLimit;
+            path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
+            return await this.restRequest(path, { method: "GET" }) || [];
+          }
+        };
         let data = null;
         try {
-          let builder = client.from(SUPABASE_TABLES.customers)
-            .select(selectExpr)
-            .or(orFilter)
-            .order("created_at", { ascending: false })
-            .limit(fetchLimit);
-          builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.customers);
-          const { data: rows, error } = await this.withRetry(() => builder, "חיפוש לקוחות");
-          if(error) throw error;
-          data = rows || [];
-        } catch(primaryErr) {
-          let path = SUPABASE_TABLES.customers
-            + "?select=" + encodeURIComponent(selectExpr)
-            + "&or=" + encodeURIComponent("(" + orFilter + ")")
-            + "&order=created_at.desc"
-            + "&limit=" + fetchLimit;
-          path = this._appendListAgentScopeToRestPath(path, SUPABASE_TABLES.customers);
-          data = await this.restRequest(path, { method: "GET" }) || [];
+          data = await fetchWithColumns(CUSTOMER_LIGHT_COLUMNS);
+        } catch(lightErr) {
+          if(!this._isMissingColumnError(lightErr)) throw lightErr;
+          try { console.warn("SEARCH_CUSTOMERS_LIGHT_SELECT_REJECTED_RETRYING_FULL:", String(lightErr?.message || lightErr)); } catch(_e) {}
+          data = await fetchWithColumns("*");
         }
         const mapped = (Array.isArray(data) ? data : [])
           .map((row, idx) => this.mapCustomerRow(row, idx))
