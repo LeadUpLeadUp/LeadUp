@@ -1346,7 +1346,6 @@
       ["customerPolicyModal", {}],
       ["lcArchiveCustomerModal", {}],
       ["lcPurgeArchivedCustomerModal", {}],
-      ["lcClearCampaignLeadsModal", {}],
       ["lcInsPicker", {}],
       ["lcCoversDrawer", {}],
       ["lcPolicyAddedModal", {}],
@@ -9018,60 +9017,6 @@
       return { ok:true, at: nowISO(), id: safeId, count: 1 };
     },
 
-    async deleteAllCampaignLeadRows(){
-      const tableName = SUPABASE_TABLES.campaignLeads;
-      const countBefore = (await this.loadTableRows(tableName, "id"))?.data?.length || 0;
-      if(!countBefore) return { ok:true, count:0, skipped:true, at: nowISO() };
-
-      const verifyEmpty = async () => {
-        const verify = await this.loadTableRows(tableName, "id");
-        if(!verify?.ok) return { ok:false, error: safeTrim(verify?.error) || "VERIFY_FAILED" };
-        const remaining = Array.isArray(verify.data) ? verify.data.length : 0;
-        return remaining ? { ok:false, error:"DELETE_VERIFY_FAILED", remaining } : { ok:true };
-      };
-
-      const performBulkDelete = async () => {
-        const client = this.getClient();
-        const { data, error } = await this.withRetry(
-          () => client.from(tableName).delete().neq("id", "").select("id"),
-          "מחיקת כל לידי קמפיין",
-          { timeoutMs: 30000 }
-        );
-        if(error) throw error;
-        return Array.isArray(data) ? data.length : 0;
-      };
-
-      try {
-        const deleted = await performBulkDelete();
-        const empty = await verifyEmpty();
-        if(empty.ok) return { ok:true, count: Math.max(deleted, countBefore), at: nowISO() };
-      } catch(primaryErr) {
-        try {
-          await this.restRequest(tableName + "?id=neq.", {
-            method: "DELETE",
-            headers: { Prefer: "return=representation" },
-            timeoutMs: 30000
-          });
-          const empty = await verifyEmpty();
-          if(empty.ok) return { ok:true, count: countBefore, at: nowISO(), mode:"rest-fallback" };
-        } catch(restErr) {
-          console.warn("CAMPAIGN_LEADS_BULK_DELETE_FAILED:", restErr?.message || restErr);
-        }
-      }
-
-      const reload = await this.loadTableRows(tableName, "id");
-      if(!reload?.ok) return { ok:false, error: safeTrim(reload?.error) || "LOAD_FAILED" };
-      const ids = (reload.data || []).map((row) => safeTrim(row?.id)).filter(Boolean);
-      let deletedCount = 0;
-      for(const id of ids){
-        const attempt = await this.deleteRowByIdSafe(tableName, id, { allowMissing: true, selectExpr: "id" });
-        if(attempt?.ok && !attempt?.skipped) deletedCount++;
-      }
-      const empty = await verifyEmpty();
-      if(!empty.ok) return { ok:false, error: empty.error || "DELETE_VERIFY_FAILED", remaining: empty.remaining || ids.length };
-      return { ok:true, count: Math.max(deletedCount, countBefore), at: nowISO(), mode:"row-by-row" };
-    },
-
     async purgeArchivedCustomerOnServer(customerId, customerSnapshot = {}){
       const safeId = safeTrim(customerId);
       if(!safeId) return { ok:false, error:"MISSING_ID" };
@@ -12593,7 +12538,7 @@ UsersGateUI.init();
           elementaryProposals: "הצעות אלמנטרי",
           elementaryPending: "ממתינים לטיפול",
           agentElementaryTracking: "לקוחות בטיפול תפעול וחיתום",
-          myTools: "הכלים שלי",
+          myTools: "כלים",
           myProcesses: "התהליכים שלי",
           mirrorCall: "שיחת שיקוף",
           elementaryMirror: "שיקוף שיחה אלמנטרי",
@@ -12601,7 +12546,7 @@ UsersGateUI.init();
           settings: "הגדרות מערכת",
           users: "ניהול משתמשים",
           systemUpdates: "עדכוני מערכת",
-          campaignLeads: "לידים מקמפיין",
+          campaignLeads: "מערכת לידים",
           campaignMyLeads: "הלידים שלי",
           reportsHub: "דוחות",
           dailyReport: (typeof DailyReportUI !== "undefined" && DailyReportUI.activeRubric === "cancellations") ? "דוח ביטולים" : "דוח מכירות",
@@ -24013,15 +23958,13 @@ UsersGateUI.init();
       return Math.round(sum * 100) / 100;
     },
 
+    /* GI-FIX 2026-08-01: הברכה מציגה ברכת יום ושם המשתמש בלבד.
+       סיומת ההיקף ("סה״כ כל הנציגים" / "סה״כ הצוות שלך" / "המכירות שלך") הוסרה
+       לבקשת המשתמש. Auth.getDashboardSalesScope() עדיין קובע את היקף הנתונים
+       עצמם ואת התוויות בכרטיסי ה-KPI — רק הכיתוב בברכה ירד. */
     dashboardGreetingIntro(){
       const agentName = safeTrim(Auth?.current?.name) || 'נציג';
-      const salesScope = Auth.getDashboardSalesScope();
-      const scope = salesScope === "all"
-        ? "סה״כ כל הנציגים"
-        : salesScope === "team"
-          ? "סה״כ הצוות שלך"
-          : "המכירות שלך";
-      return `${getTimeGreeting()} ${agentName} · ${scope}`;
+      return `${getTimeGreeting()} ${agentName}`;
     },
 
     isCustomerOwnedByCurrentAgent(rec){
@@ -63676,26 +63619,6 @@ const CampaignLeadsStore = {
         createdAt: stamp,
         updatedAt: stamp
       });
-    },
-
-    async clearAllHistory(){
-      const countBefore = (this.leads || []).length;
-      const del = await Storage.deleteAllCampaignLeadRows();
-      if(!del?.ok) return { ok:false, error: safeTrim(del?.error) || "מחיקת לידים נכשלה", countBefore };
-      this.leads = [];
-      this.lastError = "";
-      this._clearInboxCache();
-      try {
-        State.data.meta = State.data.meta && typeof State.data.meta === "object" ? State.data.meta : {};
-        State.data.meta.campaignLeadAssignInbox = [];
-        State.data.meta.updatedAt = nowISO();
-        const metaSave = await Storage.upsertMeta(State.data);
-        if(!metaSave?.ok) console.warn("CAMPAIGN_LEADS_INBOX_CLEAR_FAILED:", metaSave?.error || metaSave);
-        try { Storage.saveBackup(State.data); } catch(_e) {}
-      } catch(err) {
-        console.warn("CAMPAIGN_LEADS_INBOX_CLEAR_FAILED:", err);
-      }
-      return { ok:true, count: Number(del.count || countBefore) || 0, at: del.at || nowISO() };
     }
   };
 
@@ -66379,113 +66302,6 @@ const CampaignLeadsStore = {
     if(note) CampaignNoteViewer.open(lead, { kind });
   }
 
-  const ClearCampaignLeadsUI = {
-    els: {},
-    _confirming: false,
-
-    init(){
-      this.els.wrap = document.getElementById("lcClearCampaignLeadsModal");
-      this.els.backdrop = document.getElementById("lcClearCampaignLeadsBackdrop");
-      this.els.close = document.getElementById("lcClearCampaignLeadsClose");
-      this.els.cancel = document.getElementById("lcClearCampaignLeadsCancel");
-      this.els.confirm = document.getElementById("lcClearCampaignLeadsConfirm");
-      this.els.pin = document.getElementById("lcClearCampaignLeadsPin");
-      this.els.error = document.getElementById("lcClearCampaignLeadsError");
-      this.els.meta = document.getElementById("lcClearCampaignLeadsMeta");
-
-      on(this.els.backdrop, "click", () => this.close());
-      on(this.els.close, "click", () => this.close());
-      on(this.els.cancel, "click", () => this.close());
-      on(this.els.confirm, "click", async () => { await this.confirm(); });
-      on(this.els.pin, "keydown", async (ev) => {
-        if(ev.key === "Enter"){
-          ev.preventDefault();
-          await this.confirm();
-        }
-      });
-    },
-
-    open(){
-      if(!(Auth.isAdmin() || Auth.isManager())){
-        try {
-          window.showToast?.({ title: "אין הרשאה", text: "מחיקת היסטוריית לידים זמינה למנהל מערכת או למנהל בלבד.", variant: "warn", durationMs: 4200 });
-        } catch(_e){}
-        return;
-      }
-      if(!this.els.wrap) return;
-      const count = (CampaignLeadsStore.leads || []).length;
-      if(this.els.meta){
-        this.els.meta.textContent = count
-          ? `כרגע יש ${count} לידים במערכת. לאחר האישור כל הלידים יימחקו והמסכים יתרוקנו.`
-          : "לא נמצאו לידים במערכת. ניתן לאשר כדי לוודא שהשרת נקי לחלוטין.";
-      }
-      if(this.els.pin) this.els.pin.value = "";
-      this.showError("");
-      this.els.wrap.classList.add("is-open");
-      this.els.wrap.setAttribute("aria-hidden", "false");
-      setTimeout(() => this.els.pin?.focus?.(), 60);
-    },
-
-    close(){
-      if(!this.els.wrap) return;
-      this.els.wrap.classList.remove("is-open");
-      this.els.wrap.setAttribute("aria-hidden", "true");
-      if(this.els.pin) this.els.pin.value = "";
-      this.showError("");
-    },
-
-    showError(msg){
-      if(!this.els.error) return;
-      this.els.error.textContent = String(msg || "");
-      this.els.error.style.display = msg ? "block" : "none";
-    },
-
-    async confirm(){
-      if(this._confirming) return;
-      if(!(Auth.isAdmin() || Auth.isManager())){
-        this.showError("פעולה זו זמינה למנהל מערכת או למנהל בלבד");
-        return;
-      }
-      const typedPin = safeTrim(this.els.pin?.value);
-      if(!typedPin){
-        this.showError("נא להזין קוד מנהל");
-        this.els.pin?.focus?.();
-        return;
-      }
-      const pins = getCustomerAdminPinCandidates();
-      if(!pins.has(typedPin)){
-        this.showError("קוד מנהל שגוי");
-        this.els.pin?.focus?.();
-        this.els.pin?.select?.();
-        return;
-      }
-
-      this._confirming = true;
-      if(this.els.confirm) this.els.confirm.disabled = true;
-      try {
-        const result = await CampaignLeadsStore.clearAllHistory();
-        if(!result?.ok){
-          this.showError(result?.error || "מחיקת הלידים נכשלה");
-          return;
-        }
-        this.close();
-        CampaignLeadsUI.selectedId = null;
-        CampaignLeadsUI.showAlert("");
-        CampaignLeadsUI.beginNewLead();
-        CampaignLeadsUI.renderSplitLeads();
-        try { TrackingReportUI.render(); } catch(_e) {}
-        try { void CampaignMyLeadsUI.refresh?.(false); } catch(_e) {}
-        const count = Number(result.count || 0);
-        if(typeof toast === "function"){
-          toast(count ? `נמחקו ${count} לידים` : "היסטוריית הלידים נוקתה", "המסכים ריקים ומוכנים ללידים חדשים", "ok");
-        }
-      } finally {
-        this._confirming = false;
-        if(this.els.confirm) this.els.confirm.disabled = false;
-      }
-    }
-  };
-
   // GI-GOLD-LEAD — manager tracking board
   const GoldLeadBoard = {
     from: "",   // YYYY-MM-DD ; empty = today
@@ -67101,11 +66917,6 @@ const CampaignLeadsStore = {
         ).join("");
     },
 
-    syncClearAllButtonsVisibility(){
-      const canClear = Auth.isAdmin() || Auth.isManager();
-      $$(".js-campaignClearAll").forEach((btn) => { btn.hidden = !canClear; });
-    },
-
     init(){
       this.els.tbody = document.getElementById("campaignLeadsTbody");
       this.els.badge = document.getElementById("campaignLeadsCountBadge");
@@ -67258,7 +67069,6 @@ const CampaignLeadsStore = {
       if(this.els.form) on(this.els.form, "submit", (ev) => { ev.preventDefault(); this.saveSelected(); });
       if(this.els.btnRefresh) on(this.els.btnRefresh, "click", () => void this.refresh(true));
       if(this.els.btnSimulate) on(this.els.btnSimulate, "click", () => void this.simulateInbound());
-      $$(".js-campaignClearAll").forEach((btn) => on(btn, "click", () => ClearCampaignLeadsUI.open()));
       if(this.els.btnContinueProposal){
         on(this.els.btnContinueProposal, "click", () => {
           const lead = this.getSelectedLead();
@@ -67598,7 +67408,6 @@ const CampaignLeadsStore = {
     async render(){
       if(!Auth.canAccessCampaignLeadsInbox()) return;
       if(this.els.btnSimulate) this.els.btnSimulate.hidden = !(Auth.isAdmin() || Auth.isManager());
-      this.syncClearAllButtonsVisibility();
       this.showPanel("form");
       this.fillCampaignSelect();
       this.fillAgentSelect();
@@ -69382,7 +69191,6 @@ const CampaignLeadsStore = {
   AttendanceReportUI.init();
   DailyReportUI.init();
   CancellationsUI.init();
-  ClearCampaignLeadsUI.init();
   CampaignLeadsUI.init();
   TrackingReportUI.init();
   CampaignMyLeadsUI.init();
