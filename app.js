@@ -74813,10 +74813,18 @@ const CampaignLeadsStore = {
       }
     },
 
-    async _upsertCustomerDirect(rec){
+    async _upsertCustomerDirect(rec, options = {}){
       if(!rec || !safeTrim(rec.id) || String(rec.id).startsWith("emref_")) return false;
+      const gen = Number(options.persistGen);
+      const isFresh = () => !Number.isFinite(gen) || gen <= 0 || gen === this._persistGen;
+      if(!isFresh()) return false;
       try{
-        const live = ensureCustomerInActiveList(rec) || rec;
+        // תמיד מהרשומה החיה ב-State — לא מאובייקט ישן שנתפס לפני שמירה סופית
+        let live = this._getCustomer(safeTrim(rec.id)) || rec;
+        if(options.reportSnap) this._setElementaryReportOnRec(live, options.reportSnap);
+        live = ensureCustomerInActiveList(live) || live;
+        if(options.reportSnap) this._setElementaryReportOnRec(live, options.reportSnap);
+        if(!isFresh()) return false;
         try{
           Storage._rowHashes = Storage._rowHashes || {};
           Storage._rowHashes.customers = Storage._rowHashes.customers || {};
@@ -74824,9 +74832,17 @@ const CampaignLeadsStore = {
         }catch(_e){}
         const directRow = Storage.buildCustomerRows({ customers: [live] })[0];
         if(!directRow) return false;
-        const ur = await Storage.upsertSingleRow(SUPABASE_TABLES.customers, directRow);
+        let wireRow = directRow;
+        try{ wireRow = JSON.parse(JSON.stringify(directRow)); }catch(_e){ wireRow = directRow; }
+        // ביטול שליחה אם נכנסה שמירה חדשה יותר בזמן בניית השורה
+        if(!isFresh()) return false;
+        const ur = await Storage.upsertSingleRow(SUPABASE_TABLES.customers, wireRow);
+        if(!isFresh()){
+          // לא rememberRows לגרסה ישנה — כדי שלא ייחסם sync של השמירה החדשה
+          return false;
+        }
         if(ur?.ok){
-          try{ Storage.rememberRows(SUPABASE_TABLES.customers, [directRow]); }catch(_e){}
+          try{ Storage.rememberRows(SUPABASE_TABLES.customers, [wireRow]); }catch(_e){}
           return true;
         }
         return false;
@@ -74843,20 +74859,41 @@ const CampaignLeadsStore = {
       if(!isFresh()) return { ok: false, skipped: true, stale: true };
 
       let live = this._getCustomer(safeTrim(rec.id) || this.selectedCustomerId) || rec;
+      const reportSnap = options.reportSnap && typeof options.reportSnap === "object"
+        ? options.reportSnap
+        : null;
+      if(reportSnap) this._setElementaryReportOnRec(live, reportSnap);
       const report = live?.payload?.mirrorFlow?.elementaryReport;
       if(report && typeof report === "object"){
         this._mirrorReportOntoReferral(live, report, { force: options.forceReport === true });
       }
       if(!isFresh()) return { ok: false, skipped: true, stale: true };
 
-      const upsertOk = await this._upsertCustomerDirect(live);
+      let upsertOk = await this._upsertCustomerDirect(live, {
+        persistGen: gen,
+        reportSnap: reportSnap || undefined
+      });
       if(!isFresh()) return { ok: false, skipped: true, stale: true, upsertOk };
 
       let persistRes = null;
       if(options.skipAppPersist !== true){
         try{ persistRes = await this._persist(label || "דוח שיקוף אלמנטרי נשמר"); }catch(_e){ persistRes = null; }
       }
+      // אחרי App.persist (מיזוג קונפליקט) — להחזיר את הדוח הערוך לרשומה החיה
+      if(reportSnap){
+        live = this._getCustomer(safeTrim(rec.id) || this.selectedCustomerId) || live;
+        this._setElementaryReportOnRec(live, reportSnap);
+      }
       if(!isFresh()) return { ok: false, skipped: true, stale: true, upsertOk, persistRes };
+
+      // שמירה סופית: upsert חוזר אחרי persist — מתקן אם המיזוג העלה גרסה ישנה לשרת
+      if(options.forceReport === true && reportSnap && isFresh()){
+        const repaired = await this._upsertCustomerDirect(live, {
+          persistGen: gen,
+          reportSnap
+        });
+        if(repaired) upsertOk = true;
+      }
 
       const persistOk = !!(persistRes && persistRes.ok);
       const customersWarn = safeTrim(persistRes?.customersSyncWarning);
@@ -76499,20 +76536,26 @@ const CampaignLeadsStore = {
       } else {
         this._flushScheduledPersist();
         const gen = this._bumpPersistGen();
+        const reportSnap = this._cloneReport(nextStore) || { ...nextStore };
         try{
           const hard = await this._enqueuePersist(async () => {
             if(gen !== this._persistGen) return { ok: false, skipped: true, stale: true };
             const live = this._getCustomer(this.selectedCustomerId) || rec;
-            this._setElementaryReportOnRec(live, nextStore);
-            this._applyReportToCustomerCoreFields(live, this.reportDraft || nextStore);
-            return this._persistReportHard(
+            this._setElementaryReportOnRec(live, reportSnap);
+            this._applyReportToCustomerCoreFields(live, this.reportDraft || reportSnap);
+            const result = await this._persistReportHard(
               live,
               options.pdf ? "דוח שיקוף אלמנטרי נשמר · PDF" : "דוח שיקוף אלמנטרי נשמר",
               {
                 persistGen: gen,
-                forceReport: options.forcePersist === true || options.pdf === true || options.stopTimer === true
+                forceReport: options.forcePersist === true || options.pdf === true || options.stopTimer === true,
+                reportSnap
               }
             );
+            // שימור מקומי גם אם מיזוג שמירה נגע ברשומה
+            const again = this._getCustomer(this.selectedCustomerId) || live;
+            this._setElementaryReportOnRec(again, reportSnap);
+            return result;
           });
           persistOk = !!hard?.ok;
           if(!persistOk){
@@ -76522,6 +76565,10 @@ const CampaignLeadsStore = {
           persistOk = false;
           try{ console.error("[ElementaryMirrorUI] saveReport persist error", err); }catch(_e){}
         }
+        try{
+          const again = this._getCustomer(this.selectedCustomerId) || rec;
+          this._setElementaryReportOnRec(again, reportSnap);
+        }catch(_e){}
       }
 
       let pdfOk = true;
