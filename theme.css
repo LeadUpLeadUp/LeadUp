@@ -2245,17 +2245,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   min-width: 0 !important;
 }
 
-#view-dashboard .bankInvestNews:not(#\9):not(#\9){
-  grid-column: 1 !important;
-  grid-row: 7 !important;
-  min-width: 0 !important;
-}
 
-/* ???? ???? ?? ???? ?? ??? ??????? ? ?????? ?????? ?? ????? ????
-   ??? ??? ????? ????? ???? ?????? ?????. */
-#view-dashboard .bankDash:not(:has(.giDailySales)) .bankInvestNews:not(#\9):not(#\9){
-  grid-column: 1 / -1 !important;
-}
 
 @media (max-width: 1200px){
   #view-dashboard .bankDash:not(#\9):not(#\9){
@@ -2265,8 +2255,7 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   #view-dashboard .bankSideCard:not(#\9):not(#\9),
   #view-dashboard .bankGoal:not(#\9):not(#\9),
   #view-dashboard .bankLeader:not(#\9):not(#\9),
-  #view-dashboard .giDailySales:not(#\9):not(#\9),
-  #view-dashboard .bankInvestNews:not(#\9):not(#\9){
+  #view-dashboard .giDailySales:not(#\9):not(#\9){
     grid-column: 1 !important;
     grid-row: auto !important;
   }
