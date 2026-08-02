@@ -16,11 +16,14 @@
    לאיפוס ידני: כפתור "החל עדכון" במערכת כבר מוחק את כל המטמונים ומבטל רישום SW.
 */
 
-const CACHE_VERSION = "gi-v1-20260801-p2-wizard-steps36-fix9";
+const CACHE_VERSION = "gi-v1-20260802-p2-leadnotify-audio1";
 const RUNTIME_CACHE = `gi-runtime-${CACHE_VERSION}`;
 
 // סיומות שמותר להגיש מהמטמון.
-const STATIC_EXT = /\.(?:css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|pdf)$/i;
+// GI-LEADNOTIFY 2026-08-02: נוספו סיומות אודיו. קודם קבצי ההתראה
+// (lead-chime / lead-new-announcement / chat-message-chime) ירדו מחדש מהרשת
+// בכל טעינת עמוד, ואם הרשת הייתה איטית ברגע שהליד נכנס — הצלצול התעכב או נכשל.
+const STATIC_EXT = /\.(?:css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot|pdf|mp3|m4a|aac|wav|ogg|oga|weba)$/i;
 
 self.addEventListener("install", () => {
   self.skipWaiting();
