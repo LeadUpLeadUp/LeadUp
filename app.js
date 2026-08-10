@@ -158,6 +158,8 @@
   const LARGE_SESSION_MODE_ENABLED = true;
   const LARGE_SESSION_CUSTOMER_THRESHOLD = 5000;
   const LARGE_SESSION_CUSTOMER_WORKING_SET = 500;
+  /* אותה תקרה להצעות — אחרת מסך "הצעות" מקפיא על buildRows של כל הטבלה. */
+  const LARGE_SESSION_PROPOSAL_WORKING_SET = 500;
 
   const DAILY_REPORT_ACTIVE_ID = "active";
   // ארכיון חודשי באותה טבלה: id = "m-YYYY-MM" (לא דורס את "active").
@@ -4226,20 +4228,30 @@
     const src = payload && typeof payload === "object" ? payload : null;
     if(!src) return payload;
     const list = Array.isArray(src.customers) ? src.customers : [];
+    const proposals = Array.isArray(src.proposals) ? src.proposals : [];
     const totalHint = Math.max(Number(knownTotal) || 0, list.length);
-    if(list.length < LARGE_SESSION_CUSTOMER_THRESHOLD && totalHint < LARGE_SESSION_CUSTOMER_THRESHOLD){
+    const custCap = LARGE_SESSION_CUSTOMER_WORKING_SET;
+    const propCap = LARGE_SESSION_PROPOSAL_WORKING_SET;
+    const customersFat = list.length >= LARGE_SESSION_CUSTOMER_THRESHOLD || totalHint >= LARGE_SESSION_CUSTOMER_THRESHOLD;
+    const proposalsFat = proposals.length >= LARGE_SESSION_CUSTOMER_THRESHOLD
+      || (Storage.isLargeCustomersSession?.() && proposals.length > propCap);
+    if(!customersFat && !proposalsFat){
       return src;
     }
-    const cap = LARGE_SESSION_CUSTOMER_WORKING_SET;
-    const kept = list.length > cap ? list.slice(0, cap) : list;
+    const keptCust = customersFat && list.length > custCap ? list.slice(0, custCap) : list;
+    const keptProp = proposalsFat && proposals.length > propCap ? proposals.slice(0, propCap) : proposals;
     try {
-      Storage.setLargeCustomersSession?.(true, totalHint);
+      Storage.setLargeCustomersSession?.(true, totalHint || list.length);
     } catch(_e) {}
-    if(kept.length === list.length) return src;
+    if(keptCust.length === list.length && keptProp.length === proposals.length) return src;
     try {
-      console.warn("LARGE_SESSION_TRIM_FAT_PAYLOAD:", list.length, "→", kept.length, "totalHint=", totalHint);
+      console.warn(
+        "LARGE_SESSION_TRIM_FAT_PAYLOAD:",
+        "customers", list.length, "→", keptCust.length,
+        "proposals", proposals.length, "→", keptProp.length
+      );
     } catch(_e) {}
-    return { ...src, customers: kept };
+    return { ...src, customers: keptCust, proposals: keptProp };
   }
 
   /** מונע דריסת לקוחות קיימים במטען ריק (תקלת דלתא/מטמון) אצל מנהל/אדמין. */
@@ -10782,6 +10794,41 @@
       }
     },
 
+    /** Working-set להצעות — מונע הקפאת מסך "הצעות" בסשן גדול. */
+    async loadRecentProposalRows(limit, selectExpr = PROPOSAL_LIGHT_COLUMNS){
+      const take = Math.max(1, Math.min(2000, Number(limit) || LARGE_SESSION_PROPOSAL_WORKING_SET));
+      const cols = safeTrim(selectExpr) || PROPOSAL_LIGHT_COLUMNS;
+      try {
+        const connection = await this.waitForConnection();
+        if(!connection?.ok) return { ok:false, error: connection?.error || "NO_CONNECTION", data: [] };
+        const client = this.getClient();
+        const fetchWithColumns = async (selectCols) => {
+          let builder = client.from(SUPABASE_TABLES.proposals)
+            .select(selectCols)
+            .order("updated_at", { ascending: false })
+            .limit(take);
+          builder = this._applyListAgentScopeToQuery(builder, SUPABASE_TABLES.proposals);
+          const { data, error } = await this.withRetry(
+            () => builder,
+            "טעינת working-set הצעות"
+          );
+          if(error) throw error;
+          return Array.isArray(data) ? data : [];
+        };
+        let data = [];
+        try {
+          data = await fetchWithColumns(cols);
+        } catch(primaryErr) {
+          if(!this._isMissingColumnError(primaryErr)) throw primaryErr;
+          try { console.warn("LARGE_SESSION_PROPOSALS_LIGHT_REJECTED_RETRY_STAR:", String(primaryErr?.message || primaryErr)); } catch(_e) {}
+          data = await fetchWithColumns("*");
+        }
+        return { ok:true, data };
+      } catch(err) {
+        return { ok:false, error: String(err?.message || err), data: [] };
+      }
+    },
+
     /* GI-FIX 2026-08-01: זיהוי דחייה בגלל עמודה חסרה (PostgreSQL 42703).
        loadFullState כבר ידעה לנסות שוב עם select *, אבל שליפות מסך הלקוחות לא —
        ולכן עמודה אחת שגויה שברה את החיפוש בשקט. */
@@ -11682,12 +11729,16 @@
         const customersFetch = useLargeCustomers
           ? this.loadRecentCustomerRows(LARGE_SESSION_CUSTOMER_WORKING_SET, initialCustomerColumns)
           : this.loadTableRows(SUPABASE_TABLES.customers, initialCustomerColumns);
+        // GI-PERF 2026-08-10: בסשן גדול גם הצעות רק working-set — אחרת מסך "הצעות" מקפיא.
+        const proposalsFetch = useLargeCustomers
+          ? this.loadRecentProposalRows(LARGE_SESSION_PROPOSAL_WORKING_SET, initialProposalColumns)
+          : this.loadTableRows(SUPABASE_TABLES.proposals, initialProposalColumns);
 
         const [metaRes, agentsRes, customersLightRes, proposalsLightRes] = await Promise.all([
           this.loadMetaRow(),
           this.loadTableRows(SUPABASE_TABLES.agents),
           customersFetch,
-          this.loadTableRows(SUPABASE_TABLES.proposals, initialProposalColumns)
+          proposalsFetch
         ]);
 
         // רשת ביטחון: אם רשימת העמודות הרזה נדחתה (למשל עמודה שלא קיימת בסכימה),
@@ -11700,16 +11751,16 @@
           try { console.warn("LIGHT_SELECT_FAILED_FALLBACK_TO_FULL:", safeTrim(customersRes.error) || safeTrim(proposalsRes.error)); } catch(_e) {}
           lightSelectUsed = false;
           if(useLargeCustomers){
-            const [cRecent, pFull] = await Promise.all([
+            const [cRecent, pRecent] = await Promise.all([
               customersRes.ok
                 ? Promise.resolve(customersRes)
                 : this.loadRecentCustomerRows(LARGE_SESSION_CUSTOMER_WORKING_SET, "*"),
               proposalsRes.ok
                 ? Promise.resolve(proposalsRes)
-                : this.loadTableRows(SUPABASE_TABLES.proposals)
+                : this.loadRecentProposalRows(LARGE_SESSION_PROPOSAL_WORKING_SET, "*")
             ]);
             customersRes = cRecent;
-            proposalsRes = pFull;
+            proposalsRes = pRecent;
           } else {
             const [cFull, pFull] = await Promise.all([
               this.loadTableRows(SUPABASE_TABLES.customers),
@@ -11730,9 +11781,19 @@
               data: customersRes.data.slice(0, LARGE_SESSION_CUSTOMER_WORKING_SET)
             };
           }
+          const propLen = Array.isArray(proposalsRes?.data) ? proposalsRes.data.length : 0;
+          if(LARGE_SESSION_MODE_ENABLED && (useLargeCustomers || propLen >= LARGE_SESSION_CUSTOMER_THRESHOLD)
+            && propLen > LARGE_SESSION_PROPOSAL_WORKING_SET){
+            useLargeCustomers = true;
+            proposalsRes = {
+              ...proposalsRes,
+              data: proposalsRes.data.slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET)
+            };
+          }
         } catch(_e) {}
         if(useLargeCustomers){
           const loadedN = Array.isArray(customersRes?.data) ? customersRes.data.length : 0;
+          const loadedP = Array.isArray(proposalsRes?.data) ? proposalsRes.data.length : 0;
           if(largeProbeUncertain && loadedN < LARGE_SESSION_CUSTOMER_WORKING_SET){
             // הסקופ קטן מהתקרה — לא מצב large אמיתי.
             useLargeCustomers = false;
@@ -11743,8 +11804,10 @@
               console.warn(
                 "LARGE_SESSION_CUSTOMERS:",
                 largeCustomersTotal || loadedN || "?",
-                "→ working set",
-                loadedN
+                "→ customers",
+                loadedN,
+                "proposals",
+                loadedP
               );
             } catch(_e) {}
           }
@@ -21022,7 +21085,16 @@ UsersGateUI.init();
       // משתמשים ב-getCurrentAgentOwnershipProfile() שכולל username+id מלא מרשומת הנציג
       // ולא רק ב-Auth.current שמכיל name/id בלבד — זה מונע אי-זיהוי של referrals שהוגשו ע"י אותו נציג
       const agentProfile = canSeeAll ? null : getCurrentAgentOwnershipProfile();
-      const draftRows = (Array.isArray(State.data?.proposals) ? State.data.proposals : [])
+      // GI-PERF 2026-08-10: הגנת UI — לעולם לא לעבד עשרות אלפי הצעות בלחיצה על התפריט.
+      let proposalSource = Array.isArray(State.data?.proposals) ? State.data.proposals : [];
+      if(Storage.isLargeCustomersSession?.() && proposalSource.length > LARGE_SESSION_PROPOSAL_WORKING_SET){
+        proposalSource = proposalSource.slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET);
+      } else if(proposalSource.length > Math.max(LARGE_SESSION_PROPOSAL_WORKING_SET * 4, 2000)){
+        // גם בלי דגל large — חיתוך חירום לפני הקפאה
+        try { console.warn("PROPOSALS_UI_EMERGENCY_CAP:", proposalSource.length); } catch(_e) {}
+        proposalSource = proposalSource.slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET);
+      }
+      const draftRows = proposalSource
         .filter((rec) => !isPurgedProposalRecord(rec))
         .filter((rec) => customerVisibleToCurrentUser(rec))
         .map((rec) => ({
@@ -21112,14 +21184,31 @@ UsersGateUI.init();
 
     render(){
       if(!UI.els.proposalsTbody) return;
-      const allRows = this.list();
-      const totalVisible = allRows.length;
-      const rows = this.filtered(allRows);
-      this.updateCountBadge(rows, totalVisible);
-      const canAssignProposal = !!(Auth.isAdmin() || Auth.isManager());
-      UI.els.proposalsTbody.innerHTML = rows.length ? rows.map((rec) => this.renderProposalRowHtml(rec, canAssignProposal)).join("") : `<tr><td colspan="7"><div class="emptyState"><div class="emptyState__icon">📝</div><div class="emptyState__title">אין כרגע הצעות</div><div class="emptyState__text">טיוטות והצעות שהוגשו לחיתום יופיעו כאן.</div></div></td></tr>`;
-
-      this.bindProposalRowActions(UI.els.proposalsTbody);
+      // אם הסשן כבר טעון עם מערך הצעות ענק (לפני התיקון) — חותכים מיד בזיכרון.
+      try {
+        const props = Array.isArray(State.data?.proposals) ? State.data.proposals : [];
+        if(props.length > LARGE_SESSION_PROPOSAL_WORKING_SET && (
+          Storage.isLargeCustomersSession?.()
+          || props.length >= LARGE_SESSION_CUSTOMER_THRESHOLD
+        )){
+          State.data.proposals = props.slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET);
+          Storage.setLargeCustomersSession?.(true, Storage._largeCustomersTotalEstimate || props.length);
+          try { console.warn("LARGE_SESSION_TRIM_PROPOSALS_ON_VIEW:", props.length, "→", State.data.proposals.length); } catch(_e) {}
+        }
+      } catch(_e) {}
+      // GI-PERF 2026-08-10: לא לחסום את לחיצת התפריט — paint ב-rAF.
+      const paint = () => {
+        if(!UI.els.proposalsTbody) return;
+        const allRows = this.list();
+        const totalVisible = allRows.length;
+        const rows = this.filtered(allRows);
+        this.updateCountBadge(rows, totalVisible);
+        const canAssignProposal = !!(Auth.isAdmin() || Auth.isManager());
+        UI.els.proposalsTbody.innerHTML = rows.length ? rows.map((rec) => this.renderProposalRowHtml(rec, canAssignProposal)).join("") : `<tr><td colspan="7"><div class="emptyState"><div class="emptyState__icon">📝</div><div class="emptyState__title">אין כרגע הצעות</div><div class="emptyState__text">טיוטות והצעות שהוגשו לחיתום יופיעו כאן.</div></div></td></tr>`;
+        this.bindProposalRowActions(UI.els.proposalsTbody);
+      };
+      if(typeof requestAnimationFrame === "function") requestAnimationFrame(paint);
+      else paint();
     },
 
     referralRowActionsHtml(rec){
