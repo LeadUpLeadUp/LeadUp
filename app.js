@@ -11459,15 +11459,21 @@
       const key = stateKey === "proposals" ? "proposals" : "customers";
       const table = key === "proposals" ? SUPABASE_TABLES.proposals : SUPABASE_TABLES.customers;
       const normalize = key === "proposals" ? normalizeProposalRecord : normalizeCustomerRecord;
+      const mapRow = key === "proposals"
+        ? (row, i) => this.mapProposalRow(row, i)
+        : (row, i) => this.mapCustomerRow(row, i);
+      const lightCols = key === "proposals" ? PROPOSAL_LIGHT_COLUMNS : CUSTOMER_LIGHT_COLUMNS;
       const safeId = safeTrim(id);
       if(!safeId) return { ok:false, error:"MISSING_ID" };
 
-      const list = Array.isArray(State.data?.[key]) ? State.data[key] : [];
-      const idx = list.findIndex((row) => String(row?.id) === String(safeId));
-      const rec = idx >= 0 ? list[idx] : null;
+      let list = Array.isArray(State.data?.[key]) ? State.data[key] : [];
+      let idx = list.findIndex((row) => String(row?.id) === String(safeId));
+      let rec = idx >= 0 ? list[idx] : null;
       if(rec && !this.payloadIsEmpty(rec)) return { ok:true, record: rec, cached:true };
 
-      const res = await this.loadSingleRow(table, safeId, "id,payload");
+      // GI-PERF 2026-08-10: אם הרשומה לא ב-working-set — מביאים שורה מלאה (עמודות רזות + payload).
+      const selectExpr = rec ? "id,payload" : (lightCols + ",payload");
+      const res = await this.loadSingleRow(table, safeId, selectExpr);
       if(!res?.ok) return { ok:false, error: res?.error || "טעינת פרטי הרשומה נכשלה" };
 
       let payload = res.data?.payload;
@@ -11477,7 +11483,22 @@
       if(!payload || typeof payload !== "object"){
         return { ok:false, error:"EMPTY_PAYLOAD_ON_SERVER", record: rec };
       }
-      if(!rec) return { ok:true, record: null, payload };
+      if(!rec){
+        try {
+          const mapped = normalize(mapRow({ ...res.data, payload }, 0), 0);
+          list = Array.isArray(State.data?.[key]) ? State.data[key] : [];
+          State.data[key] = [mapped].concat(list.filter((x) => String(x?.id) !== String(safeId)));
+          if(key === "proposals" && State.data[key].length > LARGE_SESSION_PROPOSAL_WORKING_SET){
+            State.data[key] = State.data[key].slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET);
+          }
+          if(key === "customers" && State.data[key].length > LARGE_SESSION_CUSTOMER_WORKING_SET){
+            State.data[key] = State.data[key].slice(0, LARGE_SESSION_CUSTOMER_WORKING_SET);
+          }
+          return { ok:true, record: mapped, inserted:true };
+        } catch(err) {
+          return { ok:false, error: String(err?.message || err), payload };
+        }
+      }
       try {
         Object.assign(rec, normalize({ ...rec, payload }, idx));
       } catch(_e) {
@@ -21401,7 +21422,33 @@ UsersGateUI.init();
     async openById(id){
       const findRec = () => (State.data?.proposals || []).find(x => String(x.id) === String(id)) || null;
       let rec = findRec();
-      if(!rec) return;
+      if(!rec){
+        // ייתכן שההצעה לא ב-working-set — ננסה למשוך מהשרת לפי id.
+        try {
+          window.showToast?.({ title: "טוען את ההצעה…", text: "מחפש את ההצעה בשרת", variant: "info", durationMs: 2500 });
+        } catch(_e) {}
+        try {
+          const res = await Storage.ensureRecordPayload("proposals", id);
+          if(res?.ok && res.record){
+            const list = Array.isArray(State.data?.proposals) ? State.data.proposals : [];
+            if(!list.some((x) => String(x?.id) === String(id))){
+              State.data.proposals = [res.record].concat(list).slice(0, LARGE_SESSION_PROPOSAL_WORKING_SET);
+            }
+            rec = findRec() || res.record;
+          }
+        } catch(_e) {}
+      }
+      if(!rec){
+        try {
+          window.showToast?.({
+            title: "ההצעה לא נמצאה",
+            text: "ייתכן שהיא לא בטעינה הנוכחית. רענן או חפש לפי ת״ז/שם.",
+            variant: "warn",
+            durationMs: 6500
+          });
+        } catch(_e) {}
+        return;
+      }
       if(Storage.payloadIsEmpty(rec)){
         let res = null;
         try {
@@ -21424,7 +21471,7 @@ UsersGateUI.init();
           } catch(_e) {}
           return;
         }
-        rec = findRec();
+        rec = findRec() || res.record;
         if(!rec) return;
       }
       const flow = safeTrim(rec?.payload?.flowType).toLowerCase();
@@ -21432,7 +21479,13 @@ UsersGateUI.init();
         AgentAppointmentWizard.openDraft(rec);
         return;
       }
-      Wizard.openDraft(rec);
+      try {
+        await ensureGiWizardJsLoaded();
+        await Promise.resolve(Wizard.openDraft(rec));
+      } catch(err) {
+        try { console.error("PROPOSAL_OPEN_DRAFT_FAILED", err); } catch(_e) {}
+        notifyWizardChunkFailed(err);
+      }
     },
 
     openReferralDetail(referralId){
@@ -29638,7 +29691,7 @@ UsersGateUI.init();
 
   /* GI-PERF-LAZY-WIZARD 2026-08-09 */
   // Lazy Wizard — full engine in gi-wizard.js (~1.5MB parse deferred until open/init).
-  const GI_WIZARD_JS_HREF = "./gi-wizard.js?v=20260809-lazy-wizard-v1";
+  const GI_WIZARD_JS_HREF = "./gi-wizard.js?v=20260810-large-session-v3";
   const DISCOUNT_SELECT_PLACEHOLDER = "בחר הנחה";
   const TZAHAL_CLINIC = "קופה צהלית";
   const TZAHAL_CLINIC_SHABAN = "אין שב״ן";
@@ -29666,12 +29719,19 @@ UsersGateUI.init();
     _initCalled: false,
     init(){
       this._initCalled = true;
-      // GI-PERF 2026-08-10: לא לטעון gi-wizard לפני כניסה — מונע 404/UNHANDLED_REJECTION במסך login.
+      // GI-PERF 2026-08-10: לא לטעון gi-wizard לפני כניסה — מונע 404 במסך login.
+      // אחרי כניסה: prefetch מיידי (לא אחרי 6.5 שנ׳) כדי ש"המשך עריכה"/אשף בריאות יגיבו.
       const schedulePrefetch = () => {
         if(!Auth?.current) return;
-        const run = () => { void ensureGiWizardJsLoaded().catch(() => {}); };
-        try { perfIdle(run, 6500); } catch(_e) {
-          try { window.setTimeout(run, 6500); } catch(_e2) {}
+        const run = () => {
+          void ensureGiWizardJsLoaded().catch((err) => {
+            try {
+              console.warn("GI_WIZARD_PREFETCH_FAILED", err);
+            } catch(_e) {}
+          });
+        };
+        try { perfIdle(run, 200); } catch(_e) {
+          try { window.setTimeout(run, 200); } catch(_e2) {}
         }
       };
       try {
@@ -29680,9 +29740,18 @@ UsersGateUI.init();
       } catch(_e) {}
     }
   };
+  function giWizardIsInstalled(){
+    try {
+      if(globalThis.__GI_WIZARD_CHUNK_READY) return true;
+      return typeof Wizard.openDraft === "function" && Wizard.openDraft.__giWrap !== true;
+    } catch(_e) {
+      return false;
+    }
+  }
   function ensureGiWizardJsLoaded(){
-    if(Wizard._chunkReady) return Promise.resolve(Wizard);
+    if(Wizard._chunkReady && giWizardIsInstalled()) return Promise.resolve(Wizard);
     if(Wizard._chunkLoading) return Wizard._chunkLoading;
+    Wizard._chunkReady = false;
     Wizard._chunkLoading = new Promise((resolve, reject) => {
       try {
         const host = {
@@ -29921,11 +29990,20 @@ UsersGateUI.init();
           });
         } catch(_e) {}
         globalThis.__GI_WIZARD_HOST = host;
-        const done = () => { Wizard._chunkReady = true; resolve(Wizard); };
+        const done = () => {
+          if(!giWizardIsInstalled()){
+            reject(new Error("gi-wizard.js loaded but wizard methods were not installed"));
+            return;
+          }
+          Wizard._chunkReady = true;
+          resolve(Wizard);
+        };
         const existing = document.getElementById("gi-wizard-js");
         if(existing){
-          if(globalThis.__GI_WIZARD_CHUNK_READY){ done(); return; }
-          existing.addEventListener("load", done, { once: true });
+          if(giWizardIsInstalled()){ done(); return; }
+          existing.addEventListener("load", () => {
+            try { queueMicrotask(done); } catch(_e) { done(); }
+          }, { once: true });
           existing.addEventListener("error", () => reject(new Error("gi-wizard.js failed")), { once: true });
           return;
         }
@@ -29933,7 +30011,9 @@ UsersGateUI.init();
         s.id = "gi-wizard-js";
         s.src = GI_WIZARD_JS_HREF;
         s.async = true;
-        s.onload = done;
+        s.onload = () => {
+          try { queueMicrotask(done); } catch(_e) { done(); }
+        };
         s.onerror = () => {
           try { s.remove(); } catch(_e) {}
           reject(new Error("gi-wizard.js failed to load"));
@@ -29942,16 +30022,33 @@ UsersGateUI.init();
       } catch(err) { reject(err); }
     }).catch((err) => {
       Wizard._chunkLoading = null;
+      Wizard._chunkReady = false;
       try { console.warn("GI_WIZARD_CHUNK_LOAD_FAILED", err); } catch(_e) {}
       throw err;
     });
     return Wizard._chunkLoading;
   }
+  function notifyWizardChunkFailed(err){
+    try {
+      window.showToast?.({
+        title: "אשף לא נטען",
+        text: "חסר או נכשל קובץ gi-wizard.js בשרת (LeadUp). העלה את הקובץ מרענון קשיח ואז נסה שוב.",
+        variant: "err",
+        durationMs: 9000
+      });
+    } catch(_e) {}
+    try { console.warn("GI_WIZARD_USER_VISIBLE_FAIL", err); } catch(_e2) {}
+  }
   function __giWizardCall(methodName, args){
     return ensureGiWizardJsLoaded().then(() => {
       const fn = Wizard[methodName];
-      if(typeof fn !== "function" || fn.__giWrap) return undefined;
+      if(typeof fn !== "function" || fn.__giWrap){
+        throw new Error("Wizard." + methodName + " is not available after chunk load");
+      }
       return fn.apply(Wizard, args);
+    }).catch((err) => {
+      notifyWizardChunkFailed(err);
+      throw err;
     });
   }
   [
@@ -37366,7 +37463,13 @@ const ClalRiskLifePdf = {
         this.statusTimer = window.setTimeout(() => this.clearStatus(), 2400);
       }
     },
-    openHealthProposalWizard(){
+    async openHealthProposalWizard(){
+      try {
+        await ensureGiWizardJsLoaded();
+      } catch(err) {
+        notifyWizardChunkFailed(err);
+        return;
+      }
       const localDraft = Wizard._loadLocalDraft?.();
       const isDraftHealth = localDraft && (localDraft.flowType === "health" || !localDraft.flowType);
       if(isDraftHealth){
@@ -37378,19 +37481,19 @@ const ClalRiskLifePdf = {
               Wizard.reset();
               Wizard.loadDraftData({ payload: localDraft.payload, currentStep: localDraft.step });
               Wizard.restoreWizardSessionContextFromDraft(localDraft);
-              Wizard.open();
+              void Wizard.open();
               Wizard.setHint(Wizard.isCustomerPurchaseMode()
                 ? `רכישת ביטוח חדש — הטיוטה שוחזרה עבור ${Wizard.customerPurchaseMode?.customerName || "הלקוח"} ✓`
                 : "הטיוטה שוחזרה — המשך מאיפה שעצרת ✓");
-            }catch(err){ console.error("DRAFT_RESTORE_FAILED:", err); }
+            }catch(err){ console.error("DRAFT_RESTORE_FAILED:", err); notifyWizardChunkFailed(err); }
           },
           () => {
             Wizard._clearLocalDraft?.();
             try{
               prepareInteractiveWizardOpen();
               Wizard.reset();
-              Wizard.open();
-            }catch(err){ console.error("NEW_CUSTOMER_HEALTH_OPEN_FAILED:", err); }
+              void Wizard.open();
+            }catch(err){ console.error("NEW_CUSTOMER_HEALTH_OPEN_FAILED:", err); notifyWizardChunkFailed(err); }
           }
         );
         return;
@@ -37398,9 +37501,10 @@ const ClalRiskLifePdf = {
       try{
         prepareInteractiveWizardOpen();
         Wizard.reset();
-        Wizard.open();
+        await Promise.resolve(Wizard.open());
       }catch(err){
         console.error("NEW_CUSTOMER_HEALTH_OPEN_FAILED:", err);
+        notifyWizardChunkFailed(err);
         window.showToast?.({ title: "שגיאה", text: "אירעה תקלה בפתיחת וויזארד בריאות וסיכונים", variant: "warn", durationMs: 5200 });
       }
     },
