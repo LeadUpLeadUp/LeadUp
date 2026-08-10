@@ -6756,7 +6756,7 @@
     return customer;
   }
 
-  function ensureCustomerInActiveList(customer){
+  function ensureCustomerInActiveList(customer, options = {}){
     const record = customer && typeof customer === "object" ? normalizeCustomerRecord(customer, 0) : null;
     if(!record?.id) return null;
     State.data.customers = Array.isArray(State.data.customers) ? State.data.customers : [];
@@ -6766,7 +6766,13 @@
     } else {
       State.data.customers.unshift(record);
     }
-    refreshStateShadows();
+    // GI-PERF 2026-08-10: בלימה של refresh מלא לכל שורת רשימה (במיוחד בסשן גדול).
+    if(options.skipShadowRefresh === true) return record;
+    if(options.lightShadows === true){
+      refreshStateShadows({ skipNormalize: true, lightShadows: true });
+    } else {
+      refreshStateShadows();
+    }
     return record;
   }
 
@@ -16096,13 +16102,32 @@ UsersGateUI.init();
       return visible;
     },
 
+    /** GI-PERF: רק N אחרונים — בלי מיון/העתקה של כל ה-working-set כשצריך תצוגה קצרה. */
+    listLatest(limit = CUSTOMERS_DEFAULT_VISIBLE){
+      const take = Math.max(1, Math.min(80, Number(limit) || CUSTOMERS_DEFAULT_VISIBLE));
+      const all = Array.isArray(State.data?.customers) ? State.data.customers : [];
+      const visible = [];
+      for(let i = 0; i < all.length; i += 1){
+        const rec = all[i];
+        if(!rec) continue;
+        if(Auth.isElementary()){
+          if(!this.customerHasElementaryProducts(rec)) continue;
+        } else if(!Auth.canViewAllCustomers()){
+          if(!customerVisibleToCurrentUser(rec)) continue;
+        }
+        visible.push(rec);
+      }
+      giSortByDateDesc(visible, (r) => r.createdAt || r.created_at);
+      return visible.slice(0, take);
+    },
+
     /** שורות מוצגות במסך לקוחות — מגיעות מהשרת (10 אחרונים / חיפוש). */
     filtered(){
       if(Array.isArray(this._viewRows)) return this._viewRows.slice();
       // נפילה רכה עד שהשרת עונה: 10 אחרונים מקומיים בלבד (בלי חיפוש מקומי מלא)
       const q = safeTrim(UI.els.customersSearch?.value);
       if(q) return [];
-      return this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+      return this.listLatest(CUSTOMERS_DEFAULT_VISIBLE);
     },
 
     _scopeServerRows(rows){
@@ -16122,10 +16147,16 @@ UsersGateUI.init();
     _ingestServerRows(rows){
       const out = [];
       State.data.customers = Array.isArray(State.data.customers) ? State.data.customers : [];
+      const byId = new Map();
+      for(let i = 0; i < State.data.customers.length; i += 1){
+        const id = String(State.data.customers[i]?.id || "");
+        if(id) byId.set(id, i);
+      }
       (Array.isArray(rows) ? rows : []).forEach((rec) => {
         if(!rec || !rec.id || isServerArchivedCustomerRecord(rec)) return;
         try {
-          const idx = State.data.customers.findIndex((row) => String(row?.id) === String(rec.id));
+          const key = String(rec.id);
+          const idx = byId.has(key) ? byId.get(key) : -1;
           if(idx >= 0){
             const existing = State.data.customers[idx];
             // GI-FIX 2026-08-02: לא לדרוס payload מלא מקומי בשורת רשימה רזה/רדודה.
@@ -16138,7 +16169,15 @@ UsersGateUI.init();
             State.data.customers[idx] = merged;
             out.push(merged);
           } else {
-            const inserted = ensureCustomerInActiveList(rec) || rec;
+            const inserted = ensureCustomerInActiveList(rec, { skipShadowRefresh: true }) || rec;
+            if(inserted?.id){
+              // unshift — בונים מפתח מחדש לרשומות הבאות באותה אצווה
+              byId.clear();
+              for(let i = 0; i < State.data.customers.length; i += 1){
+                const id = String(State.data.customers[i]?.id || "");
+                if(id) byId.set(id, i);
+              }
+            }
             out.push(inserted);
           }
         } catch(_e) {
@@ -16174,7 +16213,7 @@ UsersGateUI.init();
           if(token !== this._listFetchToken) return;
           if(!res?.ok){
             // נפילה למקומי אם יש
-            this._viewRows = this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+            this._viewRows = this.listLatest(CUSTOMERS_DEFAULT_VISIBLE);
             this._viewMode = "latest";
             this._viewQuery = "";
             this.paintTable();
@@ -16211,7 +16250,7 @@ UsersGateUI.init();
         if(token !== this._listFetchToken) return;
         try { console.warn("CUSTOMERS_LIST_SYNC_FAILED:", err); } catch(_e) {}
         if(!q){
-          this._viewRows = this.list().slice(0, CUSTOMERS_DEFAULT_VISIBLE);
+          this._viewRows = this.listLatest(CUSTOMERS_DEFAULT_VISIBLE);
           this._viewMode = "latest";
           this._viewQuery = "";
           this.paintTable();
@@ -16553,10 +16592,8 @@ UsersGateUI.init();
       if(options.skipServerFetch === true) return;
       /* GI-PERF 2026-08-09: סנכרון שרת אחרי paint (rAF+idle) כדי שלחיצת תפריט
          לא תתחרה עם fetch/merge באותו task. forceServer:false משתמש במטמון 20ש׳.
-         Large-session: תמיד forceServer — State הוא רק working-set חלקי. */
-      const force = Storage.isLargeCustomersSession?.()
-        ? true
-        : (options.forceServer !== false);
+         GI-PERF 2026-08-10: גם בסשן גדול מכבדים מטמון — force תמידי גרם לתקיעות במעבר ללקוחות. */
+      const force = options.forceServer !== false;
       const kick = () => { void this.syncListFromServer({ force }); };
       if(typeof requestAnimationFrame === "function"){
         requestAnimationFrame(() => {
@@ -23535,12 +23572,15 @@ UsersGateUI.init();
           if(eid) ids.add(eid);
         }
       } catch(_e) {}
-      try {
-        const rows = Storage.buildCustomerRows(State.data);
-        Storage.getChangedRows(SUPABASE_TABLES.customers, rows).forEach((r) => {
-          if(r?.id) ids.add(String(r.id));
-        });
-      } catch(_e) {}
+      // GI-PERF 2026-08-10: לא לבנות את כל שורות הלקוחות בכל flush — יקר בסשן גדול.
+      if(!Storage.isLargeCustomersSession?.()){
+        try {
+          const rows = Storage.buildCustomerRows(State.data);
+          Storage.getChangedRows(SUPABASE_TABLES.customers, rows).forEach((r) => {
+            if(r?.id) ids.add(String(r.id));
+          });
+        } catch(_e) {}
+      }
       return ids;
     },
 
@@ -23723,6 +23763,9 @@ UsersGateUI.init();
     },
 
     startCustomers(){
+      // GI-PERF 2026-08-10: בסשן גדול realtime על כל טבלת customers מציף את ה-UI (52K).
+      // מסך הלקוחות מסתנכרן ב-pull קל (10 אחרונים / חיפוש).
+      if(Storage.isLargeCustomersSession?.()) return;
       if(this._customersChannel) return;
       try {
         const client = Storage.getClient();
@@ -23947,6 +23990,7 @@ UsersGateUI.init();
       try {
         const forceDashboardPull = this.shouldForceDashboardPull();
         const localDataAt = getMetaSyncAt(State.data?.meta, "data");
+        const largeSession = !!Storage.isLargeCustomersSession?.();
         if(!forceDashboardPull){
           const metaRes = await Storage.loadMetaRowCached();
           if(!metaRes?.ok) return;
@@ -23960,6 +24004,20 @@ UsersGateUI.init();
           if(remoteDataAt && localDataAt && compareIsoStamps(remoteDataAt, localDataAt) <= 0) return;
         }
         if(this.hasBlockingFlow()) return;
+        // GI-PERF 2026-08-10: בסשן גדול לא מושכים שוב working-set מלא בטיימר —
+        // זה מה שנתקע במעבר ללקוחות. רשימת הלקוחות מתעדכנת ב-syncListFromServer.
+        if(largeSession){
+          const view = this.getCurrentView();
+          if(view === "customers"){
+            HeavySyncGate.scheduleUi(() => {
+              if(LiveRefresh.hasBlockingFlow()) return;
+              try {
+                if(!CustomersUI.quietRefresh?.()) CustomersUI.render?.({ skipServerFetch: true });
+              } catch(_e) {}
+            }, 400);
+          }
+          return;
+        }
         if(!HeavySyncGate.tryEnter("LiveRefresh")) return;
         heavyHeld = true;
         const localCustomerCount = Array.isArray(State.data?.customers) ? State.data.customers.length : 0;
@@ -29691,7 +29749,7 @@ UsersGateUI.init();
 
   /* GI-PERF-LAZY-WIZARD 2026-08-09 */
   // Lazy Wizard — full engine in gi-wizard.js (~1.5MB parse deferred until open/init).
-  const GI_WIZARD_JS_VERSION = "20260810-large-session-v7";
+  const GI_WIZARD_JS_VERSION = "20260810-large-session-v8";
   const DISCOUNT_SELECT_PLACEHOLDER = "בחר הנחה";
   const TZAHAL_CLINIC = "קופה צהלית";
   const TZAHAL_CLINIC_SHABAN = "אין שב״ן";
