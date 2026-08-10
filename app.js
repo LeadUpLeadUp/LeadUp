@@ -29438,14 +29438,16 @@ UsersGateUI.init();
 
     /* GI-PERF-LAZY-SIMS 2026-08-09 */
   // Lazy simulator registry — engines in gi-simulators.js (~220KB parse deferred).
-  const GI_SIMULATOR_JS_HREF = "./gi-simulators.js?v=20260809-lazy-sims-v1";
+  const GI_SIMULATOR_JS_HREF = "./gi-simulators.js?v=20260810-hachshara-cpi-v1";
   const GI_SIMULATOR_CATALOG = Object.freeze([
     { company: "הפניקס", product: "ריסק" },
     { company: "מנורה", product: "ריסק" },
     { company: "הפניקס", product: "ריסק משכנתא" },
     { company: "מנורה", product: "בריאות" },
     { company: "איילון", product: "בריאות" },
+    { company: "הכשרה", product: "בריאות" },
     { company: "מנורה", product: "מחלות קשות" },
+    { company: "הכשרה", product: "מחלות קשות" },
     { company: "מנורה", product: "סרטן" }
   ]);
   function giSimulatorCatalogHas(company, product){
@@ -29458,6 +29460,7 @@ UsersGateUI.init();
     "./menora-risk-sim.css?v=20260808-sim-ui-blue-v1",
     "./menora-health-sim.css?v=20260809-health-cpi-v2",
     "./ayalon-health-sim.css?v=20260809-health-cpi-v2",
+    "./hachshara-health-sim.css?v=20260810-hachshara-cpi-v1",
     "./menora-ci-sim.css?v=20260809-menora-age-v2",
     "./simulators-center.css?v=20260808-sim-ui-blue-v1"
   ]);
@@ -29544,6 +29547,9 @@ UsersGateUI.init();
           safeTrim,
           escapeHtml,
           on,
+          $,
+          $$,
+          nowISO,
           parseBirthDateValue,
           formatDmyFromParts,
           renderCompanyLogoHtmlForCompany,
@@ -29722,8 +29728,9 @@ UsersGateUI.init();
       if(this._escHandler){ document.removeEventListener("keydown", this._escHandler); this._escHandler = null; }
       if(this._modal){
         const m = this._modal;
+        try { m.style.pointerEvents = "none"; } catch(_e) {}
         m.classList.add("giValModal--leaving");
-        window.setTimeout(() => m.remove(), 200);
+        window.setTimeout(() => { try { m.remove(); } catch(_e) {} }, 200);
         this._modal = null;
       }
     },
@@ -29736,20 +29743,30 @@ UsersGateUI.init();
         return;
       }
       const syntheticInsured = { id: "standalone", label: "חישוב עצמאי", data: {} };
-      handler.open({
-        standalone: true,
-        company, product,
-        insureds: [syntheticInsured],
-        onApply(){},
-        onFinalConfirm(){}
-      });
+      // אחרי סגירת המרכז — פתיחה בטיק הבא כדי לא להתחרות עם אנימציית היציאה.
+      window.setTimeout(() => {
+        try {
+          handler.open({
+            standalone: true,
+            company, product,
+            insureds: [syntheticInsured],
+            onApply(){},
+            onFinalConfirm(){}
+          });
+        } catch(err) {
+          try { console.error("SIM_CENTER_LAUNCH_FAILED", err); } catch(_e) {}
+          try {
+            window.showToast?.({ title: "שגיאה", text: "לא ניתן לפתוח את הסימולטור.", variant: "err", durationMs: 4800 });
+          } catch(_e2) {}
+        }
+      }, 0);
     }
   };
   // ===== סוף GI-SIM-CENTER ==========================================================
 
   /* GI-PERF-LAZY-WIZARD 2026-08-09 */
   // Lazy Wizard — full engine in gi-wizard.js (~1.5MB parse deferred until open/init).
-  const GI_WIZARD_JS_VERSION = "20260810-large-session-v8";
+  const GI_WIZARD_JS_VERSION = "20260810-hachshara-cpi-v1";
   const DISCOUNT_SELECT_PLACEHOLDER = "בחר הנחה";
   const TZAHAL_CLINIC = "קופה צהלית";
   const TZAHAL_CLINIC_SHABAN = "אין שב״ן";
