@@ -29691,7 +29691,7 @@ UsersGateUI.init();
 
   /* GI-PERF-LAZY-WIZARD 2026-08-09 */
   // Lazy Wizard — full engine in gi-wizard.js (~1.5MB parse deferred until open/init).
-  const GI_WIZARD_JS_HREF = "./gi-wizard.js?v=20260810-large-session-v3";
+  const GI_WIZARD_JS_VERSION = "20260810-large-session-v6";
   const DISCOUNT_SELECT_PLACEHOLDER = "בחר הנחה";
   const TZAHAL_CLINIC = "קופה צהלית";
   const TZAHAL_CLINIC_SHABAN = "אין שב״ן";
@@ -29740,6 +29740,15 @@ UsersGateUI.init();
       } catch(_e) {}
     }
   };
+  function resolveGiWizardHref(options = {}){
+    const bust = options.nocache ? ("&nocache=1&_ts=" + Date.now()) : "";
+    const rel = "./gi-wizard.js?v=" + GI_WIZARD_JS_VERSION + bust;
+    try {
+      return new URL(rel, document.baseURI || window.location.href).href;
+    } catch(_e) {
+      return rel;
+    }
+  }
   function giWizardIsInstalled(){
     try {
       if(globalThis.__GI_WIZARD_CHUNK_READY) return true;
@@ -29748,12 +29757,50 @@ UsersGateUI.init();
       return false;
     }
   }
+  async function clearGiWizardLoadCaches(){
+    try {
+      if(typeof caches !== "undefined" && caches.keys){
+        const keys = await caches.keys();
+        await Promise.all(
+          keys.filter((k) => String(k).startsWith("gi-runtime-")).map((k) => caches.delete(k))
+        );
+      }
+    } catch(_e) {}
+  }
   function ensureGiWizardJsLoaded(){
     if(Wizard._chunkReady && giWizardIsInstalled()) return Promise.resolve(Wizard);
     if(Wizard._chunkLoading) return Wizard._chunkLoading;
     Wizard._chunkReady = false;
-    Wizard._chunkLoading = new Promise((resolve, reject) => {
+    const loadOnce = async (href) => {
+      let res;
       try {
+        res = await fetch(href, {
+          credentials: "same-origin",
+          cache: String(href).includes("nocache=") ? "no-store" : "default"
+        });
+      } catch(err) {
+        throw new Error("network error fetching gi-wizard.js: " + String(err && err.message || err));
+      }
+      if(!res.ok){
+        throw new Error("HTTP " + res.status + " — gi-wizard.js לא קיים בשרת: " + href);
+      }
+      const text = await res.text();
+      if(!text || text.length < 500){
+        throw new Error("gi-wizard.js קצר מדי (" + (text ? text.length : 0) + " בתים): " + href);
+      }
+      if(/^\s*<(!DOCTYPE|html[\s>])/i.test(text)){
+        throw new Error("השרת החזיר HTML במקום JS (כנראה קובץ חסר): " + href);
+      }
+      const blobUrl = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
+      return new Promise((resolve, reject) => {
+      try {
+        // תג ישן אחרי כישלון חלקי תוקע ניסיונות הבאים (load כבר נורה).
+        try {
+          const stale = document.getElementById("gi-wizard-js");
+          if(stale) stale.remove();
+        } catch(_e) {}
+        try { globalThis.__GI_WIZARD_CHUNK_READY = false; } catch(_e) {}
+
         const host = {
           Wizard,
           onWizardInstalled: () => { Wizard._chunkReady = true; },
@@ -29998,46 +30045,66 @@ UsersGateUI.init();
           Wizard._chunkReady = true;
           resolve(Wizard);
         };
-        const existing = document.getElementById("gi-wizard-js");
-        if(existing){
-          if(giWizardIsInstalled()){ done(); return; }
-          existing.addEventListener("load", () => {
-            try { queueMicrotask(done); } catch(_e) { done(); }
-          }, { once: true });
-          existing.addEventListener("error", () => reject(new Error("gi-wizard.js failed")), { once: true });
-          return;
-        }
         const s = document.createElement("script");
         s.id = "gi-wizard-js";
-        s.src = GI_WIZARD_JS_HREF;
+        s.src = blobUrl;
         s.async = true;
         s.onload = () => {
+          try { URL.revokeObjectURL(blobUrl); } catch(_e) {}
           try { queueMicrotask(done); } catch(_e) { done(); }
         };
         s.onerror = () => {
+          try { URL.revokeObjectURL(blobUrl); } catch(_e) {}
           try { s.remove(); } catch(_e) {}
-          reject(new Error("gi-wizard.js failed to load"));
+          reject(new Error("gi-wizard.js failed to execute after fetch from " + href));
         };
         document.head.appendChild(s);
-      } catch(err) { reject(err); }
-    }).catch((err) => {
-      Wizard._chunkLoading = null;
-      Wizard._chunkReady = false;
-      try { console.warn("GI_WIZARD_CHUNK_LOAD_FAILED", err); } catch(_e) {}
-      throw err;
+      } catch(err) {
+        try { URL.revokeObjectURL(blobUrl); } catch(_e) {}
+        reject(err);
+      }
     });
+    };
+
+    Wizard._chunkLoading = (async () => {
+      const primaryHref = resolveGiWizardHref();
+      try {
+        const wiz = await loadOnce(primaryHref);
+        Wizard._chunkLoading = null;
+        return wiz;
+      } catch(firstErr) {
+        try { console.warn("GI_WIZARD_CHUNK_LOAD_FAILED", firstErr); } catch(_e) {}
+        // ניסיון שני: ניקוי מטמון SW + טעינה עם nocache (עוקף Service Worker).
+        try { await clearGiWizardLoadCaches(); } catch(_e) {}
+        const retryHref = resolveGiWizardHref({ nocache: true });
+        try {
+          const wiz = await loadOnce(retryHref);
+          Wizard._chunkLoading = null;
+          return wiz;
+        } catch(secondErr) {
+          Wizard._chunkLoading = null;
+          Wizard._chunkReady = false;
+          try { console.warn("GI_WIZARD_CHUNK_RETRY_FAILED", secondErr); } catch(_e) {}
+          throw secondErr;
+        }
+      }
+    })();
+
     return Wizard._chunkLoading;
   }
   function notifyWizardChunkFailed(err){
+    let href = "";
+    try { href = resolveGiWizardHref({ nocache: true }); } catch(_e) {}
+    const detail = String(err && err.message || err || "").slice(0, 220);
     try {
       window.showToast?.({
         title: "אשף לא נטען",
-        text: "חסר או נכשל קובץ gi-wizard.js בשרת (LeadUp). העלה את הקובץ מרענון קשיח ואז נסה שוב.",
+        text: (detail ? detail + " — " : "") + "ודא ש־gi-wizard.js (~1.6MB) הועלה ליד index.html. בדוק בטאב: " + (href || "./gi-wizard.js"),
         variant: "err",
-        durationMs: 9000
+        durationMs: 14000
       });
     } catch(_e) {}
-    try { console.warn("GI_WIZARD_USER_VISIBLE_FAIL", err); } catch(_e2) {}
+    try { console.warn("GI_WIZARD_USER_VISIBLE_FAIL", err, href); } catch(_e2) {}
   }
   function __giWizardCall(methodName, args){
     return ensureGiWizardJsLoaded().then(() => {
@@ -37519,48 +37586,57 @@ const ClalRiskLifePdf = {
         return;
       }
       if(type === "elementary"){
-        // בדוק טיוטה מקומית לאלמנטרי
-        const localDraftElem = Wizard._loadLocalDraft?.();
-        const isDraftElementary = localDraftElem && localDraftElem.flowType === "elementary";
-        if(isDraftElementary){
-          this.close();
-          Wizard._showLocalDraftRestoreDialog(
-            localDraftElem,
-            () => {
-              try{
-                prepareInteractiveWizardOpen();
-                Wizard.resetElementary();
-                Wizard.loadDraftData({ payload: localDraftElem.payload, currentStep: localDraftElem.step });
-                Wizard.restoreWizardSessionContextFromDraft(localDraftElem);
-                Wizard.open();
-                Wizard.setHint(Wizard.isCustomerPurchaseMode()
-                  ? `רכישת ביטוח חדש — הטיוטה שוחזרה עבור ${Wizard.customerPurchaseMode?.customerName || "לקוח"} ✓`
-                  : "הטיוטה שוחזרה — המשך מאיפה שעצרת ✓");
-              }catch(err){ console.error("DRAFT_RESTORE_ELEM_FAILED:", err); }
-            },
-            () => {
-              Wizard._clearLocalDraft?.();
-              try{
-                prepareInteractiveWizardOpen();
-                Wizard.resetElementary();
-                Wizard.open();
-              }catch(err){ console.error("NEW_CUSTOMER_ELEMENTARY_OPEN_FAILED:", err); }
-            }
-          );
-          return;
-        }
-        this.showStatus("פותח את וויזארד אלמנטרי…", "ready");
-        window.setTimeout(() => {
-          this.close();
-          try{
-            prepareInteractiveWizardOpen();
-            Wizard.resetElementary();
-            Wizard.open();
-          }catch(err){
-            console.error("NEW_CUSTOMER_ELEMENTARY_OPEN_FAILED:", err);
-            this.showStatus("אירעה תקלה בפתיחת וויזארד אלמנטרי", "dev");
+        void (async () => {
+          try {
+            await ensureGiWizardJsLoaded();
+          } catch(err) {
+            notifyWizardChunkFailed(err);
+            return;
           }
-        }, 140);
+          // בדוק טיוטה מקומית לאלמנטרי
+          const localDraftElem = Wizard._loadLocalDraft?.();
+          const isDraftElementary = localDraftElem && localDraftElem.flowType === "elementary";
+          if(isDraftElementary){
+            this.close();
+            Wizard._showLocalDraftRestoreDialog(
+              localDraftElem,
+              () => {
+                try{
+                  prepareInteractiveWizardOpen();
+                  Wizard.resetElementary();
+                  Wizard.loadDraftData({ payload: localDraftElem.payload, currentStep: localDraftElem.step });
+                  Wizard.restoreWizardSessionContextFromDraft(localDraftElem);
+                  Wizard.open();
+                  Wizard.setHint(Wizard.isCustomerPurchaseMode()
+                    ? `רכישת ביטוח חדש — הטיוטה שוחזרה עבור ${Wizard.customerPurchaseMode?.customerName || "לקוח"} ✓`
+                    : "הטיוטה שוחזרה — המשך מאיפה שעצרת ✓");
+                }catch(err){ console.error("DRAFT_RESTORE_ELEM_FAILED:", err); notifyWizardChunkFailed(err); }
+              },
+              () => {
+                Wizard._clearLocalDraft?.();
+                try{
+                  prepareInteractiveWizardOpen();
+                  Wizard.resetElementary();
+                  Wizard.open();
+                }catch(err){ console.error("NEW_CUSTOMER_ELEMENTARY_OPEN_FAILED:", err); notifyWizardChunkFailed(err); }
+              }
+            );
+            return;
+          }
+          this.showStatus("פותח את וויזארד אלמנטרי…", "ready");
+          window.setTimeout(() => {
+            this.close();
+            try{
+              prepareInteractiveWizardOpen();
+              Wizard.resetElementary();
+              Wizard.open();
+            }catch(err){
+              console.error("NEW_CUSTOMER_ELEMENTARY_OPEN_FAILED:", err);
+              notifyWizardChunkFailed(err);
+              this.showStatus("אירעה תקלה בפתיחת וויזארד אלמנטרי", "dev");
+            }
+          }, 140);
+        })();
         return;
       }
       if(type === "pension"){
