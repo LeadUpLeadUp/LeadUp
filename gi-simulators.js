@@ -9,7 +9,9 @@
   }
   const safeTrim = host.safeTrim;
   const escapeHtml = host.escapeHtml;
-  const on = host.on;
+  const on = typeof host.on === "function"
+    ? host.on
+    : ((el, evt, fn, opts) => el && el.addEventListener && el.addEventListener(evt, fn, opts));
   const $ = typeof host.$ === "function"
     ? host.$
     : ((sel, root) => (root || document).querySelector(sel));
@@ -24,6 +26,48 @@
   const renderCompanyLogoHtmlForCompany = host.renderCompanyLogoHtmlForCompany;
   const ensureGiSimulatorStylesLoaded = host.ensureGiSimulatorStylesLoaded;
   const RiskSimulators = host.RiskSimulators;
+
+  /**
+   * מאזין לחיצה יחיד על המודאל לכפתורי מין/עישון (ו־programMode).
+   * שורד החלפת innerHTML ב-_render — בניגוד ל-bind על כפתורים בודדים שנמחקים.
+   */
+  function ensureSegFieldDelegation(modal, sim, fieldPrefix){
+    if(!modal || !sim || !fieldPrefix) return;
+    const flag = "_giSegDel_" + fieldPrefix;
+    if(modal[flag]) return;
+    modal[flag] = true;
+    const fieldAttr = "data-" + fieldPrefix + "-field";
+    const valueAttr = "data-" + fieldPrefix + "-value";
+    on(modal, "click", (ev) => {
+      const target = ev.target;
+      if(!target || typeof target.closest !== "function") return;
+      const btn = target.closest(
+        "[" + fieldAttr + "=\"gender\"], [" + fieldAttr + "=\"smoker\"], [" + fieldAttr + "=\"programMode\"]"
+      );
+      if(!btn || !modal.contains(btn)) return;
+      const st = sim._state?.[sim._activeInsuredId];
+      if(!st) return;
+      const field = btn.getAttribute(fieldAttr);
+      const raw = btn.getAttribute(valueAttr);
+      if(field === "gender"){
+        st.gender = raw || "";
+        st.genderSource = "manual";
+      } else if(field === "smoker"){
+        st.smoker = raw === "1";
+        st.smokerSource = "manual";
+      } else if(field === "programMode"){
+        st.programMode = raw || "base";
+      } else {
+        return;
+      }
+      st.result = null;
+      st.error = null;
+      st.dirtySinceSave = true;
+      try { sim._render(); } catch(err){
+        try { console.error("GI_SIM_SEG_RENDER_FAILED", fieldPrefix, err); } catch(_e){}
+      }
+    });
+  }
 
 // ===== GI-PHX-RISK-SIM 2026-08-08 · סימולטור ריסק הפניקס =====================
   // תוסף עצמאי ומבודד לשלב 5 (פוליסות חדשות) — לא נוגע בשום קוד קיים של Wizard.
@@ -587,6 +631,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "phx");
       $$("[data-phx-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-phx-tab]", modal).forEach((el) => on(el, "click", () => {
         this._switchInsured(el.getAttribute("data-phx-tab"));
@@ -637,22 +682,6 @@
         on(occInput, "change", () => this._render());
         on(occInput, "blur", () => this._render());
       }
-      $$('[data-phx-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-phx-value") || "";
-        st.genderSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
-      $$('[data-phx-field="smoker"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.smoker = btn.getAttribute("data-phx-value") === "1";
-        st.smokerSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
       const calcBtn = modal.querySelector("[data-phx-calc]");
       if(calcBtn) on(calcBtn, "click", () => this._calc(this._activeInsuredId));
       const applyBtn = modal.querySelector("[data-phx-apply]");
@@ -1155,6 +1184,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "mnr");
       $$("[data-mnr-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-mnr-tab]", modal).forEach((el) => on(el, "click", () => {
         this._switchInsured(el.getAttribute("data-mnr-tab"));
@@ -1205,22 +1235,6 @@
         on(occInput, "change", () => this._render());
         on(occInput, "blur", () => this._render());
       }
-      $$('[data-mnr-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-mnr-value") || "";
-        st.genderSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
-      $$('[data-mnr-field="smoker"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.smoker = btn.getAttribute("data-mnr-value") === "1";
-        st.smokerSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
       const calcBtn = modal.querySelector("[data-mnr-calc]");
       if(calcBtn) on(calcBtn, "click", () => this._calc(this._activeInsuredId));
       const applyBtn = modal.querySelector("[data-mnr-apply]");
@@ -1679,6 +1693,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "phxmort");
       $$("[data-phxmort-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-phxmort-tab]", modal).forEach((el) => on(el, "click", () => {
         this._switchInsured(el.getAttribute("data-phxmort-tab"));
@@ -1729,22 +1744,6 @@
         on(occInput, "change", () => this._render());
         on(occInput, "blur", () => this._render());
       }
-      $$('[data-phxmort-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-phxmort-value") || "";
-        st.genderSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
-      $$('[data-phxmort-field="smoker"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.smoker = btn.getAttribute("data-phxmort-value") === "1";
-        st.smokerSource = "manual";
-        st.result = null; st.error = null; st.dirtySinceSave = true;
-        this._render();
-      }));
       const calcBtn = modal.querySelector("[data-phxmort-calc]");
       if(calcBtn) on(calcBtn, "click", () => this._calc(this._activeInsuredId));
       const applyBtn = modal.querySelector("[data-phxmort-apply]");
@@ -2751,6 +2750,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "mnrh");
       $$("[data-mnrh-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-mnrh-tab]", modal).forEach((el) => on(el, "click", () => this._switchInsured(el.getAttribute("data-mnrh-tab"))));
       $$("[data-mnrh-switch]", modal).forEach((el) => on(el, "click", () => {
@@ -2772,13 +2772,6 @@
         this._syncAge(st);
         this._render();
       });
-      $$('[data-mnrh-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-mnrh-value") || "";
-        st.genderSource = "manual"; st.dirtySinceSave = true;
-        this._render();
-      }));
       const occInput = modal.querySelector('[data-mnrh-field="occupation"]');
       if(occInput){
         on(occInput, "input", () => {
@@ -3604,6 +3597,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "aylh");
       $$("[data-aylh-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-aylh-tab]", modal).forEach((el) => on(el, "click", () => this._switchInsured(el.getAttribute("data-aylh-tab"))));
       $$("[data-aylh-switch]", modal).forEach((el) => on(el, "click", () => {
@@ -3625,13 +3619,6 @@
         this._syncAge(st);
         this._render();
       });
-      $$('[data-aylh-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-aylh-value") || "";
-        st.genderSource = "manual"; st.dirtySinceSave = true;
-        this._render();
-      }));
       const occInput = modal.querySelector('[data-aylh-field="occupation"]');
       if(occInput){
         on(occInput, "input", () => {
@@ -4210,6 +4197,7 @@
       _bind(){
         const modal = this._modal;
         if(!modal) return;
+        ensureSegFieldDelegation(modal, this, "mnrci");
         $$("[data-mnrci-close]", modal).forEach((el) => on(el, "click", () => this.close()));
         $$("[data-mnrci-tab]", modal).forEach((el) => on(el, "click", () => this._switchInsured(el.getAttribute("data-mnrci-tab"))));
         $$("[data-mnrci-switch]", modal).forEach((el) => on(el, "click", () => {
@@ -4252,27 +4240,6 @@
           on(occInput, "change", () => this._render());
           on(occInput, "blur", () => this._render());
         }
-        $$('[data-mnrci-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-          const st = this._state[this._activeInsuredId];
-          if(!st) return;
-          st.gender = btn.getAttribute("data-mnrci-value") || "";
-          st.genderSource = "manual"; st.result = null; st.error = null; st.dirtySinceSave = true;
-          this._render();
-        }));
-        $$('[data-mnrci-field="smoker"]', modal).forEach((btn) => on(btn, "click", () => {
-          const st = this._state[this._activeInsuredId];
-          if(!st) return;
-          st.smoker = btn.getAttribute("data-mnrci-value") === "1";
-          st.smokerSource = "manual"; st.result = null; st.error = null; st.dirtySinceSave = true;
-          this._render();
-        }));
-        $$('[data-mnrci-field="programMode"]', modal).forEach((btn) => on(btn, "click", () => {
-          const st = this._state[this._activeInsuredId];
-          if(!st) return;
-          st.programMode = btn.getAttribute("data-mnrci-value") || "base";
-          st.result = null; st.error = null; st.dirtySinceSave = true;
-          this._render();
-        }));
         const calcBtn = modal.querySelector("[data-mnrci-calc]");
         if(calcBtn) on(calcBtn, "click", () => this._calc(this._activeInsuredId));
         const applyBtn = modal.querySelector("[data-mnrci-apply]");
@@ -4847,6 +4814,7 @@
     _bind(){
       const modal = this._modal;
       if(!modal) return;
+      ensureSegFieldDelegation(modal, this, "hachh");
       $$("[data-hachh-close]", modal).forEach((el) => on(el, "click", () => this.close()));
       $$("[data-hachh-tab]", modal).forEach((el) => on(el, "click", () => this._switchInsured(el.getAttribute("data-hachh-tab"))));
       $$("[data-hachh-switch]", modal).forEach((el) => on(el, "click", () => {
@@ -4868,13 +4836,6 @@
         this._syncAge(st);
         this._render();
       });
-      $$('[data-hachh-field="gender"]', modal).forEach((btn) => on(btn, "click", () => {
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        st.gender = btn.getAttribute("data-hachh-value") || "";
-        st.genderSource = "manual"; st.dirtySinceSave = true;
-        this._render();
-      }));
       const occInput = modal.querySelector('[data-hachh-field="occupation"]');
       if(occInput){
         on(occInput, "input", () => {
@@ -5257,37 +5218,31 @@
         this._activeInsuredId = el.getAttribute("data-hachci-tab");
         this._render();
       }));
-      modal.querySelectorAll("[data-hachci-field]").forEach((el) => {
-        const field = el.getAttribute("data-hachci-field");
-        const st = this._state[this._activeInsuredId];
-        if(!st) return;
-        const apply = () => {
-          if(field === "birthDate"){
-            st.birthDate = riskSimIsoInputToBirthDate(el.value) || "";
-            st.birthDateSource = "manual";
-            this._syncAge(st);
-          } else if(field === "gender"){
-            st.gender = el.getAttribute("data-hachci-value") || "";
-            st.genderSource = "manual";
-          } else if(field === "smoker"){
-            st.smoker = el.getAttribute("data-hachci-value") === "1";
-            st.smokerSource = "manual";
-          } else if(field === "compensation"){
-            st.compensation = safeTrim(el.value);
-            st.compensationSource = "manual";
-          }
+      ensureSegFieldDelegation(modal, this, "hachci");
+      const birthInput = modal.querySelector('[data-hachci-field="birthDate"]');
+      if(birthInput){
+        birthInput.addEventListener("change", () => {
+          const st = this._state[this._activeInsuredId];
+          if(!st) return;
+          st.birthDate = riskSimBirthDateFromIsoInput(birthInput.value) || "";
+          st.birthDateSource = "manual";
+          this._syncAge(st);
           st.dirtySinceSave = true;
           this._render();
-        };
-        if(el.tagName === "INPUT"){
-          el.addEventListener("change", apply);
-          el.addEventListener("input", () => {
-            if(field === "compensation"){ st.compensation = safeTrim(el.value); st.dirtySinceSave = true; this._recalcState(st); }
-          });
-        } else {
-          el.addEventListener("click", apply);
-        }
-      });
+        });
+      }
+      const compInput = modal.querySelector('[data-hachci-field="compensation"]');
+      if(compInput){
+        compInput.addEventListener("input", () => {
+          const st = this._state[this._activeInsuredId];
+          if(!st) return;
+          st.compensation = safeTrim(compInput.value);
+          st.compensationSource = "manual";
+          st.dirtySinceSave = true;
+          this._recalcState(st);
+        });
+        compInput.addEventListener("change", () => this._render());
+      }
       modal.querySelector("[data-hachci-apply]")?.addEventListener("click", () => this._apply());
       modal.querySelector("[data-hachci-save]")?.addEventListener("click", () => this._saveActive());
       modal.querySelector("[data-hachci-finalconfirm]")?.addEventListener("click", () => {
