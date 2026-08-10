@@ -29691,7 +29691,7 @@ UsersGateUI.init();
 
   /* GI-PERF-LAZY-WIZARD 2026-08-09 */
   // Lazy Wizard — full engine in gi-wizard.js (~1.5MB parse deferred until open/init).
-  const GI_WIZARD_JS_VERSION = "20260810-large-session-v6";
+  const GI_WIZARD_JS_VERSION = "20260810-large-session-v7";
   const DISCOUNT_SELECT_PLACEHOLDER = "בחר הנחה";
   const TZAHAL_CLINIC = "קופה צהלית";
   const TZAHAL_CLINIC_SHABAN = "אין שב״ן";
@@ -29852,6 +29852,85 @@ UsersGateUI.init();
           focusElementaryDashboardPendingTab,
           BUILD,
           premiumCustomerIcon,
+          prepareInteractiveWizardOpen,
+          inferProposalFlowType,
+          inferProposalElementaryProduct,
+          applyDmyAutoFormat,
+          bindFileDropZone,
+          getValidationConfigForBind,
+          validateValueByKind,
+          elementaryCoverageTypeLabelHe,
+          elementaryLicenseIssueYearFromStored,
+          findElementaryReferralById,
+          findPendingElementaryReferralByIdNumber,
+          findPendingElementaryReferralByCustomerId,
+          isExcelUploadFile,
+          isPdfUploadFile,
+          isPdfUploadFileAsync,
+          normalizeHarWorkbookCell,
+          isElementaryLicenseIssueYearValid,
+          showWizardHarAlertModal,
+          setOpsTouch,
+          setElementaryReferrals,
+          isGoldMirrorCampaignLead,
+          pinElementaryReferralLocally,
+          normalizeElementaryPriceQuotes,
+          getReferralElementaryPriceQuotes,
+          patchElementaryReferral,
+          activateElementaryPoliciesInPayload,
+          renderCompactShabanFieldHtml,
+          findHarWorkbookHeaderRow,
+          appendAuditLog,
+          normalizeCompanyDiscountOverrides,
+          normalizeElementaryLicenseIssueYearInput,
+          israelPostZipDataJsonp,
+          extractIsraelPostNameList,
+          showHarBituachImportModal,
+          showHarBituachProcessingModal,
+          mergeElementarySaveWithExistingCustomerPayload,
+          applyElementaryQuoteVariantToInsuredData,
+          canElementaryMarkIssuedForReferral,
+          getRequestedCoverageFromPayload,
+          resolveCompanyLogoKey,
+          getCompanyLogoSrcForCompany,
+          renderHmoLogoHtmlForClinic,
+          renderHmoClinicDropdownHtml,
+          bindHmoClinicDropdown,
+          stampHealthRisksWaitingMirror,
+          normalizeDiscountOptionRow,
+          parseAnyDmyDate,
+          currentAgentIdentity,
+          findAgentRecordForSession,
+          stampRecordAgentOwnership,
+          parseCampaignLeadLandingPayload,
+          mapLandingInsuranceToWizardTypes,
+          agentCanOpenCampaignLead,
+          getNewPoliciesFromCustomerPayload,
+          mergeInsuredDataPreferNonEmpty,
+          normalizeElementaryReferral,
+          getElementaryPolicyLifecyclePresentation,
+          getElementaryReferralSourceFlow,
+          customerHasAgentHealthRiskCoverage,
+          referralAwaitingElementaryIssue,
+          elementaryReferralShouldCompleteAgentSetupOnFinish,
+          removeElementaryReferralFromActiveViews,
+          findElementaryReferralIssuableByCustomerId,
+          notifyElementaryReferralsChannel,
+          scheduleBackgroundElementaryReferralVerify,
+          touchElementaryReferralElementary,
+          persistCustomerPayloadRecord,
+          ensureCustomerForElementaryReferral,
+          markElementaryMirrorGoldSoldFromWizard,
+          touchElementaryReferralAgentSetupComplete,
+          touchElementaryReferralProposalReady,
+          verifyElementaryReferralPersisted,
+          nowISO,
+          normalizeEmailValue,
+          forceCloseUiLayers,
+          releaseGlobalUiLocks,
+          elementaryWizardLogoUrl,
+          elementaryProgressCarUrl,
+          getMaxProposalWizardStepIdFromPayload,
           digitsOnly,
         };
         try {
@@ -30096,10 +30175,13 @@ UsersGateUI.init();
     let href = "";
     try { href = resolveGiWizardHref({ nocache: true }); } catch(_e) {}
     const detail = String(err && err.message || err || "").slice(0, 220);
+    const looksMissingFile = /HTTP\s*404|לא קיים בשרת|network error|HTML במקום JS|קצר מדי/i.test(detail);
     try {
       window.showToast?.({
         title: "אשף לא נטען",
-        text: (detail ? detail + " — " : "") + "ודא ש־gi-wizard.js (~1.6MB) הועלה ליד index.html. בדוק בטאב: " + (href || "./gi-wizard.js"),
+        text: looksMissingFile
+          ? ((detail ? detail + " — " : "") + "ודא ש־gi-wizard.js (~1.6MB) הועלה ליד index.html. בדוק בטאב: " + (href || "./gi-wizard.js"))
+          : ((detail || "שגיאה בטעינת האשף") + (href ? (" | " + href) : "")),
         variant: "err",
         durationMs: 14000
       });
