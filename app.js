@@ -13290,6 +13290,7 @@
         document.body.classList.remove("lcAuthLock");
         this.els.wrap?.setAttribute?.("aria-hidden","true");
       } catch(_) {}
+      try { ensureGiSecondaryStylesLoaded(); } catch(_e) {}
     },
 
     isAdmin(){
@@ -29275,6 +29276,36 @@ UsersGateUI.init();
       } catch(_e) {}
     });
   }
+
+  /* GI-PERF 2026-08-10 — CSS משני אחרי login בלבד (לא במסך הכניסה). */
+  const GI_SECONDARY_STYLE_HREFS = Object.freeze([
+    "./theme-mirror-typing.css?v=20260805-mirror-typing-v1",
+    "./gi-customers-import.css?v=20260809-import-progress-v1",
+    "./theme-unify-flat.css?v=20260809-perf-paint-v1"
+  ]);
+  function ensureGiSecondaryStylesLoaded(){
+    if(document.documentElement.dataset.giSecondaryCss === "1") return;
+    document.documentElement.dataset.giSecondaryCss = "1";
+    GI_SECONDARY_STYLE_HREFS.forEach((href) => {
+      try {
+        const id = "gi-sec-css-" + href.replace(/[^\w]+/g, "_");
+        if(document.getElementById(id)) return;
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = href;
+        link.onerror = () => {
+          try { console.warn("GI_SECONDARY_CSS_MISSING:", href); } catch(_e) {}
+        };
+        document.head.appendChild(link);
+      } catch(_e) {}
+    });
+  }
+  try {
+    window.addEventListener("gi:app-login-ready", () => {
+      try { ensureGiSecondaryStylesLoaded(); } catch(_e) {}
+    });
+  } catch(_e) {}
   const RiskSimulators = {
     registry: {},
     _chunkReady: false,
@@ -29546,9 +29577,18 @@ UsersGateUI.init();
     _initCalled: false,
     init(){
       this._initCalled = true;
-      try { perfIdle(() => { void ensureGiWizardJsLoaded(); }, 6500); } catch(_e) {
-        try { window.setTimeout(() => { void ensureGiWizardJsLoaded(); }, 6500); } catch(_e2) {}
-      }
+      // GI-PERF 2026-08-10: לא לטעון gi-wizard לפני כניסה — מונע 404/UNHANDLED_REJECTION במסך login.
+      const schedulePrefetch = () => {
+        if(!Auth?.current) return;
+        const run = () => { void ensureGiWizardJsLoaded().catch(() => {}); };
+        try { perfIdle(run, 6500); } catch(_e) {
+          try { window.setTimeout(run, 6500); } catch(_e2) {}
+        }
+      };
+      try {
+        if(Auth?.current) schedulePrefetch();
+        else window.addEventListener("gi:app-login-ready", () => { schedulePrefetch(); }, { once: true });
+      } catch(_e) {}
     }
   };
   function ensureGiWizardJsLoaded(){
@@ -29805,12 +29845,15 @@ UsersGateUI.init();
         s.src = GI_WIZARD_JS_HREF;
         s.async = true;
         s.onload = done;
-        s.onerror = () => reject(new Error("gi-wizard.js failed to load"));
+        s.onerror = () => {
+          try { s.remove(); } catch(_e) {}
+          reject(new Error("gi-wizard.js failed to load"));
+        };
         document.head.appendChild(s);
       } catch(err) { reject(err); }
     }).catch((err) => {
       Wizard._chunkLoading = null;
-      try { console.error("GI_WIZARD_CHUNK_LOAD_FAILED", err); } catch(_e) {}
+      try { console.warn("GI_WIZARD_CHUNK_LOAD_FAILED", err); } catch(_e) {}
       throw err;
     });
     return Wizard._chunkLoading;

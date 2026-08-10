@@ -47,9 +47,9 @@
 
   /* Text */
   --gi-text:          #0F172A;
-  --gi-text-2:        #475569;
-  --gi-text-3:        #64748B;
-  --gi-text-muted:    #94A3B8;
+  --gi-text-2:        #3D4A5C;
+  --gi-text-3:        #4B5A6E;
+  --gi-text-muted:    #647287;
   --gi-on-navy:       rgba(255,255,255,.92);
   --gi-on-navy-dim:   rgba(255,255,255,.68);
 
@@ -88,7 +88,7 @@
   --panel:     #FFFFFF;
   --line:      #E5E7EB;
   --text:      #0F172A;
-  --muted:     #64748B;
+  --muted:     #4B5A6E;
 
   --blue:      #EFF6FF;
   --blue2:     #BFDBFE;
@@ -275,9 +275,21 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
   display: none !important;
 }
 
+/* Hover: הדגשת אותיות בלבד — בלי צל / בלי כרטיס מוגבה */
 .nav__item:hover:not(#\9):not(#\9){
   transform: none !important;
-  background: rgba(255,255,255,.14) !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.nav__item:hover .nav__label:not(#\9):not(#\9){
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  letter-spacing: .02em !important;
   color: #FFFFFF !important;
 }
 
@@ -291,6 +303,17 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .nav__item.is-active:hover:not(#\9):not(#\9){
   background: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  color: var(--gi-primary) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.nav__item.is-active:hover .nav__label:not(#\9):not(#\9){
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  letter-spacing: 0 !important;
   color: var(--gi-primary) !important;
 }
 
@@ -318,6 +341,8 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
   box-shadow: none !important;
   transform: none !important;
   color: inherit !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 .nav__iconSvg:not(#\9):not(#\9){ width: 19px !important; height: 19px !important; }
@@ -610,8 +635,9 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 .bankKpi:not(#\9):not(#\9){
   position: relative;
   padding: var(--gi-s5) !important;
-  /* gutter on the visual left (inline-end under RTL) reserved for the icon badge */
-  padding-inline-end: 84px !important;
+  /* gutter on the visual right (inline-start under RTL) reserved for the icon badge */
+  padding-inline-start: 84px !important;
+  padding-inline-end: var(--gi-s5) !important;
   background: var(--gi-surface) !important;
   border: 1px solid var(--gi-border) !important;
   border-radius: var(--gi-r-card) !important;
@@ -628,20 +654,22 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .bankKpi__he:not(#\9):not(#\9){
   font-size: 13px !important;
-  font-weight: 500 !important;
-  color: var(--gi-text-3) !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-2) !important;
   letter-spacing: 0 !important;
   text-shadow: none !important;
+  line-height: 1.35 !important;
 }
 
 .bankKpi__value:not(#\9):not(#\9){
   font-size: 30px !important;
   font-weight: 700 !important;
   color: var(--gi-text) !important;
-  margin-top: var(--gi-s2) !important;
+  margin-top: 6px !important;
   letter-spacing: -.02em !important;
   text-shadow: none !important;
   transform: none !important;
+  line-height: 1.1 !important;
 }
 
 .bankKpi__delta:not(#\9):not(#\9),
@@ -652,32 +680,37 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 .bankKpi__delta.is-up:not(#\9):not(#\9){   color: var(--gi-success) !important; }
 .bankKpi__delta.is-down:not(#\9):not(#\9){ color: var(--gi-danger) !important; }
 
-/* Turn the faded background watermark into a soft blue icon badge */
+/* Icon badge: circular, on the RIGHT (inline-start in RTL), next to title+value */
 .bankKpi__watermark:not(#\9):not(#\9){
   position: absolute !important;
   top: var(--gi-s5) !important;
-  inset-inline-start: auto !important;
-  inset-inline-end: var(--gi-s5) !important;
+  inset-inline-end: auto !important;
+  inset-inline-start: var(--gi-s5) !important;
   bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
   width: 48px !important;
   height: 48px !important;
   display: grid !important;
   place-items: center !important;
-  border-radius: var(--gi-r-md) !important;
+  border-radius: 50% !important;
   background: var(--gi-primary-soft) !important;
   color: var(--gi-primary) !important;
   opacity: 1 !important;
   filter: none !important;
   transform: none !important;
   pointer-events: none;
+  z-index: 2 !important;
 }
 
 .bankKpi__watermark svg:not(#\9):not(#\9),
-.bankKpi__watermark img:not(#\9):not(#\9){
+.bankKpi__watermark img:not(#\9):not(#\9),
+.bankKpi__watermark .premiumMonoIcon:not(#\9):not(#\9){
   width: 24px !important;
   height: 24px !important;
   opacity: 1 !important;
   filter: none !important;
+  color: inherit !important;
 }
 
 /* Decorative accent bar ? not part of the flat language */
@@ -685,10 +718,11 @@ body.sidebar-collapsed .sidebar:not(#\9):not(#\9){
 
 .bankKpi__caret:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; opacity: .7; }
 
-/* Below the icon badge ? reclaim the reserved gutter */
+/* Detail button stays full-width under the metrics — no overlap with icon gutter */
 .bankKpi__detailBtn:not(#\9):not(#\9),
 .bankKpiToday__breakdown:not(#\9):not(#\9){
-  margin-inline-end: -60px !important;
+  margin-inline-end: 0 !important;
+  margin-inline-start: 0 !important;
 }
 
 .bankKpi__detailBtn:not(#\9):not(#\9){
@@ -1679,6 +1713,11 @@ body.lcAuthLock .lcLogin__mfaStage:not(#\9):not(#\9){ gap: var(--gi-s4) !importa
 /* The photo variants hid the icon outright ? bring it back as the badge */
 .bankKpi__watermark:not(#\9):not(#\9){
   display: grid !important;
+  border-radius: 50% !important;
+  top: var(--gi-s5) !important;
+  inset-inline-start: var(--gi-s5) !important;
+  inset-inline-end: auto !important;
+  transform: none !important;
 }
 
 .bankKpi__he:not(#\9):not(#\9){
@@ -2169,32 +2208,26 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
 
 
 /* =====================================================================
-   25. DASHBOARD GRID ? two columns
-   BUILD: 20260731-dash-grid
+   25. DASHBOARD GRID — two columns
+   BUILD: 20260803-dash-grid-swap
 
-   app.js ???? ?? ????? ?-div ???? ???? ????? ???, ???? ??????? ????
-   ???? ??? ????. ?????? ??? ?????? ?? .bankDash ???? ??-?????.
+   RTL: column 1 = right, column 2 = left.
+   Right (wide): לקוחות אחרונים
+   Left (narrow): ביצועים מול יעד + ליד אחרון + הצעה שלא התקדמה (+ לוח מובילים)
 
-   ????? ??? display:contents ?? ?????? ????? ? ?? ??????? ????????
-   ????????? ?????? ?????? ?????? ??? ?????? ?? .bankDash. ?? ????
-   ???? ?? ????? ????? ??? ???? ?-app.js. ???? ???? ?? ???? ??????
-   ?-grid-row, ???? ?????? ???????? ???? ?? ???? ???? ????.
-
-   ?????:  ???? 1  ????              (???? ???)
-           ???? 2  ?????? KPI        (???? ???)
-           ???? 3  ??? | ??????? ??? ???
-           ???? 4  ??? | ?????? ????
-           ???? 5  ??? ?????? ???? | ????? INVEST
+   Rows still use display:contents so placement is via grid-column/row only.
+   Do not reorder DOM in app.js for this layout.
    ===================================================================== */
 
 #view-dashboard .bankDash:not(#\9):not(#\9){
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) !important;
+  /* col1 (right/RTL) wide for recent table; col2 (left/RTL) narrow for side cards */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) !important;
   align-items: start !important;
   gap: 10px !important;
 }
 
-/* ?????? ????? ??????? ? ???????? ????? ???? ?????? */
+/* Row wrappers dissolve so children place directly on .bankDash */
 #view-dashboard .bankDash__row:not(#\9):not(#\9){
   display: contents !important;
 }
@@ -2209,40 +2242,40 @@ body.sidebar-collapsed .sidebar .nav__item.is-active .nav__label:not(#\9):not(#\
   grid-row: 2 !important;
 }
 
-/* ?????? ??????? ? ?????? ?????, ???? 4, ??? ??????? */
+/* Right: recent customers (wide) */
 #view-dashboard .bankRecent:not(#\9):not(#\9){
+  grid-column: 1 !important;
+  grid-row: 3 !important;
+  min-width: 0 !important;
+}
+
+/* Left stack: goal + side cards + leader */
+#view-dashboard .bankGoal:not(#\9):not(#\9){
   grid-column: 2 !important;
   grid-row: 3 !important;
   min-width: 0 !important;
 }
 
-#view-dashboard .bankGoal:not(#\9):not(#\9){
-  grid-column: 1 !important;
-  grid-row: 3 !important;
-  min-width: 0 !important;
-}
-
-/* ??? ???????? ?????? ?????? ????, ???? ???? */
 #view-dashboard .bankSideCard--lead:not(#\9):not(#\9){
-  grid-column: 1 !important;
+  grid-column: 2 !important;
   grid-row: 4 !important;
   min-width: 0 !important;
 }
 
 #view-dashboard .bankSideCard--untouched:not(#\9):not(#\9){
-  grid-column: 1 !important;
+  grid-column: 2 !important;
   grid-row: 5 !important;
   min-width: 0 !important;
 }
 
 #view-dashboard .bankLeader:not(#\9):not(#\9){
-  grid-column: 1 !important;
+  grid-column: 2 !important;
   grid-row: 6 !important;
   min-width: 0 !important;
 }
 
 #view-dashboard .giDailySales:not(#\9):not(#\9){
-  grid-column: 2 !important;
+  grid-column: 1 !important;
   grid-row: 4 !important;
   min-width: 0 !important;
 }
@@ -5535,6 +5568,689 @@ body.view-campaignLeads-active .content:not(#\9):not(#\9){
   }
 }
 
+
+/* =====================================================================
+   GI-FIX 2026-08-03 · מעקב מכירות יומי — שכבת עיצוב מחודשת
+   נטען אחרי הבלוק המקורי ולכן גובר עליו בסדר המקור, באותה ספציפיות.
+   כל הכללים תחומים ל-#view-dailySales בלבד — האוברליי
+   (.giDailySalesOverlay) לא מושפע ולא נגענו בכללים המשותפים איתו.
+   ===================================================================== */
+
+#view-dailySales .giDailySalesPage:not(#\9):not(#\9){
+  gap: var(--gi-s4);
+  padding: var(--gi-s4) var(--gi-s5) var(--gi-s5);
+}
+
+#view-dailySales .giDailySalesPage__head:not(#\9):not(#\9){
+  align-items: center;
+  padding-bottom: var(--gi-s4);
+}
+
+#view-dailySales .giDailySalesPage .card__title:not(#\9):not(#\9){
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  color: var(--gi-text);
+}
+
+#view-dailySales .giDailySalesPage .card__hint:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  gap: var(--gi-s2);
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gi-text-muted);
+}
+
+#view-dailySales .giDailySalesPage__syncStamp:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gi-text-muted);
+}
+#view-dailySales .giDailySalesPage__syncStamp:not(:empty):not(#\9):not(#\9){
+  padding: 2px 8px;
+  border-radius: var(--gi-r-pill);
+  background: var(--gi-surface-3);
+}
+
+/* ---------- בורר תאריך ---------- */
+#view-dailySales .giDailySalesPage__dateWrap:not(#\9):not(#\9){
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--gi-r-ctl);
+  border: 1px solid var(--gi-border);
+  background: var(--gi-surface);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+#view-dailySales .giDailySalesPage__dateWrap:hover:not(#\9):not(#\9){
+  border-color: var(--gi-border-strong);
+}
+#view-dailySales .giDailySalesPage__dateWrap:focus-visible:not(#\9):not(#\9){
+  outline: none;
+  border-color: var(--gi-primary);
+  box-shadow: 0 0 0 3px var(--gi-primary-ring);
+}
+#view-dailySales .giDailySalesPage__dateIcon:not(#\9):not(#\9){
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--gi-text-muted);
+}
+#view-dailySales .giDailySalesPage__dateText:not(#\9):not(#\9){
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gi-text);
+  white-space: nowrap;
+}
+
+/* ---------- סרגל סיכום ---------- */
+#view-dailySales .giDailySalesPage__stat:not(#\9):not(#\9){
+  gap: 3px;
+  padding: 10px 14px;
+  border-radius: var(--gi-r-md);
+  background: var(--gi-surface-2);
+  border: 1px solid var(--gi-border-soft);
+}
+#view-dailySales .giDailySalesPage__stat > span:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--gi-text-muted);
+}
+#view-dailySales .giDailySalesPage__stat > strong:not(#\9):not(#\9){
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--gi-text);
+}
+#view-dailySales .giDailySalesPage__stat--prem:not(#\9):not(#\9){
+  background: var(--gi-success-soft);
+  border-color: rgba(22,163,74,.20);
+}
+
+/* ---------- טבלה ---------- */
+#view-dailySales .giDailySalesPage__tableWrap:not(#\9):not(#\9){
+  border: 1px solid var(--gi-border-soft);
+  border-radius: var(--gi-r-md);
+  background: var(--gi-surface);
+}
+
+#view-dailySales .giDailySalesPage__table:not(#\9):not(#\9){
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#view-dailySales .giDailySalesPage__table th:not(#\9):not(#\9){
+  padding: 9px 14px;
+  background: var(--gi-surface-2);
+  border-bottom: 1px solid var(--gi-border);
+  color: var(--gi-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#view-dailySales .giDailySalesPage__table td:not(#\9):not(#\9){
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gi-border-soft);
+  vertical-align: middle;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gi-text);
+}
+
+#view-dailySales .giDailySalesPage__table tbody tr:last-child td:not(#\9):not(#\9){
+  border-bottom: 0;
+}
+
+#view-dailySales .giDailySalesPage__row:hover td:not(#\9):not(#\9){
+  background: var(--gi-surface-2);
+}
+
+/* ענף חדש של אותו נציג — קו הפרדה מוחלש, כדי שקבוצת הנציג תיקרא כגוש אחד */
+#view-dailySales .giDailySalesPage__row.is-sameAgent td:not(#\9):not(#\9){
+  border-top: 0;
+}
+#view-dailySales .giDailySalesPage__row:not(.is-sameAgent) td:not(#\9):not(#\9){
+  border-top: 1px solid var(--gi-border-soft);
+}
+#view-dailySales .giDailySalesPage__table tbody tr:first-child td:not(#\9):not(#\9){
+  border-top: 0;
+}
+
+/* ---------- תא נציג ---------- */
+#view-dailySales .giDailySalesPage__agentCell:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  gap: var(--gi-s2);
+  min-width: 150px;
+}
+#view-dailySales .giDailySalesPage__agentName:not(#\9):not(#\9){
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gi-text);
+  white-space: nowrap;
+}
+#view-dailySales .giDailySalesPage__agentCell.is-repeat .giDailySalesPage__agentName:not(#\9):not(#\9){
+  font-weight: 600;
+  color: var(--gi-text-muted);
+}
+#view-dailySales .giDailySalesPage__av:not(#\9):not(#\9){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--gi-r-pill);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+#view-dailySales .giDailySalesPage__tie:not(#\9):not(#\9){
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--gi-r-pill);
+  background: repeating-linear-gradient(to bottom, var(--gi-border-strong) 0 2px, transparent 2px 6px);
+  background-size: 2px 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: .7;
+}
+#view-dailySales .giDailySalesPage__av--blue:not(#\9):not(#\9){   background: rgba(37,99,235,.12);  color: #1D4ED8; }
+#view-dailySales .giDailySalesPage__av--teal:not(#\9):not(#\9){   background: rgba(13,148,136,.12); color: #0F766E; }
+#view-dailySales .giDailySalesPage__av--amber:not(#\9):not(#\9){  background: rgba(217,119,6,.14);  color: #B45309; }
+#view-dailySales .giDailySalesPage__av--violet:not(#\9):not(#\9){ background: rgba(124,58,237,.12); color: #6D28D9; }
+#view-dailySales .giDailySalesPage__av--rose:not(#\9):not(#\9){   background: rgba(225,29,72,.11);  color: #BE123C; }
+#view-dailySales .giDailySalesPage__av--cyan:not(#\9):not(#\9){   background: rgba(8,145,178,.12);  color: #0E7490; }
+
+/* ---------- תג ענף — אותה שפת צבע כמו תגי הענף במסך הלקוחות ---------- */
+#view-dailySales .giDailySalesPage__sector:not(#\9):not(#\9){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: var(--gi-r-pill);
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+#view-dailySales .giDailySalesPage__sector--sikunim:not(#\9):not(#\9){
+  background: rgba(255,120,120,.14); color: #b42318; border-color: rgba(255,120,120,.28);
+}
+#view-dailySales .giDailySalesPage__sector--briut:not(#\9):not(#\9){
+  background: rgba(34,170,105,.12); color: #1a7a4a; border-color: rgba(34,170,105,.28);
+}
+#view-dailySales .giDailySalesPage__sector--almanteri:not(#\9):not(#\9){
+  background: rgba(79,140,255,.10); color: #2b5cb8; border-color: rgba(79,140,255,.22);
+}
+#view-dailySales .giDailySalesPage__sector--pensia:not(#\9):not(#\9){
+  background: rgba(147,112,219,.14); color: #6b46c1; border-color: rgba(147,112,219,.28);
+}
+#view-dailySales .giDailySalesPage__sector--other:not(#\9):not(#\9){
+  background: var(--gi-surface-3); color: var(--gi-text-muted); border-color: var(--gi-border);
+}
+
+/* ---------- צ'יפים של מוצרים וחברות ---------- */
+#view-dailySales .giDailySalesPage__chips:not(#\9):not(#\9){
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  max-width: 340px;
+}
+#view-dailySales .giDailySalesPage__chip:not(#\9):not(#\9){
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--gi-r-ctl);
+  border: 1px solid var(--gi-border);
+  background: var(--gi-surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--gi-text-2);
+  white-space: nowrap;
+}
+#view-dailySales .giDailySalesPage__chip--co:not(#\9):not(#\9){
+  background: var(--gi-surface);
+  border-style: dashed;
+  color: var(--gi-text-3);
+}
+#view-dailySales .giDailySalesPage__chipQty:not(#\9):not(#\9){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: var(--gi-r-pill);
+  background: var(--gi-primary-soft);
+  color: var(--gi-primary);
+  font-size: 10px;
+  font-weight: 800;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+#view-dailySales .giDailySalesPage__dash:not(#\9):not(#\9){
+  color: var(--gi-text-muted);
+  font-weight: 600;
+}
+
+/* ---------- פרמיה ---------- */
+#view-dailySales .giDailySalesPage__premCell:not(#\9):not(#\9){
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  white-space: nowrap;
+}
+#view-dailySales .giDailySalesPage__premCell > strong:not(#\9):not(#\9){
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--gi-success);
+}
+#view-dailySales .giDailySalesPage__dealsHint:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gi-text-muted);
+}
+
+#view-dailySales .giDailySalesPage__emptyCell:not(#\9):not(#\9){
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gi-text-muted);
+}
+
+/* ---------- מצב טעינה של כפתור הרענון ---------- */
+#view-dailySales #btnDailySalesRefresh.is-loading:not(#\9):not(#\9){
+  opacity: .7;
+  cursor: progress;
+}
+
+@media (max-width: 900px){
+  #view-dailySales .giDailySalesPage__chips:not(#\9):not(#\9){
+    max-width: 220px;
+  }
+  #view-dailySales .giDailySalesPage:not(#\9):not(#\9){
+    padding: var(--gi-s3) var(--gi-s3) var(--gi-s4);
+  }
+}
+
+
+/* ---------- פיצול סה״כ הפרמיה לפי ענף (בתוך כרטיס הסה״כ) ---------- */
+#view-dailySales .giDailySalesPage__stat--prem:not(#\9):not(#\9){
+  grid-column: span 1;
+}
+
+#view-dailySales .giDailySalesPage__split:not(#\9):not(#\9){
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px dashed rgba(22,163,74,.28);
+}
+
+#view-dailySales .giDailySalesPage__splitItem:not(#\9):not(#\9){
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+}
+
+#view-dailySales .giDailySalesPage__splitItem:not(:last-child):not(#\9):not(#\9){
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid var(--gi-border);
+}
+
+#view-dailySales .giDailySalesPage__splitLbl:not(#\9):not(#\9){
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--gi-text-muted);
+  white-space: nowrap;
+}
+
+#view-dailySales .giDailySalesPage__splitVal:not(#\9):not(#\9){
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gi-text);
+  white-space: nowrap;
+}
+
+#view-dailySales .giDailySalesPage__splitItem--briut .giDailySalesPage__splitVal:not(#\9):not(#\9){ color: #1a7a4a; }
+#view-dailySales .giDailySalesPage__splitItem--sikunim .giDailySalesPage__splitVal:not(#\9):not(#\9){ color: #b45309; }
+#view-dailySales .giDailySalesPage__splitItem--almanteri .giDailySalesPage__splitVal:not(#\9):not(#\9){ color: #2b5cb8; }
+#view-dailySales .giDailySalesPage__splitItem--pensia .giDailySalesPage__splitVal:not(#\9):not(#\9){ color: #6b46c1; }
+#view-dailySales .giDailySalesPage__splitItem--other .giDailySalesPage__splitVal:not(#\9):not(#\9){ color: var(--gi-text-3); }
+
+/* ענף בלי מכירות — מוחלש כדי שהעין תנחת על מה שכן נמכר */
+#view-dailySales .giDailySalesPage__splitItem.is-zero .giDailySalesPage__splitVal:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__splitItem.is-zero .giDailySalesPage__splitLbl:not(#\9):not(#\9){
+  color: var(--gi-text-muted);
+  opacity: .55;
+}
+
+/* כרטיס הסה״כ מתרחב לרוחב מלא כדי שהפיצול יישב בשורה אחת */
+@media (min-width: 901px){
+  #view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9){
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.35fr);
+  }
+}
+
+@media (max-width: 900px){
+  #view-dailySales .giDailySalesPage__split:not(#\9):not(#\9){
+    gap: 4px 8px;
+  }
+  #view-dailySales .giDailySalesPage__splitItem:not(:last-child):not(#\9):not(#\9){
+    padding-inline-end: 8px;
+  }
+}
+
+/* =====================================================================
+   GI-FIX 2026-08-04 · מעקב מכירות יומי — סרגל ענפים + עיצוב בוגר
+   נייבי/אפור שקט בסגנון מערכות סוכנות ביטוח. תחום ל-#view-dailySales בלבד.
+   ===================================================================== */
+
+#view-dailySales .giDailySalesPage:not(#\9):not(#\9){
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: none;
+  background: #fff;
+  border-color: #d8dee8;
+}
+
+#view-dailySales .giDailySalesPage__head:not(#\9):not(#\9){
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid #d8dee8;
+  margin: 0;
+}
+
+#view-dailySales .giDailySalesPage .card__title:not(#\9):not(#\9){
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  color: #1e3a5f;
+}
+
+#view-dailySales .giDailySalesPage .card__hint:not(#\9):not(#\9){
+  color: #718096;
+  font-weight: 500;
+}
+
+#view-dailySales .giDailySalesPage__syncStamp:not(:empty):not(#\9):not(#\9){
+  border-radius: 3px;
+  background: #eef2f7;
+  color: #718096;
+}
+
+#view-dailySales .giDailySalesPage__todayBtn:not(#\9):not(#\9){
+  background: #eef2f7;
+  color: #1e3a5f;
+  border-color: #c5d0e0;
+}
+#view-dailySales .giDailySalesPage__todayBtn.is-active:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__todayBtn:disabled:not(#\9):not(#\9){
+  opacity: 1;
+  background: #eef2f7;
+  color: #1e3a5f;
+}
+
+#view-dailySales .giDailySalesPage__dateWrap:not(#\9):not(#\9){
+  border-radius: 3px;
+  background: #fff;
+  border-color: #d8dee8;
+}
+#view-dailySales .giDailySalesPage__dateWrap:hover:not(#\9):not(#\9){
+  border-color: #c5cedb;
+  box-shadow: none;
+}
+#view-dailySales .giDailySalesPage__dateWrap:focus-visible:not(#\9):not(#\9){
+  border-color: #2c5282;
+  box-shadow: 0 0 0 2px rgba(30,58,95,.15);
+}
+
+#view-dailySales .giDailySalesPage__sectors:not(#\9):not(#\9){
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid #d8dee8;
+  background: #f7f8fb;
+}
+
+#view-dailySales .giDailySalesPage__sectorTab:not(#\9):not(#\9){
+  appearance: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  padding: 16px 14px 14px;
+  border: 0;
+  border-inline-start: 1px solid #d8dee8;
+  background: transparent;
+  color: #4a5568;
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition: background .12s ease, color .12s ease;
+}
+#view-dailySales .giDailySalesPage__sectorTab:first-child:not(#\9):not(#\9){
+  border-inline-start: 0;
+}
+#view-dailySales .giDailySalesPage__sectorTab:hover:not(#\9):not(#\9){
+  background: #eef1f6;
+}
+#view-dailySales .giDailySalesPage__sectorTab.is-active:not(#\9):not(#\9){
+  background: #fff;
+  color: #1a2332;
+}
+#view-dailySales .giDailySalesPage__sectorTab.is-active:not(#\9):not(#\9)::after{
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #1e3a5f;
+}
+
+#view-dailySales .giDailySalesPage__sectorTabLabel:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .04em;
+  color: #718096;
+}
+#view-dailySales .giDailySalesPage__sectorTab.is-active .giDailySalesPage__sectorTabLabel:not(#\9):not(#\9){
+  color: #1e3a5f;
+}
+#view-dailySales .giDailySalesPage__sectorTabValue:not(#\9):not(#\9){
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  color: #1a2332;
+}
+#view-dailySales .giDailySalesPage__sectorTabMeta:not(#\9):not(#\9){
+  font-size: 12px;
+  font-weight: 500;
+  color: #718096;
+}
+
+#view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9){
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid #d8dee8;
+}
+
+#view-dailySales .giDailySalesPage__stat:not(#\9):not(#\9){
+  gap: 4px;
+  padding: 14px 22px;
+  border-radius: 0;
+  border: 0;
+  border-inline-start: 1px solid #e8edf3;
+  background: #fff;
+}
+#view-dailySales .giDailySalesPage__stat:first-child:not(#\9):not(#\9){
+  border-inline-start: 0;
+}
+#view-dailySales .giDailySalesPage__stat > span:not(#\9):not(#\9){
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+}
+#view-dailySales .giDailySalesPage__stat > strong:not(#\9):not(#\9){
+  font-size: 15px;
+  font-weight: 650;
+  color: #1a2332;
+}
+#view-dailySales .giDailySalesPage__stat--prem:not(#\9):not(#\9){
+  background: #fff;
+  border-color: #e8edf3;
+}
+#view-dailySales .giDailySalesPage__stat--prem > strong:not(#\9):not(#\9){
+  color: #1e3a5f;
+}
+#view-dailySales .giDailySalesPage__split:not(#\9):not(#\9){
+  display: none;
+}
+
+#view-dailySales .giDailySalesPage__note:not(#\9):not(#\9){
+  margin: 0;
+  padding: 10px 22px;
+  border-bottom: 1px solid #d8dee8;
+  background: #fafbfc;
+  color: #718096;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+#view-dailySales .giDailySalesPage__note b:not(#\9):not(#\9){
+  color: #4a5568;
+  font-weight: 650;
+}
+#view-dailySales .giDailySalesPage__note[hidden]:not(#\9):not(#\9){
+  display: none !important;
+}
+
+#view-dailySales .giDailySalesPage__tableWrap:not(#\9):not(#\9){
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+}
+#view-dailySales .giDailySalesPage__table th:not(#\9):not(#\9){
+  padding: 11px 16px;
+  background: #fff;
+  border-bottom: 1px solid #d8dee8;
+  color: #718096;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+#view-dailySales .giDailySalesPage__table td:not(#\9):not(#\9){
+  padding: 13px 16px;
+  border-bottom: 1px solid #e8edf3;
+  font-weight: 500;
+  color: #1a2332;
+}
+#view-dailySales .giDailySalesPage__row:hover td:not(#\9):not(#\9){
+  background: #fafbfd;
+}
+
+#view-dailySales .giDailySalesPage__av:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--blue:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--teal:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--amber:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--violet:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--rose:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__av--cyan:not(#\9):not(#\9){
+  background: #e8eef5;
+  color: #1e3a5f;
+}
+
+#view-dailySales .giDailySalesPage__sector:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__sector--sikunim:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__sector--briut:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__sector--almanteri:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__sector--pensia:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__sector--other:not(#\9):not(#\9){
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+#view-dailySales .giDailySalesPage__chip:not(#\9):not(#\9){
+  border-radius: 2px;
+  border-color: #d8dee8;
+  background: #fff;
+  color: #4a5568;
+  font-weight: 500;
+}
+#view-dailySales .giDailySalesPage__chip--co:not(#\9):not(#\9){
+  border-style: solid;
+  color: #718096;
+}
+#view-dailySales .giDailySalesPage__chipQty:not(#\9):not(#\9){
+  border-radius: 2px;
+  background: #eef2f7;
+  color: #4a5568;
+}
+
+#view-dailySales .giDailySalesPage__premCell:not(#\9):not(#\9),
+#view-dailySales .giDailySalesPage__premCell > strong:not(#\9):not(#\9){
+  color: #1e3a5f;
+}
+#view-dailySales .giDailySalesPage__premCell > strong:not(#\9):not(#\9){
+  font-size: 14px;
+  font-weight: 650;
+}
+
+@media (max-width: 860px){
+  #view-dailySales .giDailySalesPage__sectors:not(#\9):not(#\9){
+    grid-template-columns: 1fr 1fr;
+  }
+  #view-dailySales .giDailySalesPage__sectorTab:nth-child(2):not(#\9):not(#\9){
+    border-inline-start: 0;
+  }
+  #view-dailySales .giDailySalesPage__sectorTab:nth-child(n+3):not(#\9):not(#\9){
+    border-top: 1px solid #d8dee8;
+  }
+  #view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9){
+    grid-template-columns: 1fr 1fr;
+  }
+  #view-dailySales .giDailySalesPage__stat:nth-child(2):not(#\9):not(#\9){
+    border-inline-start: 0;
+  }
+  #view-dailySales .giDailySalesPage__stat:nth-child(n+3):not(#\9):not(#\9){
+    border-top: 1px solid #e8edf3;
+  }
+}
+
+@media (min-width: 901px){
+  #view-dailySales .giDailySalesPage__summary:not(#\9):not(#\9){
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 /* =====================================================================
    SETTINGS CONSOLE ? GI stretch (Settings Hub)
    Visual layer only; DOM/logic unchanged.
@@ -6752,4 +7468,725 @@ body.lcSettingsRubric-systemUpdates #view-settings .lcSettingsHub__content:not(#
   justify-content: flex-end !important;
   gap: 10px !important;
   margin-top: 14px !important;
+}
+
+/* ==========================================================================
+   GI-GLOBALSEARCH 2026-08-03 — פאנל תוצאות החיפוש הגלובלי
+   --------------------------------------------------------------------------
+   מרחב שמות ייעודי (giGS) — אין חפיפה עם מחלקות קיימות.
+   משתמש בטריק ה-:not(#\9) של הקובץ כדי לגבור על כללי !important גלובליים.
+   ========================================================================== */
+
+/* העוגן לפאנל. .giTopSearch לא היה position:relative ואין בו כרגע שום
+   אלמנט ממוקם אבסולוטית, ולכן ההוספה אינה משנה שום פריסה קיימת. */
+.giTopSearch:not(#\9):not(#\9){
+  position: relative;
+}
+
+.giGSPanel:not(#\9):not(#\9){
+  position: absolute;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  z-index: 4000;
+  max-height: min(460px, calc(100vh - 140px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--gi-s2);
+  background: var(--gi-surface);
+  border: 1px solid var(--gi-border);
+  border-radius: var(--gi-r-card, 14px);
+  box-shadow: var(--gi-sh-lg);
+  text-align: start;
+  animation: giGSPanelIn .13s ease-out;
+}
+
+.giGSPanel[hidden]:not(#\9):not(#\9){
+  display: none !important;
+}
+
+@keyframes giGSPanelIn{
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.giGSPanel__group:not(#\9):not(#\9){
+  padding: var(--gi-s2) var(--gi-s3) 6px;
+  font-family: var(--gi-font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--gi-text-muted);
+}
+
+.giGSRow:not(#\9):not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  gap: var(--gi-s3);
+  width: 100%;
+  margin: 0;
+  padding: 9px var(--gi-s3);
+  border: 0;
+  border-radius: var(--gi-r-ctl, 10px);
+  background: transparent;
+  box-shadow: none;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color .12s ease;
+}
+
+.giGSRow:hover:not(#\9):not(#\9),
+.giGSRow.is-active:not(#\9):not(#\9){
+  background: var(--gi-surface-2);
+}
+
+.giGSRow__icon:not(#\9):not(#\9){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--gi-surface-3);
+  color: var(--gi-text-2);
+}
+
+.giGSRow__icon:not(#\9):not(#\9) svg{
+  width: 16px;
+  height: 16px;
+}
+
+.giGSRow__icon--customer:not(#\9):not(#\9){ background: var(--gi-primary-soft); color: var(--gi-primary); }
+.giGSRow__icon--proposal:not(#\9):not(#\9){ background: var(--gi-info-soft); color: var(--gi-info); }
+.giGSRow__icon--policy:not(#\9):not(#\9){ background: var(--gi-success-soft); color: var(--gi-success); }
+.giGSRow__icon--elementary:not(#\9):not(#\9){ background: var(--gi-warn-soft); color: var(--gi-warn); }
+.giGSRow__icon--lead:not(#\9):not(#\9){ background: var(--gi-danger-soft); color: var(--gi-danger); }
+
+.giGSRow__body:not(#\9):not(#\9){
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.giGSRow__title:not(#\9):not(#\9){
+  font-family: var(--gi-font);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--gi-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.giGSRow__sub:not(#\9):not(#\9){
+  font-family: var(--gi-font);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--gi-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.giGSRow__meta:not(#\9):not(#\9){
+  flex: 0 0 auto;
+  max-width: 108px;
+  font-family: var(--gi-font);
+  font-size: 11px;
+  color: var(--gi-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.giGSPanel__empty:not(#\9):not(#\9){
+  padding: var(--gi-s5) var(--gi-s3);
+  text-align: center;
+}
+
+.giGSPanel__emptyTitle:not(#\9):not(#\9){
+  font-family: var(--gi-font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gi-text-2);
+}
+
+.giGSPanel__emptyHint:not(#\9):not(#\9){
+  margin-top: 4px;
+  font-family: var(--gi-font);
+  font-size: 11.5px;
+  color: var(--gi-text-muted);
+}
+
+.giGSPanel__foot:not(#\9):not(#\9){
+  margin-top: var(--gi-s2);
+  padding: 7px var(--gi-s3) 3px;
+  border-top: 1px solid var(--gi-border-soft);
+  font-family: var(--gi-font);
+  font-size: 10.5px;
+  color: var(--gi-text-muted);
+}
+
+@media (max-width: 1200px){
+  .giGSPanel:not(#\9):not(#\9){ max-height: min(400px, calc(100vh - 140px)); }
+}
+
+
+/* =====================================================================
+   GI-DESIGN 2026-08-04 · Customers list (#view-customers)
+   One-to-one with _preview-customers-layout.html
+   theme.css loads after app.css — keep !important + :not(#\9) specificity.
+   ===================================================================== */
+
+#view-customers .lcCustomersCard:not(#\9):not(#\9){
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+#view-customers .lcCustomersCard > .card__head:not(#\9):not(#\9){
+  padding: 22px 24px 18px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  background: #fff !important;
+  align-items: flex-end !important;
+}
+#view-customers .lcCustomersCard > .card__head .card__title:not(#\9):not(#\9){
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  color: #1a2332 !important;
+}
+#view-customers .lcCustomersCard > .card__head .card__hint:not(#\9):not(#\9){
+  font-size: 13px !important;
+  color: #718096 !important;
+  font-weight: 400 !important;
+}
+#view-customers .lcCustomers__headMeta .badge:not(#\9):not(#\9){
+  height: 28px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  background: #e8f0f5 !important;
+  color: #1e4d6b !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border: 0 !important;
+}
+#view-customers .lcCustomers__toolbar:not(#\9):not(#\9){
+  padding: 14px 24px !important;
+  background: #fafbfc !important;
+  border-bottom: 1px solid #edf2f7 !important;
+}
+#view-customers .lcCustomers__searchWrap:not(#\9):not(#\9){
+  max-width: 520px !important;
+  height: 40px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  overflow: hidden !important;
+}
+#view-customers #btnCustomersExport:not(#\9):not(#\9),
+#view-customers .lcCustomers__toolbar .btn.btn--primary:not(#\9):not(#\9){
+  height: 40px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid #1e4d6b !important;
+  background: #1e4d6b !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+#view-customers .tableWrap .table:not(#\9):not(#\9){
+  width: 100% !important;
+  min-width: 1100px !important;
+  table-layout: fixed !important;
+}
+#view-customers .tableWrap .table th:not(#\9):not(#\9){
+  padding: 12px 14px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: #718096 !important;
+  background: #f7fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+#view-customers .tableWrap .table td:not(#\9):not(#\9){
+  padding: 14px 14px !important;
+  font-size: 13.5px !important;
+  color: #1a2332 !important;
+  font-weight: 500 !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  background: #fff !important;
+}
+#view-customers .tableWrap .table tbody tr:hover td:not(#\9):not(#\9){
+  background: #f8fafc !important;
+}
+
+#view-customers .tableWrap .table th:nth-child(1):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(1):not(#\9):not(#\9){ width: 22% !important; }
+#view-customers .tableWrap .table th:nth-child(2):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(2):not(#\9):not(#\9){ width: 14% !important; }
+#view-customers .tableWrap .table th:nth-child(3):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(3):not(#\9):not(#\9){ width: 12% !important; }
+#view-customers .tableWrap .table th:nth-child(4):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(4):not(#\9):not(#\9){ width: 11% !important; }
+#view-customers .tableWrap .table th:nth-child(5):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(5):not(#\9):not(#\9){ width: 12% !important; }
+#view-customers .tableWrap .table th:nth-child(6):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(6):not(#\9):not(#\9){ width: 12% !important; }
+#view-customers .tableWrap .table th:nth-child(7):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(7):not(#\9):not(#\9){ width: 11% !important; }
+#view-customers .tableWrap .table th:nth-child(8):not(#\9):not(#\9),
+#view-customers .tableWrap .table td:nth-child(8):not(#\9):not(#\9){ width: 6% !important; text-align: left !important; }
+
+#view-customers .lcCustomers__avatar:not(#\9):not(#\9){
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: #e8f0f5 !important;
+  color: #1e4d6b !important;
+  border: 0 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+#view-customers .lcCustomers__nameMeta strong:not(#\9):not(#\9){
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #1a2332 !important;
+}
+#view-customers .lcCustomers__nameMeta .muted.small:not(#\9):not(#\9),
+#view-customers .lcCustomers__nameMeta span:not(#\9):not(#\9){
+  font-size: 12px !important;
+  color: #718096 !important;
+  font-weight: 400 !important;
+}
+#view-customers .lcCustomers__date:not(#\9):not(#\9),
+#view-customers .lcCustomers__mono:not(#\9):not(#\9){
+  color: #4a5568 !important;
+  font-weight: 500 !important;
+  font-size: 13.5px !important;
+}
+#view-customers .lcCustomers__agentLabel:not(#\9):not(#\9){
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  color: #718096 !important;
+}
+#view-customers .lcCustomers__agentName:not(#\9):not(#\9){
+  font-size: 13.5px !important;
+  color: #1a2332 !important;
+  font-weight: 600 !important;
+}
+
+#view-customers .lcCustomers__sectorTag:not(#\9):not(#\9){
+  height: 24px !important;
+  padding: 0 9px !important;
+  border-radius: 5px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+#view-customers .lcCustomers__sectorTag--sikunim:not(#\9):not(#\9){
+  background: #fef2f2 !important; color: #b42318 !important; border-color: #fecaca !important;
+}
+#view-customers .lcCustomers__sectorTag--briut:not(#\9):not(#\9){
+  background: #ecfdf5 !important; color: #1a7a4a !important; border-color: #a7f3d0 !important;
+}
+#view-customers .lcCustomers__sectorTag--almanteri:not(#\9):not(#\9){
+  background: #eff6ff !important; color: #1e40af !important; border-color: #bfdbfe !important;
+}
+#view-customers .lcCustomers__sectorTag--pensia:not(#\9):not(#\9){
+  background: #f5f3ff !important; color: #6b46c1 !important; border-color: #ddd6fe !important;
+}
+#view-customers .lcCustomers__sectorTag--agentAppt:not(#\9):not(#\9){
+  background: #f3e8ff !important; color: #5b21b6 !important; border-color: #e9d5ff !important;
+}
+
+#view-customers .lcCustomers__premiumBadge:not(#\9):not(#\9){
+  height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  margin-top: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+#view-customers .lcCustomers__premiumBadge--is-premium-high:not(#\9):not(#\9){
+  background: #ecfdf5 !important; color: #065f46 !important; border-color: #a7f3d0 !important;
+}
+#view-customers .lcCustomers__premiumBadge--is-premium-mid:not(#\9):not(#\9){
+  background: #eff6ff !important; color: #1e40af !important; border-color: #bfdbfe !important;
+}
+#view-customers .lcCustomers__premiumBadge--is-premium-low:not(#\9):not(#\9){
+  background: #f8fafc !important; color: #475569 !important; border-color: #e2e8f0 !important;
+}
+
+#view-customers .lcCustomerFolderBtn:not(#\9):not(#\9){
+  width: 36px !important;
+  height: 36px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #1e4d6b !important;
+  box-shadow: none !important;
+}
+#view-customers .lcCustomerRow:hover .lcCustomerFolderBtn:not(#\9):not(#\9),
+#view-customers .lcCustomerFolderBtn:hover:not(#\9):not(#\9){
+  background: #1e4d6b !important;
+  border-color: #1e4d6b !important;
+  color: #fff !important;
+}
+
+
+/* =====================================================================
+   Proposals list (#view-proposals): readable black row text
+   Same treatment as customers. CSS only — scoped to this view.
+   Leaves .lcProposalBadge / action buttons with their own colors.
+   ===================================================================== */
+
+#view-proposals .tableWrap .table th:not(#\9):not(#\9){
+  font-size: 13px !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+#view-proposals .tableWrap .table td:not(#\9):not(#\9){
+  font-size: 15px !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+}
+
+#view-proposals .lcProposalsName strong:not(#\9):not(#\9){
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0F172A !important;
+}
+
+#view-proposals .lcProposalsStatusSub.muted.small:not(#\9):not(#\9),
+#view-proposals .tableWrap .table td .muted.small:not(#\9):not(#\9){
+  font-size: 13px !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   GI-CF-HIER / GI-CF-STATUS — 2026-08-04
+   תיק לקוח: היררכיית נושאים, עמודת פרמיה אחת, כתב מודגש, סטטוס פוליסות ישנות.
+   ========================================================================== */
+
+:root:not(#\9):not(#\9){
+  --gi-health:#2563EB; --gi-health-soft:#EFF6FF;
+  --gi-appt:#7C3AED;   --gi-appt-soft:#F5F3FF;
+  --gi-elem:#EA580C;   --gi-elem-soft:#FFF7ED;
+  --gi-legacy:#64748B; --gi-legacy-soft:#F1F5F9;
+  --gi-num:'Rubik','Heebo',system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+
+/* ---- Group section ---- */
+.cfGroup:not(#\9):not(#\9){
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+  overflow: hidden !important;
+  margin-bottom: 16px !important;
+}
+
+.cfGroup__head:not(#\9):not(#\9){
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--gi-s3) !important;
+  padding: 14px 18px !important;
+  position: relative !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+}
+
+.cfGroup__head:not(#\9):not(#\9)::before{
+  content: "" !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 4px !important;
+  background: var(--gi-cf-acc, var(--gi-primary)) !important;
+}
+
+.cfGroup__icon:not(#\9):not(#\9){
+  width: 38px !important;
+  height: 38px !important;
+  flex: none !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-cf-acc-soft, var(--gi-primary-soft)) !important;
+  color: var(--gi-cf-acc, var(--gi-primary)) !important;
+}
+
+.cfGroup__icon svg:not(#\9):not(#\9){
+  width: 19px !important;
+  height: 19px !important;
+  stroke-width: 2 !important;
+}
+
+.cfGroup__titleWrap:not(#\9):not(#\9){ min-width: 0 !important; flex: 1 !important; }
+
+.cfGroup__title:not(#\9):not(#\9){
+  margin: 0 !important;
+  font-family: var(--gi-num) !important;
+  font-size: 16.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.01em !important;
+  color: var(--gi-text) !important;
+}
+
+.cfGroup__sub:not(#\9):not(#\9){
+  margin: 3px 0 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-muted) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  flex-wrap: wrap !important;
+}
+
+.cfGroup__kind:not(#\9):not(#\9){
+  display: inline-block !important;
+  padding: 2px 8px !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-cf-acc-soft, var(--gi-primary-soft)) !important;
+  color: var(--gi-cf-acc, var(--gi-primary)) !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  border: 1px solid var(--gi-cf-acc-line, rgba(37,99,235,.22)) !important;
+}
+
+.cfGroup__sum:not(#\9):not(#\9){
+  text-align: left !important;
+  flex: none !important;
+  padding-inline-start: 14px !important;
+  border-inline-start: 1px solid var(--gi-border) !important;
+}
+
+.cfGroup__sumVal:not(#\9):not(#\9){
+  display: block !important;
+  font-family: var(--gi-num) !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.02em !important;
+}
+
+.cfGroup__sumLbl:not(#\9):not(#\9){
+  display: block !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-muted) !important;
+  margin-top: 2px !important;
+}
+
+.cfGroup--health:not(#\9):not(#\9){  --gi-cf-acc: var(--gi-health);  --gi-cf-acc-soft: var(--gi-health-soft);  --gi-cf-acc-line: rgba(37,99,235,.22); }
+.cfGroup--appt:not(#\9):not(#\9){    --gi-cf-acc: var(--gi-appt);    --gi-cf-acc-soft: var(--gi-appt-soft);    --gi-cf-acc-line: rgba(124,58,237,.22); }
+.cfGroup--elem:not(#\9):not(#\9){    --gi-cf-acc: var(--gi-elem);    --gi-cf-acc-soft: var(--gi-elem-soft);    --gi-cf-acc-line: rgba(234,88,12,.22); }
+.cfGroup--legacy:not(#\9):not(#\9){  --gi-cf-acc: var(--gi-legacy);  --gi-cf-acc-soft: var(--gi-legacy-soft);  --gi-cf-acc-line: rgba(100,116,139,.28); }
+
+/* ---- Table: bolder rows ---- */
+.cfGroup .cfFile__table:not(#\9):not(#\9){ font-size: 13.5px !important; }
+
+.cfGroup .cfFile__table thead th:not(#\9):not(#\9){
+  padding: 9px 14px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .04em !important;
+  color: var(--gi-text-muted) !important;
+  background: var(--gi-surface-2) !important;
+  border-bottom: 1px solid var(--gi-border) !important;
+  text-align: start !important;
+  white-space: nowrap !important;
+}
+
+.cfGroup .cfFile__table td:not(#\9):not(#\9){ padding: 13px 14px !important; }
+.cfGroup .cfFile__table tbody tr:last-child:not(#\9):not(#\9){ border-bottom: none !important; }
+
+.cfFile__policyLogoMark:not(#\9):not(#\9){
+  width: 40px !important;
+  height: 40px !important;
+  flex: none !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: var(--gi-r-md) !important;
+  background: var(--gi-surface-2) !important;
+  border: 1px solid var(--gi-border) !important;
+  overflow: hidden !important;
+}
+
+.cfFile__policyName:not(#\9):not(#\9){
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.005em !important;
+  line-height: 1.3 !important;
+}
+
+.cfFile__policyType:not(#\9):not(#\9){
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-muted) !important;
+  margin-top: 3px !important;
+}
+
+.cfFile__coverage:not(#\9):not(#\9){
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text-2) !important;
+}
+
+.cfFile__policyNumber:not(#\9):not(#\9),
+.cfFile__apptDate:not(#\9):not(#\9){
+  font-family: var(--gi-num) !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text-2) !important;
+}
+
+/* ---- Single premium column ---- */
+.cfGroup .cfFile__premium:not(#\9):not(#\9){
+  font-family: var(--gi-num) !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--gi-text) !important;
+  letter-spacing: -.01em !important;
+  white-space: nowrap !important;
+}
+
+.cfFile__cancelReason:not(#\9):not(#\9){
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: var(--gi-text-2) !important;
+}
+
+.cfFile__cancelReason.is-empty:not(#\9):not(#\9){ color: var(--gi-text-muted) !important; font-weight: 500 !important; }
+
+/* ---- Status badges ---- */
+.cfGroup .cfFile__statusBadge:not(#\9):not(#\9){
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+.cfFile__statusBadge.is-appoint:not(#\9):not(#\9){
+  background: var(--gi-appt-soft) !important; color: #5B21B6 !important; border-color: rgba(124,58,237,.22) !important;
+}
+.cfFile__statusBadge.is-cancelFull:not(#\9):not(#\9){
+  background: var(--gi-danger-soft) !important; color: #991B1B !important; border-color: rgba(220,38,38,.22) !important;
+}
+.cfFile__statusBadge.is-cancelPartial:not(#\9):not(#\9){
+  background: var(--gi-warn-soft) !important; color: #92400E !important; border-color: rgba(217,119,6,.24) !important;
+}
+.cfFile__statusBadge.is-nochangeClient:not(#\9):not(#\9){
+  background: var(--gi-primary-soft) !important; color: #1E40AF !important; border-color: rgba(37,99,235,.22) !important;
+}
+.cfFile__statusBadge.is-nochangeCollective:not(#\9):not(#\9){
+  background: var(--gi-legacy-soft) !important; color: #475569 !important; border-color: var(--gi-border-strong) !important;
+}
+.cfFile__statusBadge.is-pending:not(#\9):not(#\9){
+  background: transparent !important; color: var(--gi-text-muted) !important; border: 1px dashed var(--gi-border-strong) !important;
+}
+
+/* ---- Sidebar ---- */
+.cfFile__side:not(#\9):not(#\9){ position: sticky !important; top: 16px !important; }
+
+.cfFile__sideTotalLbl:not(#\9):not(#\9){
+  font-size: 11.5px !important; font-weight: 600 !important; color: var(--gi-text-3) !important; margin-top: 4px !important;
+}
+
+.cfFile__sideGroup:not(#\9):not(#\9){
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: .05em !important;
+  color: var(--gi-text-muted) !important;
+  padding: 0 2px 6px !important;
+  margin-top: 4px !important;
+}
+
+.cfFile__sideRow span:not(#\9):not(#\9){
+  display: flex !important; align-items: center !important; gap: 7px !important;
+  color: var(--gi-text-3) !important; font-weight: 600 !important;
+}
+
+.cfFile__sideRow strong:not(#\9):not(#\9){
+  font-family: var(--gi-num) !important; font-weight: 800 !important; color: var(--gi-text) !important; white-space: nowrap !important;
+}
+
+.cfFile__sideDot:not(#\9):not(#\9){
+  width: 7px !important; height: 7px !important; border-radius: 50% !important; flex: none !important; display: block !important;
+}
+.cfFile__sideDot--health:not(#\9):not(#\9){ background: var(--gi-health) !important; }
+.cfFile__sideDot--appt:not(#\9):not(#\9){ background: var(--gi-appt) !important; }
+.cfFile__sideDot--elem:not(#\9):not(#\9){ background: var(--gi-elem) !important; }
+.cfFile__sideDot--legacy:not(#\9):not(#\9){ background: var(--gi-legacy) !important; }
+
+.cfFile__sideDivide:not(#\9):not(#\9){
+  height: 1px !important; background: var(--gi-border) !important; margin: 12px -4px !important;
+}
+
+/* ---- Tabs (pill) ---- */
+.cfFile__tabs:not(#\9):not(#\9){
+  gap: 4px !important; padding: 5px !important;
+  background: var(--gi-surface) !important;
+  border: 1px solid var(--gi-border) !important;
+  border-radius: var(--gi-r-card) !important;
+  box-shadow: var(--gi-sh-sm) !important;
+}
+
+.cfFile__tab:not(#\9):not(#\9){
+  padding: 9px 15px !important;
+  border: none !important;
+  border-radius: var(--gi-r-ctl) !important;
+  background: transparent !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--gi-text-3) !important;
+}
+
+.cfFile__tab:hover:not(#\9):not(#\9){ background: var(--gi-surface-2) !important; color: var(--gi-text) !important; }
+
+.cfFile__tab.is-active:not(#\9):not(#\9){
+  background: var(--gi-primary) !important; color: #fff !important;
+  box-shadow: 0 1px 2px rgba(37,99,235,.3) !important;
+}
+
+.cfFile__tabCount:not(#\9):not(#\9){
+  font-family: var(--gi-num) !important;
+  min-width: 20px !important;
+  padding: 1px 6px !important;
+  border-radius: var(--gi-r-pill) !important;
+  background: var(--gi-surface-3) !important;
+  color: var(--gi-text-3) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.cfFile__tab.is-active .cfFile__tabCount:not(#\9):not(#\9){
+  background: rgba(255,255,255,.22) !important; color: #fff !important;
+}
+
+@media (max-width: 1080px){
+  .cfFile__side:not(#\9):not(#\9){ position: static !important; }
+}
+
+@media (max-width: 640px){
+  .cfGroup__head:not(#\9):not(#\9){ flex-wrap: wrap !important; }
+  .cfGroup__sum:not(#\9):not(#\9){ border: none !important; padding-inline-start: 0 !important; }
 }

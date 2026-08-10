@@ -374,13 +374,13 @@
    כאן נסגר הפער. textarea לא נכלל: הוא זקוק לגובה משלו.
    ===================================================================== */
 
-.lcWizard:not(#\9):not(#\9) .input:not(textarea),
-.lcWizard:not(#\9):not(#\9) input[type="text"],
-.lcWizard:not(#\9):not(#\9) input[type="number"],
-.lcWizard:not(#\9):not(#\9) input[type="tel"],
-.lcWizard:not(#\9):not(#\9) input[type="email"],
-.lcWizard:not(#\9):not(#\9) input[type="date"],
-.lcWizard:not(#\9):not(#\9) input[type="search"],
+.lcWizard:not(#\9):not(#\9) .input:not(textarea):not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="text"]:not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="number"]:not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="tel"]:not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="email"]:not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="date"]:not(.lcElementaryPlateInput),
+.lcWizard:not(#\9):not(#\9) input[type="search"]:not(.lcElementaryPlateInput),
 .lcWizard:not(#\9):not(#\9) select{
   height: auto !important;
   min-height: 38px !important;
@@ -389,6 +389,21 @@
   font-size: 13px !important;
   font-weight: 500 !important;
   box-shadow: none !important;
+}
+
+/* לוחית רישוי — הטקסט על הצהוב, בלי רקע/מסגרת של שדה אשף */
+.lcWizard:not(#\9):not(#\9) .lcElementaryPlateInput,
+.lcWizard:not(#\9):not(#\9) input.lcElementaryPlateInput[type="text"]{
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  font-size: inherit !important;
+  font-weight: 900 !important;
 }
 
 /* וריאנט קומפקטי (טבלאות אלמנטרי) - נשאר קומפקטי, אבל בשפה אחת */
@@ -3265,3 +3280,430 @@
   color: var(--gi-success) !important;
   font-weight: 700 !important;
 }
+
+/* =====================================================================
+   GI-FIX: גלילה בדשבורד אלמנטרי
+   theme.css (~2190) מחיל `#view-dashboard .bankDash{display:grid !important}`
+   על כל מי שנושא את הקלאס bankDash — כולל סקשן דשבורד אלמנטרי, שהתכנון
+   שלו הוא עמודת flex עם טבלה גוללת פנימית. התוצאה: פריסת 2×2 שבורה,
+   ה-flex:1/min-height:0 על ה-tableWrap מאבד משמעות, והטבלה נחתכת ע"י
+   ה-overflow:hidden של .content בלי אפשרות גלילה.
+   כאן מחזירים לו את פריסת ה-flex ואת אזור הגלילה. theme-p2.css נטען
+   אחרון, וה-hack של :not(#\9) שומר על ספציפיות שווה לכלל שדורסים.
+   ===================================================================== */
+
+#view-dashboard .bankDash--elementaryLive:not(#\9):not(#\9){
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* אזור הגלילה עצמו: לוקח את כל הגובה שנשאר וגולל פנימית.
+   min-height:0 חובה — בלעדיו flex item לא מתכווץ מתחת לגובה התוכן. */
+#view-dashboard .bankDash--elementaryLive .lcElemDash__tableWrap:not(#\9):not(#\9){
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* שאר האזורים קבועים ולא מתכווצים, אחרת הם "גונבים" גובה מהטבלה. */
+#view-dashboard .bankDash--elementaryLive .lcElemDash__topBar:not(#\9):not(#\9),
+#view-dashboard .bankDash--elementaryLive .lcElemDash__tabsBar:not(#\9):not(#\9),
+#view-dashboard .bankDash--elementaryLive .lcElemDash__kpiStrip:not(#\9):not(#\9),
+#view-dashboard .bankDash--elementaryLive .lcElemDash__toolbar:not(#\9):not(#\9){
+  flex: 0 0 auto !important;
+}
+
+/* כותרות הטבלה נשארות דבוקות למעלה בזמן גלילה. */
+#view-dashboard .bankDash--elementaryLive .lcElemDashTable thead th:not(#\9):not(#\9){
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 3 !important;
+  background: #f3f6fb !important;
+}
+
+/* רשת ביטחון: אם :has() לא נתמך בדפדפן, .content לא מקבל flex/overflow:hidden
+   והטבלה לא תיחתך — אבל אז צריך שהאזור עצמו יקבל גובה מפורש כדי לגלול. */
+@supports not selector(:has(*)){
+  #view-dashboard .bankDash--elementaryLive .lcElemDash__tableWrap:not(#\9):not(#\9){
+    max-height: calc(100vh - 260px) !important;
+  }
+}
+
+/* מסכים צרים: הפריסה עוברת לגלילת עמוד רגילה, בלי כליאת גובה. */
+@media (max-width: 980px){
+  #view-dashboard .bankDash--elementaryLive:not(#\9):not(#\9){
+    overflow: visible !important;
+  }
+  #view-dashboard .bankDash--elementaryLive .lcElemDash__tableWrap:not(#\9):not(#\9){
+    overflow-y: visible !important;
+    max-height: none !important;
+  }
+}
+
+/* ===== GI-STAT-STRIP — רצועת מדדים משותפת (דוח מכירות + דוח ביטולים) ===== */
+.lcStatStrip{
+  border-top:1px solid var(--gi-border-soft,#F1F5F9);
+  background:#FCFDFE;
+  margin:14px -1px -1px;
+  border-radius:0 0 var(--gi-r-card,16px) var(--gi-r-card,16px);
+  overflow:hidden;
+}
+.lcStatStrip[hidden]{ display:none !important; }
+
+.lcStatStrip__row{ display:flex; flex-wrap:wrap; align-items:stretch; }
+.lcStatStrip__row + .lcStatStrip__row{ border-top:1px solid var(--gi-border-soft,#F1F5F9); }
+
+.lcStatCell{
+  flex:1 1 150px;
+  position:relative;
+  min-width:0;
+  padding:13px 18px;
+  border-inline-end:1px solid var(--gi-border-soft,#F1F5F9);
+}
+.lcStatCell:last-child{ border-inline-end:0; }
+
+.lcStatCell__label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12.5px;
+  font-weight:600;
+  color:#334155;
+  white-space:nowrap;
+}
+.lcStatCell__dot{
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--gi-text-muted,#647287);
+  flex:0 0 auto;
+}
+.lcStatCell__dot--danger{ background:var(--gi-danger,#DC2626); }
+.lcStatCell__dot--dangerDim{ background:var(--gi-danger,#DC2626); opacity:.45; }
+.lcStatCell__dot--warn{ background:var(--gi-warn,#D97706); }
+.lcStatCell__dot--info{ background:var(--gi-info,#2563EB); }
+.lcStatCell__dot--success{ background:var(--gi-success,#16A34A); }
+
+.lcStatCell__value{
+  display:block;
+  font-size:22px;
+  font-weight:700;
+  letter-spacing:-.01em;
+  line-height:1.25;
+  margin-top:3px;
+  letter-spacing:-.015em;
+  color:var(--gi-text,#0F172A);
+  font-variant-numeric:tabular-nums;
+  direction:ltr;
+  unicode-bidi:plaintext;
+  text-align:start;
+}
+.lcStatCell__sub{
+  display:block;
+  font-size:11.5px;
+  font-weight:500;
+  color:var(--gi-text-3,#4B5A6E);
+  margin-top:1px;
+}
+
+.lcStatCell--totalDanger{ background:#FEF4F4; }
+.lcStatCell--totalDanger .lcStatCell__label{ color:#991B1B; font-weight:700; }
+.lcStatCell--totalDanger .lcStatCell__value{ color:#B91C1C; font-weight:800; }
+.lcStatCell--totalDanger .lcStatCell__sub{ color:#96504F; }
+
+.lcStatCell--totalSuccess{ background:#F6FDF9; }
+.lcStatCell--totalSuccess .lcStatCell__label{ color:#166534; font-weight:700; }
+.lcStatCell--totalSuccess .lcStatCell__value{ color:#15803D; font-weight:800; }
+.lcStatCell--totalSuccess .lcStatCell__sub{ color:#4A7A5C; }
+
+.lcStatCell--totalInfo{ background:var(--gi-primary-soft,#EFF6FF); }
+.lcStatCell--totalInfo .lcStatCell__label{ color:#1E40AF; font-weight:700; }
+.lcStatCell--totalInfo .lcStatCell__value{ color:#1D4ED8; font-weight:800; }
+.lcStatCell--totalInfo .lcStatCell__sub{ color:#4C6A9E; }
+
+/* פילוח שנת ביטול */
+.lcStatCell--years{ flex:2 1 300px; padding:12px 18px; }
+.lcStatYears__title{
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  color:var(--gi-text-3,#4B5A6E);
+  margin-bottom:7px;
+}
+.lcStatYears__chips{ display:flex; flex-wrap:wrap; gap:7px; }
+.lcStatYears__chip{
+  display:inline-flex;
+  align-items:baseline;
+  gap:6px;
+  padding:4px 11px;
+  border-radius:var(--gi-r-pill,999px);
+  background:var(--gi-surface-2,#F8FAFC);
+  border:1px solid #EDF1F5;
+}
+.lcStatYears__chipLabel{ font-size:12px; font-weight:800; color:#15803D; }
+.lcStatYears__chipValue{
+  font-size:12.5px; font-weight:700; color:#0F172A;
+  font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:plaintext;
+}
+.lcStatYears__chipCount{ font-size:11px; font-weight:600; color:var(--gi-text-muted,#647287); }
+.lcStatYears__chip--empty{ background:#FBFCFD; border-style:dashed; border-color:#E5E9EF; }
+.lcStatYears__chip--empty .lcStatYears__chipLabel,
+.lcStatYears__chip--empty .lcStatYears__chipValue{ color:var(--gi-text-muted,#647287); }
+
+.lcStatStrip.is-filtered{ background:#FBFCFE; }
+.lcStatStrip.is-filtered .lcStatCell__label::after{
+  content:"·";
+  color:var(--gi-primary,#2563EB);
+  font-weight:900;
+}
+
+/* שורת "נכון לתאריך" מתחת לכותרת */
+.lcDailyReport__asOf--sub{
+  font-size:12.5px;
+  font-weight:700;
+  color:#475569;
+  margin-top:3px;
+}
+.lcDailyReport__asOf--sub[hidden]{ display:none !important; }
+
+@media (max-width:760px){
+  .lcStatCell{ flex:1 1 45%; border-bottom:1px solid var(--gi-border-soft,#F1F5F9); }
+  .lcStatCell--years{ flex:1 1 100%; }
+  .lcStatCell__value{ font-size:20px; }
+}
+
+/* ===== GI-STAT-STRIP — הרצועה בשורה העליונה של הכרטיס (במקום הכותרת) ===== */
+.lcReportHead__main{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.lcDailyReportCard__head > .lcReportHead__main + .lcDailyReportCard__actions{ flex:0 0 auto; }
+
+.lcStatStrip--inHead{
+  margin:0;
+  border:1px solid var(--gi-border-soft,#F1F5F9);
+  border-radius:var(--gi-r-md,12px);
+  background:#FCFDFE;
+  overflow:hidden;
+}
+.lcStatStrip--inHead .lcStatCell{ padding:13px 18px; }
+.lcStatStrip--inHead .lcStatCell__value{ font-size:22px; }
+.lcStatStrip--inHead .lcStatCell--years{ padding:12px 18px; }
+
+.lcReportHead__main .lcDailyReport__asOf--sub{ margin-top:0; }
+
+@media (max-width:900px){
+  .lcDailyReportCard__head{ flex-wrap:wrap; }
+  .lcReportHead__main{ flex:1 1 100%; order:2; }
+  .lcDailyReportCard__actions{ flex:1 1 100%; order:1; }
+}
+
+/* ===== GI-NAV-ACTIONS — כפתורי דוח הביטולים בשורת הניווט ===== */
+.lcReportNav{ align-items:center; }
+.lcReportNav__actions{
+  margin-inline-start:auto;
+  display:flex;
+  align-items:center;
+}
+.lcReportNav__actions[hidden]{ display:none !important; }
+.lcReportNav__actionsInner{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.lcReportNav__actionsInner .btn{ white-space:nowrap; }
+.lcReportNav__actionsInner .lcDailyReport__asOfPick{ margin:0; }
+.lcReportNav__actionsInner .lcDailyReport__monthPick{ margin:0; }
+
+@media (max-width:900px){
+  .lcReportNav{ flex-wrap:wrap; }
+  .lcReportNav__actions{ flex:1 1 100%; margin-inline-start:0; margin-top:8px; }
+  .lcReportNav__actionsInner{ justify-content:flex-start; }
+}
+
+/* ===== GI-NAV-ACTIONS — שני סלוטי הכפתורים חולקים את אותו מיקום ===== */
+.lcReportNav__actions + .lcReportNav__actions{ margin-inline-start:0; }
+.lcReportNav__actionsInner .lcDailyReport__asOfPickLabel{
+  font-size:11px;
+  font-weight:600;
+  color:var(--gi-text-muted,#647287);
+}
+
+/* ==========================================================================
+   GI-PLEDGE-MULTI 2026-08-04 · שיעבוד לשני בנקים
+   ========================================================================== */
+
+.lcPledgeBox__head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap; margin-bottom:10px;
+}
+.lcPledgeAddBtn{
+  border:1px solid var(--brandA, #2563eb);
+  background:color-mix(in srgb, var(--brandA, #2563eb) 8%, transparent);
+  color:var(--brandA, #2563eb);
+  font-family:inherit; font-weight:800; font-size:13px;
+  padding:8px 14px; border-radius:999px; cursor:pointer;
+  transition:background .18s ease, transform .12s ease;
+}
+.lcPledgeAddBtn:hover{ background:color-mix(in srgb, var(--brandA, #2563eb) 16%, transparent); }
+.lcPledgeAddBtn:active{ transform:scale(.97); }
+.lcPledgeMaxNote{ font-size:12px; font-weight:700; opacity:.65; }
+
+/* ── פס המאזן ── */
+.lcPledgeBalance{
+  border-radius:14px; padding:12px 14px; margin-bottom:14px;
+  border:1px solid rgba(0,0,0,.08);
+  background:rgba(0,0,0,.02);
+}
+.lcPledgeBalance__cells{
+  display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;
+}
+.lcPledgeBalance__cell{
+  flex:1 1 130px; min-width:120px;
+  display:flex; flex-direction:column; gap:2px;
+  padding:8px 10px; border-radius:10px;
+  background:rgba(255,255,255,.75);
+  border:1px solid rgba(0,0,0,.05);
+}
+.lcPledgeBalance__k{ font-size:11px; font-weight:700; opacity:.6; }
+.lcPledgeBalance__v{ font-size:15px; font-weight:900; letter-spacing:-.2px; }
+.lcPledgeBalance__msg{ font-size:12.5px; font-weight:800; line-height:1.45; }
+
+.lcPledgeBalance--ok{   border-color:rgba(16,185,129,.35); background:rgba(16,185,129,.07); }
+.lcPledgeBalance--ok   .lcPledgeBalance__msg{ color:#047857; }
+.lcPledgeBalance--warn{ border-color:rgba(245,158,11,.38); background:rgba(245,158,11,.08); }
+.lcPledgeBalance--warn .lcPledgeBalance__msg{ color:#b45309; }
+.lcPledgeBalance--bad{  border-color:rgba(239,68,68,.4);  background:rgba(239,68,68,.07); }
+.lcPledgeBalance--bad  .lcPledgeBalance__msg{ color:#b91c1c; }
+
+/* ── כרטיס בנק ── */
+.lcPledgeBankList{ display:flex; flex-direction:column; gap:12px; }
+.lcPledgeBankCard{
+  border:1px solid rgba(0,0,0,.09); border-radius:14px;
+  padding:12px 14px; background:rgba(255,255,255,.6);
+}
+.lcPledgeBankCard + .lcPledgeBankCard{
+  border-color:color-mix(in srgb, var(--brandA, #2563eb) 30%, rgba(0,0,0,.09));
+}
+.lcPledgeBankCard__head{
+  display:flex; align-items:center; gap:10px; margin-bottom:10px;
+}
+.lcPledgeBankCard__num{
+  font-size:12.5px; font-weight:900;
+  color:var(--brandA, #2563eb);
+  background:color-mix(in srgb, var(--brandA, #2563eb) 10%, transparent);
+  padding:4px 10px; border-radius:999px;
+}
+.lcPledgeBankCard__share{ font-size:11.5px; font-weight:800; opacity:.6; }
+.lcPledgeBankCard__remove{
+  margin-inline-start:auto;
+  border:none; background:rgba(239,68,68,.1); color:#dc2626;
+  width:26px; height:26px; border-radius:50%;
+  font-size:13px; font-weight:900; cursor:pointer; line-height:1;
+  transition:background .16s ease;
+}
+.lcPledgeBankCard__remove:hover{ background:rgba(239,68,68,.2); }
+
+.lcPledgeAutoTag{
+  font-size:10px; font-weight:800; margin-inline-start:6px;
+  padding:2px 7px; border-radius:999px;
+  background:rgba(16,185,129,.14); color:#047857;
+}
+
+/* ── מוטבים: בסיס חלוקה + סכום בשקלים ── */
+.lcBenBaseNote{
+  font-size:12.5px; font-weight:700; margin-top:4px;
+  color:#047857;
+}
+.lcBenBaseNote--empty{ color:#b45309; }
+.lcBeneficiaryRow__amount{
+  font-size:11.5px; font-weight:800; opacity:.7; margin-top:4px; min-height:14px;
+}
+
+/* ── שיחת שיקוף ── */
+.mcPledgeBox__balance{
+  display:flex; flex-wrap:wrap; gap:10px 16px;
+  padding:10px 12px; border-radius:12px; margin-bottom:10px;
+  font-size:12.5px; font-weight:700;
+  border:1px solid rgba(0,0,0,.08); background:rgba(0,0,0,.02);
+}
+.mcPledgeBox__balanceMsg{ flex-basis:100%; font-weight:800; }
+.mcPledgeBox__balance--ok{   border-color:rgba(16,185,129,.35); background:rgba(16,185,129,.07); }
+.mcPledgeBox__balance--ok   .mcPledgeBox__balanceMsg{ color:#047857; }
+.mcPledgeBox__balance--warn{ border-color:rgba(245,158,11,.38); background:rgba(245,158,11,.08); }
+.mcPledgeBox__balance--warn .mcPledgeBox__balanceMsg{ color:#b45309; }
+.mcPledgeBox__balance--bad{  border-color:rgba(239,68,68,.4);  background:rgba(239,68,68,.07); }
+.mcPledgeBox__balance--bad  .mcPledgeBox__balanceMsg{ color:#b91c1c; }
+
+.mcPledgeBank + .mcPledgeBank{
+  margin-top:12px; padding-top:12px;
+  border-top:1px dashed rgba(0,0,0,.14);
+}
+.mcPledgeBank__num{
+  font-size:12px; font-weight:900; margin-bottom:8px;
+  color:var(--brandA, #2563eb);
+}
+
+@media (max-width:640px){
+  .lcPledgeBalance__cell{ flex:1 1 100%; }
+  .lcPledgeBox__head{ align-items:flex-start; }
+}
+
+/* ── GI-PLEDGE-MULTI · שלב ב' · שיחת שיקוף + רמזי סכום (תצוגה בלבד) ── */
+
+/* רמז סכום מפורמט — מוצג מתחת לשדה, השדה עצמו נשאר מספר נקי */
+.lcMoneyHint,
+.mcMoneyHint{
+  display:block; margin-top:4px; min-height:15px;
+  font-size:12px; font-weight:900; letter-spacing:-.1px;
+  color:var(--brandA, #2563eb); opacity:.85;
+}
+.mcMoneyHint{ font-size:11.5px; }
+
+/* כותרת בוקס השיעבוד בשיחת שיקוף + כפתור הוספה */
+.mcPledgeBox__head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap; margin-bottom:8px;
+}
+.mcPledgeAddBtn{
+  font-size:12.5px; font-weight:800; padding:6px 12px;
+  border-radius:999px; white-space:nowrap;
+}
+.mcPledgeMaxNote{ font-size:11.5px; font-weight:700; opacity:.6; }
+
+.mcPledgeBank__num{
+  display:flex; align-items:center; gap:8px;
+}
+.mcPledgeBank__remove{
+  margin-inline-start:auto;
+  border:none; background:rgba(239,68,68,.1); color:#dc2626;
+  width:24px; height:24px; border-radius:50%;
+  font-size:12px; font-weight:900; cursor:pointer; line-height:1;
+  transition:background .16s ease;
+}
+.mcPledgeBank__remove:hover{ background:rgba(239,68,68,.2); }
+
+/* סכום בשקלים ליד אחוז המוטב */
+.mcBenefRow__money{
+  display:block; margin-top:4px; min-height:14px;
+  font-size:11.5px; font-weight:800; opacity:.72;
+}
+
+/* שורת בסיס החלוקה */
+.mcBenefCard__base{
+  display:block; margin-top:5px;
+  font-size:11.5px; font-weight:700; color:#047857;
+}
+.mcBenefCard__base--empty{ color:#b45309; }
