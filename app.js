@@ -29438,7 +29438,7 @@ UsersGateUI.init();
 
     /* GI-PERF-LAZY-SIMS 2026-08-09 */
   // Lazy simulator registry — engines in gi-simulators.js (~220KB parse deferred).
-  const GI_SIMULATOR_JS_HREF = "./gi-simulators.js?v=20260810-hachshara-cpi-v1";
+  const GI_SIMULATOR_JS_HREF = "./gi-simulators.js?v=20260810-hachshara-cpi-v2";
   const GI_SIMULATOR_CATALOG = Object.freeze([
     { company: "הפניקס", product: "ריסק" },
     { company: "מנורה", product: "ריסק" },
@@ -29656,7 +29656,8 @@ UsersGateUI.init();
         return;
       }
       this.close();
-      const items = (typeof RiskSimulators.list === "function") ? RiskSimulators.list() : [];
+      // מקור האמת לרשימת הכרטיסים: הקטלוג ב-app.js (לא רק מה שכבר נרשם ב-registry).
+      const items = Array.isArray(GI_SIMULATOR_CATALOG) ? GI_SIMULATOR_CATALOG.slice() : [];
       const modal = document.createElement("div");
       modal.id = "lcSimCenterModal";
       modal.className = "giValModal lcSimCenterModal";
